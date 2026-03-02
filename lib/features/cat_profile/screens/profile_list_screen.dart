@@ -1,10 +1,12 @@
-import 'package:cat_diet_planner/core/widgets/ghost_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/theme_provider.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/cat_selector_avatar.dart';
-
 import '../../../core/widgets/neon_button.dart';
+import '../../../core/widgets/ghost_button.dart';
+import '../../../core/widgets/app_card_container.dart';
+import '../../../core/widgets/status_badge.dart';
 
 class ProfileListScreen extends ConsumerWidget {
   const ProfileListScreen({super.key});
@@ -13,10 +15,10 @@ class ProfileListScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('CatDiet Planner'),
+        title: const Text('UI Components Showcase'),
         centerTitle: true,
-        // Adicionando aquele sininho do design original!
         actions: [
+          // Botão mágico de trocar tema Claro/Escuro
           IconButton(
             icon: Icon(
               Theme.of(context).brightness == Brightness.dark
@@ -34,132 +36,192 @@ class ProfileListScreen extends ConsumerWidget {
           const SizedBox(width: 8),
         ],
       ),
-
-      // O Segredo: Uma SingleChildScrollView permite rolar a tela se o celular for pequeno
       body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(
-            24.0,
-          ), // Margem de respiro de toda a tela
-          child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.start, // Alinha tudo à esquerda (Start)
-            children: [
-              // 1. A SEÇÃO DOS GATINHOS
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    CatSelectorAvatar(
-                      imagePath:
-                          'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=200&q=80',
-                      name: 'Milo',
-                      isActive: true,
-                      onTap: () => debugPrint('Milo'),
-                    ),
-                    const SizedBox(width: 16), // Espaçamento entre os gatos
-                    CatSelectorAvatar(
-                      imagePath:
-                          'https://images.unsplash.com/photo-1543852786-1cf6624b9987?auto=format&fit=crop&w=200&q=80',
-                      name: 'Luna',
-                      isActive: false,
-                      onTap: () => debugPrint('Luna'),
-                    ),
-                    const SizedBox(width: 16),
-                    CatSelectorAvatar(
-                      imagePath:
-                          'https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=200&q=80',
-                      name: 'Oliver',
-                      isActive: false,
-                      onTap: () => debugPrint('Oliver'),
-                    ),
-                    const SizedBox(width: 16),
-                    // O Botão de "+" (Add New) do Stitch!
-                    _buildAddCatButton(context),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 48), // Espaço grande em branco
-              // 2. A SEÇÃO DE TESTE DO BOTÃO NEON
-              const Text(
-                'Playground de Botões',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 16),
-
-              // Aqui está o seu NeonButton brilhando!
-              NeonButton(
-                text: '🍴 Feed Now',
-                onTap: () {
-                  debugPrint('Alimentando o Milo!');
-                },
-              ),
-
-              const SizedBox(height: 24),
-
-              const SizedBox(height: 16),
-              Row(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ============================================
+            // SEÇÃO 1: AVATARES DE GATOS
+            // ============================================
+            const _SectionTitle(title: '1. Cat Avatars'),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: GhostButton(
-                      text: 'Scan Food',
-                      icon: Icons.qr_code_scanner,
-                      onTap: () {},
-                    ),
+                  CatSelectorAvatar(
+                    imagePath:
+                        'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=200&q=80',
+                    name: 'Milo',
+                    isActive: true,
+                    onTap: () => debugPrint('Milo Tocado'),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: GhostButton(
-                      text: 'Log Weight',
-                      icon: Icons.monitor_weight_outlined,
-                      onTap: () {},
-                    ),
+                  CatSelectorAvatar(
+                    imagePath:
+                        'https://images.unsplash.com/photo-1543852786-1cf6624b9987?auto=format&fit=crop&w=200&q=80',
+                    name: 'Luna',
+                    isActive: false,
+                    onTap: () => debugPrint('Luna Tocada'),
+                  ),
+                  CatSelectorAvatar(
+                    imagePath:
+                        'https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=200&q=80',
+                    name: 'Oliver',
+                    isActive: false,
+                    onTap: () => debugPrint('Oliver Tocado'),
+                  ),
+                  const SizedBox(width: 8),
+                  _buildAddCatButton(context),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // ============================================
+            // SEÇÃO 2: CARDS & STATUS BADGES
+            // ============================================
+            const _SectionTitle(title: '2. App Card & Badges'),
+            AppCardContainer(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Health Status',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                      // BADGE ALERTA/ROSA
+                      const StatusBadge(
+                        text: '45 MIN LEFT',
+                        baseColor: AppTheme.primaryNeon,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Milo is currently on track with his daily goals! Here are some sample tags showing different statuses.',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  const SizedBox(height: 16),
+                  const Row(
+                    children: [
+                      // BADGE ROSA
+                      StatusBadge(
+                        text: 'Active',
+                        baseColor: AppTheme.primaryNeon,
+                      ),
+                      SizedBox(width: 8),
+                      // BADGE VERDE
+                      StatusBadge(
+                        text: 'Completed',
+                        baseColor: AppTheme.successGreen,
+                      ),
+                      SizedBox(width: 8),
+                      // BADGE AMARELO
+                      StatusBadge(
+                        text: 'Warning',
+                        baseColor: AppTheme.warningYellow,
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+            const SizedBox(height: 32),
+
+            // ============================================
+            // SEÇÃO 3: BOTÕES NEON E GHOST
+            // ============================================
+            const _SectionTitle(title: '3. Action Buttons'),
+            // BOTÃO PRINCIPAL
+            NeonButton(
+              text: '🍴 Feed Now',
+              onTap: () => debugPrint('Feed Now Apertado'),
+            ),
+            const SizedBox(height: 16),
+            // BOTÕES VAZADOS (LADO A LADO)
+            Row(
+              children: [
+                Expanded(
+                  child: GhostButton(
+                    text: 'Scan Food',
+                    icon: Icons.qr_code_scanner,
+                    onTap: () => debugPrint('Scan Food'),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: GhostButton(
+                    text: 'Log Weight',
+                    icon: Icons.monitor_weight_outlined,
+                    onTap: () => debugPrint('Log Weight'),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 48), // Espaço final
+          ],
         ),
       ),
     );
   }
 
-  // --- WIDGET AUXILIAR ---
-  // Aquele círculo pontilhado com um "+" dentro para adicionar gato
+  // --- WIDGET AUXILIAR DO ADD NEW ---
   Widget _buildAddCatButton(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 56,
-          height: 56,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(
-                0.3,
-              ), // Borda cinza/translúcida
-              width: 1.5,
-              style: BorderStyle
-                  .none, // O Flutter puro não tem borda pontilhada nativa
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
+                width: 1.5,
+                style: BorderStyle.none,
+              ),
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.05),
             ),
-            // Simulando a borda do design com uma cor de fundo sutil
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.05),
+            child: Icon(
+              Icons.add,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+            ),
           ),
-          child: Icon(
-            Icons.add,
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+          const SizedBox(height: 8),
+          Text(
+            'Add New',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+              fontWeight: FontWeight.bold,
+            ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// Minimal Widget just to render nice titles in this showcase
+class _SectionTitle extends StatelessWidget {
+  final String title;
+  const _SectionTitle({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16.0),
+      child: Text(
+        title,
+        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          color: Theme.of(context).colorScheme.primary,
         ),
-        const SizedBox(height: 8),
-        Text(
-          'Add New',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
