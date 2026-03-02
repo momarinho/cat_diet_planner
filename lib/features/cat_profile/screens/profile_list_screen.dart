@@ -7,6 +7,7 @@ import '../../../core/widgets/neon_button.dart';
 import '../../../core/widgets/ghost_button.dart';
 import '../../../core/widgets/app_card_container.dart';
 import '../../../core/widgets/status_badge.dart';
+import '../../../core/widgets/meal_horizontal_card.dart';
 
 class ProfileListScreen extends ConsumerWidget {
   const ProfileListScreen({super.key});
@@ -161,6 +162,41 @@ class ProfileListScreen extends ConsumerWidget {
                   ),
                 ),
               ],
+            ),
+            // ============================================
+            // SEÇÃO 4: MEAL TIMELINE (HORIZONTAL)
+            // ============================================
+            const _SectionTitle(title: '4. Meal Timeline'),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              clipBehavior: Clip.none,
+              child: Row(
+                children: [
+                  const MealHorizontalCard(
+                    title: 'Breakfast',
+                    time: '08:00 AM',
+                    calories: 100,
+                    icon: Icons.breakfast_dining,
+                    isCompleted: true,
+                  ),
+                  const SizedBox(width: 16),
+                  const MealHorizontalCard(
+                    title: 'Lunch',
+                    time: '01:00 PM',
+                    calories: 150,
+                    icon: Icons.lunch_dining,
+                    isCompleted: true,
+                  ),
+                  const SizedBox(width: 16),
+                  const MealHorizontalCard(
+                    title: 'Dinner',
+                    time: '07:00 PM',
+                    calories: 150,
+                    icon: Icons.dinner_dining,
+                    isNext: true,
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 48), // Espaço final
           ],
