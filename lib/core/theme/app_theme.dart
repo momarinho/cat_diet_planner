@@ -2,32 +2,38 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Cores Compartilhadas
-  static const Color primaryNeon = Color(0xFFFF849F);
-  static const Color successGreen = Color(0xFF4ADE80);
-  static const Color warningYellow = Color(0xFFFBBF24);
+  // Cores do Design (Extraídas do Figma)
+  static const Color primaryNeon = Color(
+    0xFFFF85A1,
+  ); // Rosa Pastel/Neon Oficial
+  static const Color successGreen = Color(0xFF22C55E); // Verde Status
+  static const Color warningYellow = Color(
+    0xFFF59E0B,
+  ); // Laranja/Amarelo Status
 
   // Cores Tema Claro
-  static const Color lightBackground = Color(
-    0xFFFFF5F7,
-  ); // Cinza super claro/off-white
-  static const Color lightSurfaceCard = Color(0xFFFFF5F7);
+  static const Color lightBackground = Color(0xFFFFF5F7); // Fundo rosa/gelo
+  static const Color lightSurfaceCard = Color(0xFFFFFFFF); // Cartões brancos
   static const Color lightTextPrimary = Color(
-    0xFF2D2A2B,
-  ); // Chumbo escuro suave
-  static const Color lightTextSecondary = Color(0xFF8E8A8B); // Cinza neutro
+    0xFF2D2D2D,
+  ); // Chumbo extra escuro
+  static const Color lightTextSecondary = Color(
+    0xFF6E6E6E,
+  ); // Cinza neutro legível
 
-  // Cores Tema Escuro (Dark Plum & Neon Coral)
-  static const Color darkBackground = Color(0xFF1E1517); // Ameixa ultra escuro
+  // Cores Tema Escuro (Dark Plum)
+  static const Color darkBackground = Color(
+    0xFF230F13,
+  ); // Vinho/Ameixa pardo escuríssimo
   static const Color darkSurfaceCard = Color(
-    0xFF2A1E22,
-  ); // Ameixa mais claro para cards
+    0xFF2D1B20,
+  ); // Ameixa ligeiramente mais claro
   static const Color darkTextPrimary = Colors.white;
   static const Color darkTextSecondary = Color(
     0xFFA19398,
-  ); // Texto cinza/rosado
+  ); // Texto cinza quente/rosado
 
-  /// Tema Claro
+  /// Tema Claro: Pink Pastel
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
@@ -65,7 +71,7 @@ class AppTheme {
       cardTheme: const CardThemeData(
         color: lightSurfaceCard,
         elevation: 4,
-        shadowColor: Color(0x1A000000), // Sombra bem sutil 10%
+        shadowColor: Color(0x1A000000), // Sombra 10%
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(24)),
         ),
@@ -98,7 +104,7 @@ class AppTheme {
           side: const BorderSide(color: primaryNeon, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(100), // Formato Pílula
           ),
           textStyle: GoogleFonts.manrope(fontWeight: FontWeight.bold),
         ),
@@ -111,14 +117,14 @@ class AppTheme {
         elevation: 8,
       ),
       dividerTheme: const DividerThemeData(
-        color: Color(0xFFE5E5E5), // Linha divisória clara
+        color: Color(0xFFE5E5E5),
         thickness: 1,
         space: 24,
       ),
     );
   }
 
-  /// Tema Escuro Principal
+  /// Tema Escuro Principal (Dark Plum & Neon Coral)
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
@@ -171,7 +177,7 @@ class AppTheme {
           backgroundColor: primaryNeon,
           foregroundColor: Colors.white,
           minimumSize: const Size(double.infinity, 56),
-          elevation: 8, // Para ajudar no efeito Neon Glow básico
+          elevation: 8,
           shadowColor: primaryNeon.withOpacity(0.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
@@ -188,7 +194,7 @@ class AppTheme {
           side: const BorderSide(color: primaryNeon, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(100), // Formato Pílula
           ),
           textStyle: GoogleFonts.manrope(fontWeight: FontWeight.bold),
         ),
@@ -201,9 +207,9 @@ class AppTheme {
         elevation: 0,
       ),
       dividerTheme: const DividerThemeData(
-        color: Color(0xFF3D262F), // Linhas divisórias sutis bem amadeiradas
+        color: Color(0xFF3D262F), // Linha divisória da cor da ameixa
         thickness: 1,
-        space: 24,
+        space: 24, // Espaçamento base do divider
       ),
     );
   }
