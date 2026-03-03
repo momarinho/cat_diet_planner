@@ -8,6 +8,8 @@ import '../../../core/widgets/ghost_button.dart';
 import '../../../core/widgets/app_card_container.dart';
 import '../../../core/widgets/status_badge.dart';
 import '../../../core/widgets/meal_horizontal_card.dart';
+import '../../../core/widgets/daily_summary_ring.dart';
+import '../../../core/widgets/vertical_timeline_tile.dart';
 
 class ProfileListScreen extends ConsumerWidget {
   const ProfileListScreen({super.key});
@@ -163,6 +165,7 @@ class ProfileListScreen extends ConsumerWidget {
                 ),
               ],
             ),
+            const SizedBox(height: 32),
             // ============================================
             // SEÇÃO 4: MEAL TIMELINE (HORIZONTAL)
             // ============================================
@@ -194,6 +197,47 @@ class ProfileListScreen extends ConsumerWidget {
                     calories: 150,
                     icon: Icons.dinner_dining,
                     isNext: true,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 32),
+            // ============================================
+            // SEÇÃO 5: DAILY SUMMARY + VERTICAL TIMELINE
+            // ============================================
+            const _SectionTitle(title: '5. Daily Summary & Vertical Timeline'),
+            AppCardContainer(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const DailySummaryRing(
+                    consumedCalories: 250,
+                    goalCalories: 300,
+                    size: 110,
+                    strokeWidth: 10,
+                  ),
+                  const SizedBox(width: 20),
+                  const Expanded(
+                    child: Column(
+                      children: [
+                        VerticalTimelineTile(
+                          icon: Icons.breakfast_dining,
+                          title: 'Breakfast',
+                          subtitle: '08:00 AM • 100 kcal',
+                        ),
+                        VerticalTimelineTile(
+                          icon: Icons.lunch_dining,
+                          title: 'Lunch',
+                          subtitle: '01:00 PM • 150 kcal',
+                        ),
+                        VerticalTimelineTile(
+                          icon: Icons.dinner_dining,
+                          title: 'Dinner',
+                          subtitle: '07:00 PM • 150 kcal',
+                          isLast: true,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
