@@ -1,9 +1,10 @@
 import 'package:cat_diet_planner/core/theme/theme_provider.dart';
+import 'package:cat_diet_planner/features/dashboard/screens/dashboard_overview_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
 import 'data/hive_service/hive_service.dart';
-import 'features/cat_profile/screens/profile_list_screen.dart';
 
 void main() async {
   // Garante que os bindings do Flutter estejam prontos antes de inicializar serviços externos
@@ -29,7 +30,7 @@ class MyApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: currentThemeMode,
 
-      home: const ProfileListScreen(),
+      home: DashboardOverviewScreen(),
     );
   }
 }
