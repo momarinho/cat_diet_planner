@@ -1,5 +1,6 @@
 import 'package:cat_diet_planner/core/theme/theme_provider.dart';
 import 'package:cat_diet_planner/features/dashboard/screens/dashboard_overview_screen.dart';
+import 'package:cat_diet_planner/features/navigation/app_shell_screen.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,7 +31,7 @@ class MyApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: currentThemeMode,
 
-      home: DashboardOverviewScreen(),
+      home: AppShellScreen(),
     );
   }
 }

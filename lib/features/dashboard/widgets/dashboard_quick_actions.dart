@@ -13,7 +13,7 @@ class DashboardQuickActions extends StatelessWidget {
         Expanded(
           child: NeonButton(text: 'Scan Food', onTap: () {}),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 16),
         Expanded(
           child: GhostButton(
             text: 'Log Weight',

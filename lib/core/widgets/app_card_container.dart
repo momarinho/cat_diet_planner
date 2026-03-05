@@ -12,6 +12,7 @@ class AppCardContainer extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Container(
+      width: double.infinity,
       padding: padding ?? const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,

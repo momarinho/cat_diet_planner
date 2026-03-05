@@ -15,7 +15,7 @@ class DashboardOverviewScreen extends StatelessWidget {
       extendBodyBehindAppBar: true,
       appBar: const DashboardBlurAppBar(),
       body: const SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(16, 110, 16, 24),
+        padding: EdgeInsets.fromLTRB(16, 110, 16, 120),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
