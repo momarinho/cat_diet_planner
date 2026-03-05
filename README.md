@@ -2,6 +2,10 @@
 
 A new Flutter project.
 
+## Planejamento de Telas
+
+- Plano oficial do mockup v1: [docs/PLANO_TELAS_MOCKUP.md](docs/PLANO_TELAS_MOCKUP.md)
+
 ## Getting Started
 
 This project is a starting point for a Flutter application.
