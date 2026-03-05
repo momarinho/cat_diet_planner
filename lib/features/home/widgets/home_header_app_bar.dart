@@ -1,35 +1,41 @@
+import 'package:cat_diet_planner/core/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class HomeHeaderAppBar extends StatelessWidget implements PreferredSizeWidget {
+class HomeHeaderAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const HomeHeaderAppBar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(kToolbarHeight + 8);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight + 1);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
 
     return AppBar(
+      automaticallyImplyLeading: false,
       backgroundColor: theme.scaffoldBackgroundColor,
+      surfaceTintColor: Colors.transparent,
       elevation: 0,
       centerTitle: true,
       title: const Text('CatDiet Planner'),
-      surfaceTintColor: Colors.transparent,
-      bottom: PreferredSize(
-        preferredSize: const Size.fromHeight(1),
-        child: Divider(
-          height: 1,
-          thickness: 1,
-          color: primary.withValues(alpha: 0.10),
-        ),
-      ),
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 12),
-        child: _CircleIconButton(icon: Icons.menu_rounded, onTap: () {}),
-      ),
       actions: [
+        if (kDebugMode)
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: _CircleIconButton(
+              icon: Theme.of(context).brightness == Brightness.dark
+                  ? Icons.light_mode
+                  : Icons.dark_mode,
+              onTap: () => ref.read(themeProvider.notifier).toggleTheme(),
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: _CircleIconButton(icon: Icons.settings_outlined, onTap: () {}),
+        ),
         Padding(
           padding: const EdgeInsets.only(right: 12),
           child: Stack(
@@ -40,8 +46,8 @@ class HomeHeaderAppBar extends StatelessWidget implements PreferredSizeWidget {
                 onTap: () {},
               ),
               Positioned(
-                right: 3,
-                top: 3,
+                right: 2,
+                top: 2,
                 child: Container(
                   width: 9,
                   height: 9,
@@ -55,6 +61,14 @@ class HomeHeaderAppBar extends StatelessWidget implements PreferredSizeWidget {
           ),
         ),
       ],
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Divider(
+          height: 1,
+          thickness: 1,
+          color: primary.withValues(alpha: 0.10),
+        ),
+      ),
     );
   }
 }

@@ -1,8 +1,11 @@
 import 'dart:ui';
 
+import 'package:cat_diet_planner/core/theme/theme_provider.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class DashboardBlurAppBar extends StatelessWidget
+class DashboardBlurAppBar extends ConsumerWidget
     implements PreferredSizeWidget {
   const DashboardBlurAppBar({super.key});
 
@@ -10,7 +13,7 @@ class DashboardBlurAppBar extends StatelessWidget
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
 
@@ -25,19 +28,32 @@ class DashboardBlurAppBar extends StatelessWidget
           filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
           child: Container(
             decoration: BoxDecoration(
-              color: theme.scaffoldBackgroundColor.withOpacity(0.82),
+              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.82),
               border: Border(
-                bottom: BorderSide(color: primary.withOpacity(0.12), width: 1),
+                bottom: BorderSide(
+                  color: primary.withValues(alpha: 0.12),
+                  width: 1,
+                ),
               ),
             ),
           ),
         ),
       ),
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 12),
-        child: _IconCircleButton(icon: Icons.menu_rounded, onTap: () {}),
-      ),
       actions: [
+        if (kDebugMode)
+          Padding(
+            padding: const EdgeInsets.only(right: 8),
+            child: _IconCircleButton(
+              icon: Theme.of(context).brightness == Brightness.dark
+                  ? Icons.light_mode
+                  : Icons.dark_mode,
+              onTap: () => ref.read(themeProvider.notifier).toggleTheme(),
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.only(right: 8),
+          child: _IconCircleButton(icon: Icons.settings_outlined, onTap: () {}),
+        ),
         Padding(
           padding: const EdgeInsets.only(right: 12),
           child: Stack(
@@ -79,7 +95,7 @@ class _IconCircleButton extends StatelessWidget {
     final primary = Theme.of(context).colorScheme.primary;
 
     return Material(
-      color: primary.withOpacity(0.10),
+      color: primary.withValues(alpha: 0.10),
       shape: const CircleBorder(),
       child: InkWell(
         onTap: onTap,

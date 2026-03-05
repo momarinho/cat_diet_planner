@@ -1,4 +1,5 @@
 import 'package:cat_diet_planner/features/dashboard/screens/dashboard_overview_screen.dart';
+import 'package:cat_diet_planner/features/home/screens/home_overview_screen.dart';
 import 'package:flutter/material.dart';
 
 class AppShellScreen extends StatefulWidget {
@@ -12,7 +13,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
   int _currentIndex = 0;
 
   late final List<Widget> _tabs = [
-    const DashboardOverviewScreen(), // Home
+    const HomeOverviewScreen(), // Home
     const _NutritionMockScreen(),
     const _HealthMockScreen(),
     const _ProfileMockScreen(),
