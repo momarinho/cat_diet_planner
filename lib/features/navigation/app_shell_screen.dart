@@ -1,4 +1,4 @@
-import 'package:cat_diet_planner/features/dashboard/screens/dashboard_overview_screen.dart';
+import 'package:cat_diet_planner/features/daily/screens/daily_overview_screen.dart';
 import 'package:cat_diet_planner/features/home/screens/home_overview_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -13,10 +13,10 @@ class _AppShellScreenState extends State<AppShellScreen> {
   int _currentIndex = 0;
 
   late final List<Widget> _tabs = [
-    const HomeOverviewScreen(), // Home
-    const _NutritionMockScreen(),
-    const _HealthMockScreen(),
-    const _ProfileMockScreen(),
+    const DailyOverviewScreen(), // Daily
+    const HomeOverviewScreen(), // Profiles
+    const _PlansMockScreen(),
+    const _HistoryMockScreen(),
   ];
 
   void _onTabTap(int index) {
@@ -79,7 +79,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
               Expanded(
                 child: _NavItem(
                   icon: Icons.home_rounded,
-                  label: 'Home',
+                  label: 'Daily',
                   active: _currentIndex == 0,
                   activeColor: primary,
                   inactiveColor: inactive,
@@ -88,8 +88,8 @@ class _AppShellScreenState extends State<AppShellScreen> {
               ),
               Expanded(
                 child: _NavItem(
-                  icon: Icons.restaurant_rounded,
-                  label: 'Meals',
+                  icon: Icons.pets_rounded,
+                  label: 'Profiles',
                   active: _currentIndex == 1,
                   activeColor: primary,
                   inactiveColor: inactive,
@@ -99,8 +99,8 @@ class _AppShellScreenState extends State<AppShellScreen> {
               const SizedBox(width: 56),
               Expanded(
                 child: _NavItem(
-                  icon: Icons.health_and_safety_rounded,
-                  label: 'Health',
+                  icon: Icons.adjust_rounded,
+                  label: 'Plans',
                   active: _currentIndex == 2,
                   activeColor: primary,
                   inactiveColor: inactive,
@@ -109,8 +109,8 @@ class _AppShellScreenState extends State<AppShellScreen> {
               ),
               Expanded(
                 child: _NavItem(
-                  icon: Icons.person_outline_rounded,
-                  label: 'Profile',
+                  icon: Icons.show_chart_rounded,
+                  label: 'History',
                   active: _currentIndex == 3,
                   activeColor: primary,
                   inactiveColor: inactive,
@@ -173,29 +173,20 @@ class _NavItem extends StatelessWidget {
   }
 }
 
-class _NutritionMockScreen extends StatelessWidget {
-  const _NutritionMockScreen();
+class _PlansMockScreen extends StatelessWidget {
+  const _PlansMockScreen();
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Nutrition (Mock)')));
+    return const Scaffold(body: Center(child: Text('Plans (Mock)')));
   }
 }
 
-class _HealthMockScreen extends StatelessWidget {
-  const _HealthMockScreen();
+class _HistoryMockScreen extends StatelessWidget {
+  const _HistoryMockScreen();
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Health (Mock)')));
-  }
-}
-
-class _ProfileMockScreen extends StatelessWidget {
-  const _ProfileMockScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Profile (Mock)')));
+    return const Scaffold(body: Center(child: Text('History (Mock)')));
   }
 }
