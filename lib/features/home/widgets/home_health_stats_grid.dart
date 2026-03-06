@@ -8,28 +8,49 @@ class HomeHealthStatsGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
-      children: [
-        Expanded(
-          child: _StatCard(
-            icon: Icons.opacity_rounded,
-            title: 'HYDRATION',
-            value: 'Normal',
-            status: '↗ Good',
-            statusColor: AppTheme.successGreen,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isNarrow = constraints.maxWidth < 360;
+
+        final cards = [
+          const Expanded(
+            child: _StatCard(
+              icon: Icons.opacity_rounded,
+              title: 'HYDRATION',
+              value: 'Normal',
+              status: '↗ Good',
+              statusColor: AppTheme.successGreen,
+            ),
           ),
-        ),
-        SizedBox(width: 12),
-        Expanded(
-          child: _StatCard(
-            icon: Icons.monitor_weight_outlined,
-            title: 'WEIGHT',
-            value: '4.8 kg',
-            status: '↗ Over goal',
-            statusColor: AppTheme.warningYellow,
+          const Expanded(
+            child: _StatCard(
+              icon: Icons.monitor_weight_outlined,
+              title: 'WEIGHT',
+              value: '4.8 kg',
+              status: '↗ Over goal',
+              statusColor: AppTheme.warningYellow,
+            ),
           ),
-        ),
-      ],
+        ];
+
+        if (isNarrow) {
+          return Column(
+            children: [
+              Row(children: [cards[0]]),
+              const SizedBox(height: 12),
+              Row(children: [cards[1]]),
+            ],
+          );
+        }
+
+        return Row(
+          children: [
+            cards[0],
+            const SizedBox(width: 12),
+            cards[1],
+          ],
+        );
+      },
     );
   }
 }
@@ -78,6 +99,8 @@ class _StatCard extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               status,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: statusColor,
                 fontWeight: FontWeight.w700,

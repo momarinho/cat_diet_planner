@@ -16,21 +16,22 @@ class HomeNextFeedingCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            crossAxisAlignment: WrapCrossAlignment.center,
             children: [
               Icon(
                 Icons.schedule_rounded,
                 color: theme.colorScheme.primary,
                 size: 22,
               ),
-              const SizedBox(width: 8),
               Text(
                 'Next Feeding',
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const Spacer(),
               const StatusBadge(
                 text: '45 MIN LEFT',
                 baseColor: AppTheme.primaryNeon,
@@ -57,6 +58,8 @@ class HomeNextFeedingCard extends StatelessWidget {
                   children: [
                     Text(
                       'Evening Feast',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -64,11 +67,15 @@ class HomeNextFeedingCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'Scheduled: 6:30 PM',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodyLarge,
                     ),
                     const SizedBox(height: 2),
                     Text(
                       '85g Wellness Core Wet',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodyLarge,
                     ),
                   ],

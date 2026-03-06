@@ -31,10 +31,14 @@ class HomeHealthInsightsCard extends StatelessWidget {
                     size: 26,
                   ),
                   const SizedBox(width: 8),
-                  Text(
-                    'Health Insights',
-                    style: theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w800,
+                  Expanded(
+                    child: Text(
+                      'Health Insights',
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                   ),
                 ],
@@ -55,7 +59,10 @@ class HomeHealthInsightsCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 6,
+                      alignment: WrapAlignment.spaceBetween,
                       children: [
                         Text(
                           'Weight Alert',
@@ -64,7 +71,6 @@ class HomeHealthInsightsCard extends StatelessWidget {
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        const Spacer(),
                         Text(
                           '+0.2kg vs last week',
                           style: theme.textTheme.bodyMedium?.copyWith(
@@ -89,77 +95,109 @@ class HomeHealthInsightsCard extends StatelessWidget {
                         _bar(28, primary.withValues(alpha: 0.50)),
                         _bar(34, primary.withValues(alpha: 0.60)),
                         _bar(42, primary.withValues(alpha: 0.70)),
-                        _bar(52, AppTheme.warningYellow),
+                        _bar(52, AppTheme.warningYellow, isLast: true),
                       ],
                     ),
                   ],
                 ),
               ),
               const SizedBox(height: 14),
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF1D2342)
-                      : const Color(0xFFEFF2FF),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 20,
-                      backgroundColor: primary.withValues(alpha: 0.2),
-                      child: Icon(
-                        Icons.fitness_center,
-                        color: primary,
-                        size: 20,
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isCompact = constraints.maxWidth < 320;
+
+                  final leading = Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: primary.withValues(alpha: 0.2),
+                        child: Icon(
+                          Icons.fitness_center,
+                          color: primary,
+                          size: 20,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Daily Activity',
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w800,
+                      const SizedBox(width: 12),
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Daily Activity',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
                             ),
-                          ),
-                          Text(
-                            'Goal: 30m playtime',
-                            style: theme.textTheme.bodyMedium,
-                          ),
-                        ],
+                            Text(
+                              'Goal: 30m playtime',
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                              style: theme.textTheme.bodyMedium,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Text(
-                          '18m / 30m',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            color: primary,
-                            fontWeight: FontWeight.w800,
+                    ],
+                  );
+
+                  final trailing = Column(
+                    crossAxisAlignment: isCompact
+                        ? CrossAxisAlignment.start
+                        : CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        '18m / 30m',
+                        style: theme.textTheme.titleMedium?.copyWith(
+                          color: primary,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      SizedBox(
+                        width: isCompact ? double.infinity : 86,
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(100),
+                          child: LinearProgressIndicator(
+                            minHeight: 7,
+                            value: 18 / 30,
+                            backgroundColor: primary.withValues(alpha: 0.2),
+                            valueColor: AlwaysStoppedAnimation(primary),
                           ),
                         ),
-                        const SizedBox(height: 6),
-                        SizedBox(
-                          width: 86,
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(100),
-                            child: LinearProgressIndicator(
-                              minHeight: 7,
-                              value: 18 / 30,
-                              backgroundColor: primary.withValues(alpha: 0.2),
-                              valueColor: AlwaysStoppedAnimation(primary),
-                            ),
-                          ),
-                        ),
-                      ],
+                      ),
+                    ],
+                  );
+
+                  return Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF1D2342)
+                          : const Color(0xFFEFF2FF),
+                      borderRadius: BorderRadius.circular(16),
                     ),
-                  ],
-                ),
+                    child: isCompact
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              leading,
+                              const SizedBox(height: 12),
+                              trailing,
+                            ],
+                          )
+                        : Row(
+                            children: [
+                              Expanded(child: leading),
+                              const SizedBox(width: 12),
+                              trailing,
+                            ],
+                          ),
+                  );
+                },
               ),
             ],
           ),
@@ -168,11 +206,11 @@ class HomeHealthInsightsCard extends StatelessWidget {
     );
   }
 
-  Widget _bar(double height, Color color) {
+  Widget _bar(double height, Color color, {bool isLast = false}) {
     return Expanded(
       child: Container(
         height: height,
-        margin: const EdgeInsets.only(right: 6),
+        margin: EdgeInsets.only(right: isLast ? 0 : 6),
         decoration: BoxDecoration(
           color: color,
           borderRadius: BorderRadius.circular(4),

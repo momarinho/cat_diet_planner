@@ -1,4 +1,3 @@
-import 'package:cat_diet_planner/core/widgets/neon_button.dart';
 import 'package:flutter/material.dart';
 
 class DailyScannerCta extends StatelessWidget {
@@ -6,12 +5,40 @@ class DailyScannerCta extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final primary = Theme.of(context).colorScheme.primary;
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+
     return Positioned(
-      right: 16,
-      bottom: 84,
-      child: SizedBox(
-        width: 220,
-        child: NeonButton(text: 'FOOD SCANNER', onTap: () {}),
+      right: 20,
+      bottom: 96 + bottomInset,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {},
+          customBorder: const CircleBorder(),
+          child: Container(
+            width: 88,
+            height: 88,
+            decoration: BoxDecoration(
+              color: primary,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: primary.withValues(alpha: 0.35),
+                  blurRadius: 34,
+                  offset: const Offset(0, 18),
+                ),
+              ],
+            ),
+            child: const Center(
+              child: Icon(
+                Icons.qr_code_scanner_rounded,
+                color: Colors.white,
+                size: 34,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
