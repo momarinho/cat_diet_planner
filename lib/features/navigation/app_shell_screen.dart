@@ -1,3 +1,4 @@
+import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/features/daily/screens/daily_overview_screen.dart';
 import 'package:cat_diet_planner/features/home/screens/home_overview_screen.dart';
 import 'package:flutter/material.dart';
@@ -140,7 +141,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
     );
   }
 
-  void _onScannerTap() {}
+  void _onScannerTap() => Navigator.of(context).pushNamed(AppRoutes.scanner);
 }
 
 class _NavItem extends StatelessWidget {

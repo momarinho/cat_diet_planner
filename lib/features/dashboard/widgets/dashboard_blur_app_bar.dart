@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/core/theme/theme_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -52,7 +53,10 @@ class DashboardBlurAppBar extends ConsumerWidget
           ),
         Padding(
           padding: const EdgeInsets.only(right: 8),
-          child: _IconCircleButton(icon: Icons.settings_outlined, onTap: () {}),
+          child: _IconCircleButton(
+            icon: Icons.settings_outlined,
+            onTap: () => Navigator.of(context).pushNamed(AppRoutes.settings),
+          ),
         ),
         Padding(
           padding: const EdgeInsets.only(right: 12),

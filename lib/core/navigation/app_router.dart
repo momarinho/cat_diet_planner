@@ -2,7 +2,10 @@ import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/features/dashboard/screens/dashboard_overview_screen.dart';
 import 'package:cat_diet_planner/features/navigation/app_shell_screen.dart';
+import 'package:cat_diet_planner/features/scanner/screens/scanner_screen.dart';
 import 'package:cat_diet_planner/features/settings/settings_screen.dart';
+import 'package:cat_diet_planner/features/weight/screens/weight_checkin_screen.dart';
+
 import 'package:flutter/material.dart';
 
 class AppRouter {
@@ -29,6 +32,16 @@ class AppRouter {
       case AppRoutes.settings:
         return MaterialPageRoute(
           builder: (_) => const SettingsScreen(),
+          settings: settings,
+        );
+      case AppRoutes.weightCheckIn:
+        return MaterialPageRoute(
+          builder: (_) => const WeightCheckInScreen(),
+          settings: settings,
+        );
+      case AppRoutes.scanner:
+        return MaterialPageRoute(
+          builder: (_) => const ScannerScreen(),
           settings: settings,
         );
       default:

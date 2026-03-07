@@ -38,28 +38,28 @@ tirar o app do estado de mock parcialmente navegável.
 - [x] Daily e Home já apontam para telas reais
 - [ ] Plans deixar de usar placeholder
 - [ ] History deixar de usar placeholder
-- [ ] FAB central abrir fluxo real de scanner
+- [x] FAB central abrir fluxo real de scanner
 
 Critério de aceite:
 - nenhuma aba principal exibe placeholder
 - nenhuma ação principal da shell fica vazia
 
 ### 1.2 Rotas internas obrigatórias
-- [ ] Scanner
-- [ ] Settings
+- [-] Scanner
+- [x] Settings
 - [ ] Food Database
-- [ ] Weight Check-in
+- [-] Weight Check-in
 
 Critério de aceite:
 - usuário consegue abrir manualmente todas essas telas a partir dos pontos visíveis da UI
 
 ### 1.3 Ações hoje vazias
-- [ ] settings no Home
-- [ ] settings no Daily
-- [ ] settings no Dashboard
-- [ ] quick action `Scan Food`
-- [ ] quick action `Log Weight`
-- [ ] CTA de scanner no Daily
+- [x] settings no Home
+- [x] settings no Daily
+- [x] settings no Dashboard
+- [x] quick action `Scan Food`
+- [x] quick action `Log Weight`
+- [x] CTA de scanner no Daily
 
 Critério de aceite:
 - eliminar `onTap: () {}` dos fluxos principais
@@ -138,13 +138,13 @@ Critério de aceite:
 - usuário consegue cadastrar e recuperar alimentos reais
 
 ### 3.2 Scanner de alimento
-- [ ] tela visual do scanner
+- [x] tela visual do scanner
 - [ ] overlay alinhado ao mock
 - [ ] flash
-- [ ] fallback `Manual Entry`
+- [-] fallback `Manual Entry`
 - [ ] card inferior de confirmação
 - [ ] ação `Confirm Product`
-- [ ] navegação a partir do FAB e quick actions
+- [x] navegação a partir do FAB e quick actions
 - [ ] integração com câmera
 - [ ] leitura de barcode via ML Kit
 
@@ -251,10 +251,10 @@ Objetivo:
 encerrar o app como produto utilizável.
 
 ### 6.1 Settings
-- [ ] tela de configurações
-- [ ] toggle de reminders
+- [x] tela de configurações
+- [-] toggle de reminders
 - [ ] configuração de horários
-- [ ] dark mode
+- [x] dark mode
 - [ ] idioma
 - [ ] export JSON
 - [ ] backup
