@@ -2,36 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
-  // Cores do Design (Extraídas do Figma)
-  static const Color primaryNeon = Color(
-    0xFFFF85A1,
-  ); // Rosa Pastel/Neon Oficial
-  static const Color successGreen = Color(0xFF22C55E); // Verde Status
-  static const Color warningYellow = Color(
-    0xFFF59E0B,
-  ); // Laranja/Amarelo Status
+  // Core palette based on the pink pastel and midnight rose guides.
+  static const Color primaryNeon = Color(0xFFFF85A1);
+  static const Color successGreen = Color(0xFFA8E6CF);
+  static const Color warningYellow = Color(0xFFFFD93D);
+  static const Color dangerRed = Color(0xFFFF8E8E);
 
-  // Cores Tema Claro
-  static const Color lightBackground = Color(0xFFFFF5F7); // Fundo rosa/gelo
-  static const Color lightSurfaceCard = Color(0xFFFFFFFF); // Cartões brancos
-  static const Color lightTextPrimary = Color(
-    0xFF2D2D2D,
-  ); // Chumbo extra escuro
-  static const Color lightTextSecondary = Color(
-    0xFF6E6E6E,
-  ); // Cinza neutro legível
+  // Light theme colors
+  static const Color lightBackground = Color(0xFFFFF5F7);
+  static const Color lightSurfaceCard = Color(0xFFFFFFFF);
+  static const Color lightTextPrimary = Color(0xFF2D3436);
+  static const Color lightTextSecondary = Color(0xFF6F6A6C);
+  static const Color lightBorder = Color(0xFFFFE2E8);
 
-  // Cores Tema Escuro (Dark Plum)
-  static const Color darkBackground = Color(
-    0xFF230F13,
-  ); // Vinho/Ameixa pardo escuríssimo
-  static const Color darkSurfaceCard = Color(
-    0xFF2D1B20,
-  ); // Ameixa ligeiramente mais claro
+  // Dark theme colors
+  static const Color darkBackground = Color(0xFF1A1617);
+  static const Color darkSurfaceCard = Color(0xFF251F21);
   static const Color darkTextPrimary = Colors.white;
-  static const Color darkTextSecondary = Color(
-    0xFFA19398,
-  ); // Texto cinza quente/rosado
+  static const Color darkTextSecondary = Color(0xFFA49D9E);
+  static const Color darkBorder = Color(0x33FFFFFF);
 
   /// Tema Claro: Pink Pastel
   static ThemeData get lightTheme {
@@ -50,11 +39,15 @@ class AppTheme {
             bodyLarge: GoogleFonts.manrope(color: lightTextPrimary),
             bodyMedium: GoogleFonts.manrope(color: lightTextSecondary),
           ),
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryNeon,
+      colorScheme: const ColorScheme.light(
         primary: primaryNeon,
+        onPrimary: Colors.white,
+        secondary: primaryNeon,
+        onSecondary: Colors.white,
         surface: lightSurfaceCard,
-        brightness: Brightness.light,
+        onSurface: lightTextPrimary,
+        error: dangerRed,
+        onError: Colors.white,
       ),
       scaffoldBackgroundColor: lightBackground,
       appBarTheme: AppBarTheme(
@@ -88,7 +81,7 @@ class AppTheme {
           foregroundColor: Colors.white,
           minimumSize: const Size(double.infinity, 56),
           elevation: 4,
-          shadowColor: primaryNeon.withOpacity(0.3),
+          shadowColor: primaryNeon.withValues(alpha: 0.3),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -117,7 +110,7 @@ class AppTheme {
         elevation: 8,
       ),
       dividerTheme: const DividerThemeData(
-        color: Color(0xFFE5E5E5),
+        color: lightBorder,
         thickness: 1,
         space: 24,
       ),
@@ -141,11 +134,15 @@ class AppTheme {
             bodyLarge: GoogleFonts.manrope(color: darkTextPrimary),
             bodyMedium: GoogleFonts.manrope(color: darkTextSecondary),
           ),
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: primaryNeon,
+      colorScheme: const ColorScheme.dark(
         primary: primaryNeon,
+        onPrimary: Color(0xFF1A1617),
+        secondary: primaryNeon,
+        onSecondary: Color(0xFF1A1617),
         surface: darkSurfaceCard,
-        brightness: Brightness.dark,
+        onSurface: darkTextPrimary,
+        error: dangerRed,
+        onError: Color(0xFF1A1617),
       ),
       scaffoldBackgroundColor: darkBackground,
       appBarTheme: AppBarTheme(
@@ -178,7 +175,7 @@ class AppTheme {
           foregroundColor: Colors.white,
           minimumSize: const Size(double.infinity, 56),
           elevation: 8,
-          shadowColor: primaryNeon.withOpacity(0.5),
+          shadowColor: primaryNeon.withValues(alpha: 0.5),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -207,9 +204,9 @@ class AppTheme {
         elevation: 0,
       ),
       dividerTheme: const DividerThemeData(
-        color: Color(0xFF3D262F), // Linha divisória da cor da ameixa
+        color: darkBorder,
         thickness: 1,
-        space: 24, // Espaçamento base do divider
+        space: 24,
       ),
     );
   }
