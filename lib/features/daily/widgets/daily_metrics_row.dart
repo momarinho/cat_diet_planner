@@ -1,4 +1,3 @@
-import 'package:cat_diet_planner/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class DailyMetricsRow extends StatelessWidget {
@@ -11,7 +10,11 @@ class DailyMetricsRow extends StatelessWidget {
         final narrow = constraints.maxWidth < 360;
         final children = const [
           Expanded(
-            child: _MetricCard(title: 'CURRENT WEIGHT', value: '4.5', unit: 'kg'),
+            child: _MetricCard(
+              title: 'CURRENT WEIGHT',
+              value: '4.5',
+              unit: 'kg',
+            ),
           ),
           Expanded(
             child: _MetricCard(title: 'DAILY GOAL', value: '240', unit: 'kcal'),
@@ -29,11 +32,7 @@ class DailyMetricsRow extends StatelessWidget {
         }
 
         return Row(
-          children: [
-            children[0],
-            const SizedBox(width: 16),
-            children[1],
-          ],
+          children: [children[0], const SizedBox(width: 16), children[1]],
         );
       },
     );
@@ -55,6 +54,8 @@ class _MetricCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final labelColor = theme.colorScheme.primary;
+    final valueColor = theme.colorScheme.onSurface;
+    final unitColor = theme.colorScheme.onSurface.withValues(alpha: 0.72);
     final surfaceColor = theme.brightness == Brightness.dark
         ? const Color(0xFF342127)
         : const Color(0xFFFFFFFF).withValues(alpha: 0.76);
@@ -66,7 +67,9 @@ class _MetricCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(26),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: theme.brightness == Brightness.dark ? 0.16 : 0.04),
+            color: Colors.black.withValues(
+              alpha: theme.brightness == Brightness.dark ? 0.16 : 0.04,
+            ),
             blurRadius: 24,
             offset: const Offset(0, 10),
           ),
@@ -88,7 +91,7 @@ class _MetricCard extends StatelessWidget {
             text: TextSpan(
               text: value,
               style: theme.textTheme.displaySmall?.copyWith(
-                color: AppTheme.lightTextPrimary,
+                color: valueColor,
                 fontWeight: FontWeight.w900,
                 letterSpacing: -1.4,
               ),
@@ -96,7 +99,7 @@ class _MetricCard extends StatelessWidget {
                 TextSpan(
                   text: ' $unit',
                   style: theme.textTheme.headlineSmall?.copyWith(
-                    color: theme.textTheme.bodyMedium?.color,
+                    color: unitColor,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.4,
                   ),
