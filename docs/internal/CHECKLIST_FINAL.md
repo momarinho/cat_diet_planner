@@ -1,11 +1,11 @@
 # Checklist Final de Entrega
 
-> Obsoleto como fonte principal. Usar `docs/EXECUTION_PLAN.md`.
+> Obsoleto como fonte principal. Usar `docs/internal/EXECUTION_PLAN.md`.
 
 Documento consolidado a partir de:
-- `docs/PLAN.md`
-- `docs/PLANO_TELAS_MOCKUP.md`
-- `docs/UI_PLAN.md`
+- `docs/internal/PLAN.md`
+- `docs/internal/PLANO_TELAS_MOCKUP.md`
+- `docs/internal/UI_PLAN.md`
 - estado atual do código em `lib/`
 - conjunto de telas finais aprovado no mock
 

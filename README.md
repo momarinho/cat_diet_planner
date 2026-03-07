@@ -1,21 +1,52 @@
-# cat_diet_planner
+# CatDiet Planner
 
-A new Flutter project.
+CatDiet Planner e um app Flutter para gerenciar dieta, rotina diaria e peso de multiplos gatos.
 
-## Planejamento de Telas
+O projeto esta sendo construido com foco em:
+- Flutter
+- Riverpod
+- Hive
+- arquitetura `offline-first`
 
-- Plano oficial do mockup v1: [docs/PLANO_TELAS_MOCKUP.md](docs/PLANO_TELAS_MOCKUP.md)
+## Produto
 
-## Getting Started
+Especificacao publica do produto:
+- [docs/PRODUCT_SPEC.md](docs/PRODUCT_SPEC.md)
 
-This project is a starting point for a Flutter application.
+Esse documento resume:
+- visao do app
+- telas alvo
+- funcionalidades principais
+- decisao atual sobre banco local e backend
+- roadmap em alto nivel
 
-A few resources to get you started if this is your first Flutter project:
+## Estrutura de documentacao
+
+Documentacao publica:
+- [docs/PRODUCT_SPEC.md](docs/PRODUCT_SPEC.md)
+
+Documentacao interna de execucao:
+- `docs/internal/`
+
+## Desenvolvimento
+
+Comandos uteis:
+
+```bash
+flutter pub get
+flutter run
+flutter analyze
+```
+
+Para emuladores Android:
+
+```bash
+flutter emulators
+flutter emulators --launch <emulator_id>
+```
+
+## Referencias Flutter
 
 - [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
 - [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
 - [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.

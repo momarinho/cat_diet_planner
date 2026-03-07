@@ -3,9 +3,9 @@
 Documento único para substituir a separação entre checklist e sprint plan.
 
 Fontes usadas:
-- `docs/PLAN.md`
-- `docs/PLANO_TELAS_MOCKUP.md`
-- `docs/UI_PLAN.md`
+- `docs/internal/PLAN.md`
+- `docs/internal/PLANO_TELAS_MOCKUP.md`
+- `docs/internal/UI_PLAN.md`
 - estado atual do código em `lib/`
 - mock final aprovado
 
@@ -124,6 +124,9 @@ alta
 
 Objetivo:
 fechar os fluxos que alimentam o produto com dados reais.
+
+Documento de apoio:
+- `docs/internal/FOOD_DATABASE_PLAN.md`
 
 ### 3.1 Food Database
 - [ ] tela de Food Database

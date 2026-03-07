@@ -1,8 +1,8 @@
 # Plano de Execução por Sprint
 
-> Obsoleto como fonte principal. Usar `docs/EXECUTION_PLAN.md`.
+> Obsoleto como fonte principal. Usar `docs/internal/EXECUTION_PLAN.md`.
 
-Baseado em [CHECKLIST_FINAL.md](/run/media/mateus/f8271cf2-fe57-43a3-a203-4b4c407bd599/CatDiet/cat_diet_planner/docs/CHECKLIST_FINAL.md) e no estado atual do código.
+Baseado em [CHECKLIST_FINAL.md](/run/media/mateus/f8271cf2-fe57-43a3-a203-4b4c407bd599/CatDiet/cat_diet_planner/docs/internal/CHECKLIST_FINAL.md) e no estado atual do código.
 
 ## Princípio de execução
 Ordem correta para este projeto:
