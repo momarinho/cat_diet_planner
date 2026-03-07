@@ -1,3 +1,4 @@
+import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
 
 class ScannerScreen extends StatelessWidget {
@@ -80,7 +81,9 @@ class ScannerScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () {},
+                          onPressed: () => Navigator.of(
+                            context,
+                          ).pushNamed(AppRoutes.foodDatabase),
                           icon: Icon(Icons.edit_note_rounded),
                           label: const Text('Manual Entry'),
                         ),

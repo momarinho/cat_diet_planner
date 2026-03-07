@@ -1,6 +1,7 @@
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/features/dashboard/screens/dashboard_overview_screen.dart';
+import 'package:cat_diet_planner/features/food_database/screens/food_database_screen.dart';
 import 'package:cat_diet_planner/features/navigation/app_shell_screen.dart';
 import 'package:cat_diet_planner/features/scanner/screens/scanner_screen.dart';
 import 'package:cat_diet_planner/features/settings/settings_screen.dart';
@@ -44,6 +45,12 @@ class AppRouter {
           builder: (_) => const ScannerScreen(),
           settings: settings,
         );
+      case AppRoutes.foodDatabase:
+        return MaterialPageRoute(
+          builder: (_) => const FoodDatabaseScreen(),
+          settings: settings,
+        );
+
       default:
         return _errorRoute(settings, 'No route defined for ${settings.name}.');
     }

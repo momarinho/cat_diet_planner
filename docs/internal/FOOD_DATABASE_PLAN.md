@@ -6,6 +6,60 @@ Plano específico para a feature `Food Database`, com foco em:
 - papel do `Hive` local
 - possibilidade futura de sync com backend
 
+## Checklist de implementacao guiada
+Use esta checklist para executar a feature e estudar a arquitetura ao mesmo tempo.
+
+Legenda:
+- `[x]` concluido
+- `[-]` parcialmente pronto
+- `[ ]` pendente
+
+### Bloco A: tela e rota
+- [x] criar `FoodDatabaseScreen`
+- [x] registrar `AppRoutes.foodDatabase`
+- [x] adicionar `case AppRoutes.foodDatabase` no `AppRouter`
+- [x] ligar um ponto de entrada visivel para abrir a tela
+- [x] validar que a tela abre sem `Route Error`
+
+### Bloco B: leitura local com Hive
+- [ ] entender `HiveService.foodsBox`
+- [ ] carregar alimentos reais na tela
+- [ ] renderizar lista de `FoodItem`
+- [ ] implementar estado vazio
+- [ ] validar atualizacao da lista com dados locais
+
+### Bloco C: busca local
+- [ ] adicionar campo de busca
+- [ ] filtrar por `name`
+- [ ] filtrar por `brand`
+- [ ] filtrar por `barcode`
+- [ ] validar busca sem depender de backend
+
+### Bloco D: cadastro manual
+- [ ] criar `AddFoodScreen`
+- [ ] montar formulario com campos obrigatorios
+- [ ] validar `name`
+- [ ] validar `kcalPer100g`
+- [ ] salvar `FoodItem` no `Hive`
+- [ ] voltar para a lista com atualizacao visivel
+
+### Bloco E: integracao com Scanner
+- [ ] botao `Manual Entry` abrir cadastro manual
+- [ ] botao `Scan Barcode` abrir scanner
+- [ ] scanner procurar alimento por barcode na base local
+- [ ] scanner reaproveitar item existente quando encontrado
+- [ ] scanner oferecer complemento manual quando nao encontrar
+
+### Bloco F: integracao com Plans
+- [ ] disponibilizar lista de alimentos para `Plans`
+- [ ] usar `kcalPer100g` no calculo
+- [ ] permitir persistir alimento escolhido no plano
+
+### Bloco G: decisao de arquitetura
+- [ ] manter `Hive` como fonte de verdade local
+- [ ] nao introduzir backend antes do fluxo local fechar
+- [ ] documentar claramente quando sync remoto passa a fazer sentido
+
 ## Decisão de arquitetura
 Implementar `Food Database` como `offline-first` com `Hive` local.
 
