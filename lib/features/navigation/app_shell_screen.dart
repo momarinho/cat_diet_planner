@@ -2,6 +2,19 @@ import 'package:cat_diet_planner/features/daily/screens/daily_overview_screen.da
 import 'package:cat_diet_planner/features/home/screens/home_overview_screen.dart';
 import 'package:flutter/material.dart';
 
+enum AppShellTab {
+  daily('/daily', 'Daily', Icons.grid_view_rounded),
+  home('/home', 'Home', Icons.home_rounded),
+  plans('/plans', 'Plans', Icons.adjust_rounded),
+  history('/history', 'History', Icons.bar_chart_rounded);
+
+  const AppShellTab(this.path, this.label, this.icon);
+
+  final String path;
+  final String label;
+  final IconData icon;
+}
+
 class AppShellScreen extends StatefulWidget {
   const AppShellScreen({super.key});
 
@@ -10,17 +23,17 @@ class AppShellScreen extends StatefulWidget {
 }
 
 class _AppShellScreenState extends State<AppShellScreen> {
-  int _currentIndex = 0;
+  AppShellTab _currentTab = AppShellTab.daily;
 
-  late final List<Widget> _tabs = [
-    const DailyOverviewScreen(),
-    const HomeOverviewScreen(),
-    const _PlansMockScreen(),
-    const _HistoryMockScreen(),
-  ];
+  final Map<AppShellTab, Widget> _tabScreens = const {
+    AppShellTab.daily: DailyOverviewScreen(),
+    AppShellTab.home: HomeOverviewScreen(),
+    AppShellTab.plans: _PlansMockScreen(),
+    AppShellTab.history: _HistoryMockScreen(),
+  };
 
-  void _onTabTap(int index) {
-    setState(() => _currentIndex = index);
+  void _onTabTap(AppShellTab tab) {
+    setState(() => _currentTab = tab);
   }
 
   @override
@@ -28,11 +41,16 @@ class _AppShellScreenState extends State<AppShellScreen> {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final activeColor = primary;
-    final inactiveColor = theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.55) ?? primary.withValues(alpha: 0.45);
-    final showDailyScanner = _currentIndex == 0;
+    final inactiveColor =
+        theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.55) ??
+        primary.withValues(alpha: 0.45);
+    final showDailyScanner = _currentTab == AppShellTab.daily;
 
     return Scaffold(
-      body: IndexedStack(index: _currentIndex, children: _tabs),
+      body: IndexedStack(
+        index: AppShellTab.values.indexOf(_currentTab),
+        children: AppShellTab.values.map((tab) => _tabScreens[tab]!).toList(),
+      ),
       bottomNavigationBar: BottomAppBar(
         color: theme.scaffoldBackgroundColor.withValues(alpha: 0.96),
         elevation: 0,
@@ -55,7 +73,10 @@ class _AppShellScreenState extends State<AppShellScreen> {
                 decoration: BoxDecoration(
                   color: theme.scaffoldBackgroundColor.withValues(alpha: 0.96),
                   border: Border(
-                    top: BorderSide(color: primary.withValues(alpha: 0.12), width: 1),
+                    top: BorderSide(
+                      color: primary.withValues(alpha: 0.12),
+                      width: 1,
+                    ),
                   ),
                   boxShadow: [
                     BoxShadow(
@@ -69,43 +90,39 @@ class _AppShellScreenState extends State<AppShellScreen> {
                   children: [
                     Expanded(
                       child: _NavItem(
-                        icon: Icons.grid_view_rounded,
-                        label: 'Daily',
-                        active: _currentIndex == 0,
+                        tab: AppShellTab.daily,
+                        currentTab: _currentTab,
                         activeColor: activeColor,
                         inactiveColor: inactiveColor,
-                        onTap: () => _onTabTap(0),
+                        onTap: () => _onTabTap(AppShellTab.daily),
                       ),
                     ),
                     Expanded(
                       child: _NavItem(
-                        icon: Icons.pets_rounded,
-                        label: 'Profiles',
-                        active: _currentIndex == 1,
+                        tab: AppShellTab.home,
+                        currentTab: _currentTab,
                         activeColor: activeColor,
                         inactiveColor: inactiveColor,
-                        onTap: () => _onTabTap(1),
+                        onTap: () => _onTabTap(AppShellTab.home),
                       ),
                     ),
                     SizedBox(width: showDailyScanner ? 72 : 0),
                     Expanded(
                       child: _NavItem(
-                        icon: Icons.adjust_rounded,
-                        label: 'Plans',
-                        active: _currentIndex == 2,
+                        tab: AppShellTab.plans,
+                        currentTab: _currentTab,
                         activeColor: activeColor,
                         inactiveColor: inactiveColor,
-                        onTap: () => _onTabTap(2),
+                        onTap: () => _onTabTap(AppShellTab.plans),
                       ),
                     ),
                     Expanded(
                       child: _NavItem(
-                        icon: Icons.bar_chart_rounded,
-                        label: 'History',
-                        active: _currentIndex == 3,
+                        tab: AppShellTab.history,
+                        currentTab: _currentTab,
                         activeColor: activeColor,
                         inactiveColor: inactiveColor,
-                        onTap: () => _onTabTap(3),
+                        onTap: () => _onTabTap(AppShellTab.history),
                       ),
                     ),
                   ],
@@ -127,17 +144,15 @@ class _AppShellScreenState extends State<AppShellScreen> {
 }
 
 class _NavItem extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool active;
+  final AppShellTab tab;
+  final AppShellTab currentTab;
   final Color activeColor;
   final Color inactiveColor;
   final VoidCallback onTap;
 
   const _NavItem({
-    required this.icon,
-    required this.label,
-    required this.active,
+    required this.tab,
+    required this.currentTab,
     required this.activeColor,
     required this.inactiveColor,
     required this.onTap,
@@ -145,6 +160,7 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final active = tab == currentTab;
     final color = active ? activeColor : inactiveColor;
 
     return InkWell(
@@ -155,10 +171,10 @@ class _NavItem extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: color, size: 24),
+            Icon(tab.icon, color: color, size: 24),
             const SizedBox(height: 3),
             Text(
-              label.toUpperCase(),
+              tab.label.toUpperCase(),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(

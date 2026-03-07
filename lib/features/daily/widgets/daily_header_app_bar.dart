@@ -1,3 +1,4 @@
+import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
 
 class DailyHeaderAppBar extends StatelessWidget {
@@ -20,10 +21,7 @@ class DailyHeaderAppBar extends StatelessWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
-              colors: [
-                primary,
-                primary.withValues(alpha: 0.65),
-              ],
+              colors: [primary, primary.withValues(alpha: 0.65)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -70,7 +68,9 @@ class DailyHeaderAppBar extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 12),
-        _SettingsButton(onTap: () {}),
+        _SettingsButton(
+          onTap: () => Navigator.of(context).pushNamed(AppRoutes.settings),
+        ),
       ],
     );
   }
@@ -86,29 +86,15 @@ class _SettingsButton extends StatelessWidget {
     final primary = Theme.of(context).colorScheme.primary;
 
     return Material(
-      color: Colors.white.withValues(alpha: 0.78),
+      color: primary.withValues(alpha: 0.10),
       shape: const CircleBorder(),
-      elevation: 0,
       child: InkWell(
         onTap: onTap,
         customBorder: const CircleBorder(),
-        child: Container(
-          width: 58,
-          height: 58,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.6),
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: primary.withValues(alpha: 0.08),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Icon(Icons.settings_outlined, color: primary, size: 28),
+        child: SizedBox(
+          width: 40,
+          height: 40,
+          child: Icon(Icons.settings_outlined, color: primary),
         ),
       ),
     );

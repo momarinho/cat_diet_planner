@@ -1,3 +1,4 @@
+import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/core/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
@@ -34,7 +35,10 @@ class HomeHeaderAppBar extends ConsumerWidget implements PreferredSizeWidget {
           ),
         Padding(
           padding: const EdgeInsets.only(right: 8),
-          child: _CircleIconButton(icon: Icons.settings_outlined, onTap: () {}),
+          child: _CircleIconButton(
+            icon: Icons.settings_outlined,
+            onTap: () => Navigator.pushNamed(context, AppRoutes.settings),
+          ),
         ),
         Padding(
           padding: const EdgeInsets.only(right: 12),

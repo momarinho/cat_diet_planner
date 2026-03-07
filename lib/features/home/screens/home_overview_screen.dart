@@ -1,5 +1,5 @@
 // lib/features/home/screens/home_overview_screen.dart
-import 'package:cat_diet_planner/features/dashboard/screens/dashboard_overview_screen.dart';
+import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/home_cat_carousel_section.dart';
@@ -21,11 +21,9 @@ class HomeOverviewScreen extends StatelessWidget {
           children: [
             HomeCatCarouselSection(
               onCatTap: (cat) {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => DashboardOverviewScreen(cat: cat),
-                  ),
-                );
+                Navigator.of(
+                  context,
+                ).pushNamed(AppRoutes.dashboard, arguments: cat);
               },
             ),
             SizedBox(height: 16),
