@@ -3,7 +3,9 @@ import 'package:cat_diet_planner/data/models/food_item.dart';
 import 'package:flutter/material.dart';
 
 class AddFoodScreen extends StatefulWidget {
-  const AddFoodScreen({super.key});
+  final String? initialBarcode;
+
+  const AddFoodScreen({super.key, this.initialBarcode});
 
   @override
   State<AddFoodScreen> createState() => _AddFoodScreenState();
@@ -18,6 +20,12 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
   final _kcalController = TextEditingController();
   final _proteinController = TextEditingController();
   final _fatController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _barcodeController.text = widget.initialBarcode ?? '';
+  }
 
   @override
   void dispose() {

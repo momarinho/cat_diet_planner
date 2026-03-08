@@ -44,11 +44,11 @@ Legenda:
 - [x] voltar para a lista com atualizacao visivel
 
 ### Bloco E: integracao com Scanner
-- [ ] botao `Manual Entry` abrir cadastro manual
-- [ ] botao `Scan Barcode` abrir scanner
-- [ ] scanner procurar alimento por barcode na base local
-- [ ] scanner reaproveitar item existente quando encontrado
-- [ ] scanner oferecer complemento manual quando nao encontrar
+- [x] botao `Manual Entry` abrir cadastro manual
+- [x] botao `Scan Barcode` abrir scanner
+- [x] scanner procurar alimento por barcode na base local
+- [x] scanner reaproveitar item existente quando encontrado
+- [x] scanner oferecer complemento manual quando nao encontrar
 
 ### Bloco F: integracao com Plans
 - [ ] disponibilizar lista de alimentos para `Plans`

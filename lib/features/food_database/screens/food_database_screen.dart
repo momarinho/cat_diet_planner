@@ -1,3 +1,4 @@
+import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/data/models/food_item.dart';
 import 'package:cat_diet_planner/features/food_database/screens/add_food_screen.dart';
@@ -68,7 +69,8 @@ class _FoodDatabaseScreenState extends State<FoodDatabaseScreen> {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: () {},
+                  onPressed: () =>
+                      Navigator.of(context).pushNamed(AppRoutes.scanner),
                   icon: const Icon(Icons.qr_code_scanner_rounded),
                   label: const Text('Scan Barcode'),
                 ),

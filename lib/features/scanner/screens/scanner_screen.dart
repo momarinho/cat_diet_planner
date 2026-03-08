@@ -1,8 +1,29 @@
-import 'package:cat_diet_planner/core/navigation/app_routes.dart';
+import 'package:cat_diet_planner/features/food_database/screens/add_food_screen.dart';
+import 'package:cat_diet_planner/features/scanner/services/scanner_product_service.dart';
 import 'package:flutter/material.dart';
 
 class ScannerScreen extends StatelessWidget {
   const ScannerScreen({super.key});
+
+  Future<void> _confirmProduct(BuildContext context) async {
+    final result = await ScannerProductService.lookupMockProduct();
+
+    if (!context.mounted) return;
+
+    if (result.exists) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Food already exists in database')),
+      );
+      Navigator.of(context).pop();
+      return;
+    }
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => AddFoodScreen(initialBarcode: result.barcode),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -81,18 +102,22 @@ class ScannerScreen extends StatelessWidget {
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () => Navigator.of(
-                            context,
-                          ).pushNamed(AppRoutes.foodDatabase),
-                          icon: Icon(Icons.edit_note_rounded),
+                          onPressed: () {
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => const AddFoodScreen(),
+                              ),
+                            );
+                          },
+                          icon: const Icon(Icons.edit_note_rounded),
                           label: const Text('Manual Entry'),
                         ),
                       ),
                       const SizedBox(width: 8),
                       Expanded(
                         child: FilledButton.icon(
-                          onPressed: () {},
-                          icon: Icon(Icons.check_rounded),
+                          onPressed: () => _confirmProduct(context),
+                          icon: const Icon(Icons.check_rounded),
                           label: const Text('Confirm Product'),
                         ),
                       ),
