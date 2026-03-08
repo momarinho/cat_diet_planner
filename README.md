@@ -28,6 +28,38 @@ Documentacao publica:
 Documentacao interna de execucao:
 - `docs/internal/`
 
+## Estrutura de pastas
+
+Padrao atual: `feature-first` com `core` compartilhado e `data` central de persistencia.
+
+```text
+lib/
+├── core/
+│   ├── navigation/
+│   ├── theme/
+│   └── widgets/
+├── data/
+│   ├── local/
+│   └── models/
+├── features/
+│   ├── cat_profile/
+│   ├── daily/
+│   ├── dashboard/
+│   ├── food_database/
+│   ├── home/
+│   ├── scanner/
+│   ├── settings/
+│   ├── shell/
+│   └── weight/
+└── main.dart
+```
+
+Convencao por feature:
+- `screens/` para telas
+- `widgets/` para componentes da feature
+- `providers/` quando houver estado da feature
+- `repositories/` quando houver acesso a dados da feature
+
 ## Desenvolvimento
 
 Comandos uteis:

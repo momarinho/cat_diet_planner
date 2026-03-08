@@ -22,26 +22,26 @@ Legenda:
 - [x] validar que a tela abre sem `Route Error`
 
 ### Bloco B: leitura local com Hive
-- [ ] entender `HiveService.foodsBox`
-- [ ] carregar alimentos reais na tela
-- [ ] renderizar lista de `FoodItem`
-- [ ] implementar estado vazio
-- [ ] validar atualizacao da lista com dados locais
+- [x] entender `HiveService.foodsBox`
+- [x] carregar alimentos reais na tela
+- [x] renderizar lista de `FoodItem`
+- [x] implementar estado vazio
+- [-] validar atualizacao da lista com dados locais
 
 ### Bloco C: busca local
-- [ ] adicionar campo de busca
-- [ ] filtrar por `name`
-- [ ] filtrar por `brand`
-- [ ] filtrar por `barcode`
-- [ ] validar busca sem depender de backend
+- [x] adicionar campo de busca
+- [x] filtrar por `name`
+- [x] filtrar por `brand`
+- [x] filtrar por `barcode`
+- [x] validar busca sem depender de backend
 
 ### Bloco D: cadastro manual
-- [ ] criar `AddFoodScreen`
-- [ ] montar formulario com campos obrigatorios
-- [ ] validar `name`
-- [ ] validar `kcalPer100g`
-- [ ] salvar `FoodItem` no `Hive`
-- [ ] voltar para a lista com atualizacao visivel
+- [x] criar `AddFoodScreen`
+- [x] montar formulario com campos obrigatorios
+- [x] validar `name`
+- [x] validar `kcalPer100g`
+- [x] salvar `FoodItem` no `Hive`
+- [x] voltar para a lista com atualizacao visivel
 
 ### Bloco E: integracao com Scanner
 - [ ] botao `Manual Entry` abrir cadastro manual

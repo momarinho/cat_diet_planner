@@ -2,9 +2,9 @@ import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/features/dashboard/screens/dashboard_overview_screen.dart';
 import 'package:cat_diet_planner/features/food_database/screens/food_database_screen.dart';
-import 'package:cat_diet_planner/features/navigation/app_shell_screen.dart';
+import 'package:cat_diet_planner/features/shell/screens/app_shell_screen.dart';
 import 'package:cat_diet_planner/features/scanner/screens/scanner_screen.dart';
-import 'package:cat_diet_planner/features/settings/settings_screen.dart';
+import 'package:cat_diet_planner/features/settings/screens/settings_screen.dart';
 import 'package:cat_diet_planner/features/weight/screens/weight_checkin_screen.dart';
 
 import 'package:flutter/material.dart';

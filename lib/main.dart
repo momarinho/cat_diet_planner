@@ -5,7 +5,7 @@ import 'package:cat_diet_planner/core/theme/theme_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'core/theme/app_theme.dart';
-import 'data/hive_service/hive_service.dart';
+import 'data/local/hive_service.dart';
 
 void main() async {
   // Garante que os bindings do Flutter estejam prontos antes de inicializar serviços externos
