@@ -51,8 +51,8 @@ Legenda:
 - [x] scanner oferecer complemento manual quando nao encontrar
 
 ### Bloco F: integracao com Plans
-- [ ] disponibilizar lista de alimentos para `Plans`
-- [ ] usar `kcalPer100g` no calculo
+- [x] disponibilizar lista de alimentos para `Plans`
+- [x] usar `kcalPer100g` no calculo
 - [ ] permitir persistir alimento escolhido no plano
 
 ### Bloco G: decisao de arquitetura

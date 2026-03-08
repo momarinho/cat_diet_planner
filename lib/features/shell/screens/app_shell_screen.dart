@@ -1,6 +1,8 @@
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/features/daily/screens/daily_overview_screen.dart';
 import 'package:cat_diet_planner/features/home/screens/home_overview_screen.dart';
+import 'package:cat_diet_planner/features/plans/screens/plans_screen.dart';
+
 import 'package:flutter/material.dart';
 
 enum AppShellTab {
@@ -29,7 +31,7 @@ class _AppShellScreenState extends State<AppShellScreen> {
   final Map<AppShellTab, Widget> _tabScreens = const {
     AppShellTab.daily: DailyOverviewScreen(),
     AppShellTab.home: HomeOverviewScreen(),
-    AppShellTab.plans: _PlansMockScreen(),
+    AppShellTab.plans: PlansScreen(),
     AppShellTab.history: _HistoryMockScreen(),
   };
 
@@ -233,15 +235,6 @@ class _DailyScannerButton extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _PlansMockScreen extends StatelessWidget {
-  const _PlansMockScreen();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(body: Center(child: Text('Plans (Mock)')));
   }
 }
 
