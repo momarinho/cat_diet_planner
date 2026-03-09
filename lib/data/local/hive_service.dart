@@ -7,6 +7,7 @@ class HiveService {
   // Boxes declaradas como late para garantir a inicialização antes do uso
   static late Box<CatProfile> catsBox;
   static late Box<FoodItem> foodsBox;
+  static late Box<WeightRecord> weightsBox;
   static late Box<Map<dynamic, dynamic>> mealsBox;
 
   /// Inicializa o Hive, registra os adaptadores e abre as boxes necessárias.
@@ -23,7 +24,7 @@ class HiveService {
     // 3. Abertura das Boxes (equivalente a tabelas no SQL)
     catsBox = await Hive.openBox<CatProfile>('cats');
     foodsBox = await Hive.openBox<FoodItem>('foods');
-
+    weightsBox = await Hive.openBox<WeightRecord>('weights');
     // Usamos Map para refeições para permitir flexibilidade no histórico diário
     mealsBox = await Hive.openBox<Map<dynamic, dynamic>>('meals');
   }

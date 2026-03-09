@@ -36,7 +36,7 @@ tirar o app do estado de mock parcialmente navegável.
 - [x] Bottom navigation principal
 - [x] FAB central visual no contexto Daily
 - [x] Daily e Home já apontam para telas reais
-- [ ] Plans deixar de usar placeholder
+- [x] Plans deixar de usar placeholder
 - [ ] History deixar de usar placeholder
 - [x] FAB central abrir fluxo real de scanner
 
@@ -47,7 +47,7 @@ Critério de aceite:
 ### 1.2 Rotas internas obrigatórias
 - [-] Scanner
 - [x] Settings
-- [ ] Food Database
+- [x] Food Database
 - [-] Weight Check-in
 
 Critério de aceite:
@@ -129,13 +129,13 @@ Documento de apoio:
 - `docs/internal/FOOD_DATABASE_PLAN.md`
 
 ### 3.1 Food Database
-- [ ] tela de Food Database
-- [ ] busca por nome/marca/tipo
-- [ ] atalho `Scan Barcode`
-- [ ] atalho `Add Manually`
+- [x] tela de Food Database
+- [x] busca por nome/marca/tipo
+- [x] atalho `Scan Barcode`
+- [x] atalho `Add Manually`
 - [ ] lista de itens recentes/populares
-- [ ] salvar alimentos no Hive
-- [ ] reaproveitar alimentos no app
+- [x] salvar alimentos no Hive
+- [x] reaproveitar alimentos no app
 
 Critério de aceite:
 - usuário consegue cadastrar e recuperar alimentos reais
@@ -144,9 +144,9 @@ Critério de aceite:
 - [x] tela visual do scanner
 - [ ] overlay alinhado ao mock
 - [ ] flash
-- [-] fallback `Manual Entry`
+- [x] fallback `Manual Entry`
 - [ ] card inferior de confirmação
-- [ ] ação `Confirm Product`
+- [-] ação `Confirm Product`
 - [x] navegação a partir do FAB e quick actions
 - [ ] integração com câmera
 - [ ] leitura de barcode via ML Kit
@@ -176,10 +176,10 @@ Objetivo:
 fazer o fluxo principal do produto funcionar de ponta a ponta.
 
 ### 4.1 Regras de negócio
-- [ ] implementar `DietCalculatorService`
+- [x] implementar `DietCalculatorService`
 - [ ] fórmulas RER/MER
 - [ ] validar inputs
-- [ ] cálculo de porção por refeição
+- [-] cálculo de porção por refeição
 - [ ] metas de manutenção/perda/ganho
 - [ ] alertas de saúde por faixa
 - [ ] salvar plano alimentar atual
@@ -188,11 +188,11 @@ Critério de aceite:
 - cálculo gera plano consistente a partir de gato + alimento + objetivo
 
 ### 4.2 Plans
-- [ ] criar tela/fluxo real de `Plans`
-- [ ] substituir placeholder da aba
+- [x] criar tela/fluxo real de `Plans`
+- [x] substituir placeholder da aba
 - [ ] permitir selecionar gato e alimento
-- [ ] exibir meta calórica diária
-- [ ] exibir porção por refeição
+- [-] exibir meta calórica diária
+- [-] exibir porção por refeição
 - [ ] persistir plano
 
 Critério de aceite:
@@ -234,11 +234,31 @@ Critério de aceite:
 - Dashboard detalhado deixa de ser apenas mock navegável
 
 ### 5.2 History / Weekly Diet Report
-- [ ] aba `History` real
-- [ ] tela de `Weekly Diet Report`
-- [ ] gráfico de tendência de peso
-- [ ] tabela de calorias por dia
-- [ ] notas veterinárias
+Documento de apoio:
+- `usar este bloco como checklist inicial`
+
+#### Bloco A: HistoryScreen real
+- [x] criar tela real de `History`
+- [x] substituir placeholder da aba `History`
+- [x] estado vazio coerente quando nao houver historico
+
+#### Bloco B: leitura local de historico
+- [x] ler `WeightRecord` do Hive
+- [x] listar registros reais por data
+- [x] exibir valor e observacoes quando existirem
+
+#### Bloco C: resumo visual
+- [x] resumo do ultimo peso
+- [x] resumo da variacao recente
+- [x] tendencia simples de evolucao
+
+#### Bloco D: Weekly Diet Report
+- [x] tela de `Weekly Diet Report`
+- [-] gráfico de tendência de peso
+- [-] tabela de calorias por dia
+- [-] notas veterinárias
+
+#### Bloco E: exportacao e compartilhamento
 - [ ] `Download PDF`
 - [ ] `Share via WhatsApp`
 - [ ] exportação PDF real

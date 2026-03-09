@@ -9,4 +9,5 @@ abstract final class AppRoutes {
   static const scanner = '/scanner';
   static const weightCheckIn = '/weight-check-in';
   static const foodDatabase = '/food-database';
+  static const weeklyDietReport = '/weekly-diet-report';
 }
