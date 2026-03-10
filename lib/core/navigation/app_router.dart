@@ -6,6 +6,7 @@ import 'package:cat_diet_planner/features/history/screens/weekly_diet_report_scr
 import 'package:cat_diet_planner/features/shell/screens/app_shell_screen.dart';
 import 'package:cat_diet_planner/features/scanner/screens/scanner_screen.dart';
 import 'package:cat_diet_planner/features/settings/screens/settings_screen.dart';
+import 'package:cat_diet_planner/features/splash/screens/splash_screen.dart';
 import 'package:cat_diet_planner/features/weight/screens/weight_checkin_screen.dart';
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,11 @@ import 'package:flutter/material.dart';
 class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
+      case AppRoutes.splash:
+        return MaterialPageRoute(
+          builder: (_) => const SplashScreen(),
+          settings: settings,
+        );
       case AppRoutes.shell:
         return MaterialPageRoute(
           builder: (_) => const AppShellScreen(),

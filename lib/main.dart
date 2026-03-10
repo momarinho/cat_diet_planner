@@ -30,7 +30,7 @@ class MyApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: currentThemeMode,
-      initialRoute: AppRoutes.shell,
+      initialRoute: AppRoutes.splash,
       onGenerateRoute: AppRouter.onGenerateRoute,
     );
   }

@@ -24,6 +24,25 @@ Cada bloco abaixo já combina:
 
 Se um item mudar de ordem durante a execução, a referência continua sendo este documento. Não é necessário comparar com outro plano.
 
+## Sprint 0.5: UI Alignment Pass
+Prioridade:
+alta
+
+Objetivo:
+alinhar as telas reais já implementadas ao mock final antes de continuar expandindo fluxos em cima de UI desalinhada.
+
+### 0.5.1 Entrada e identidade
+- [x] `SplashScreen` implementar
+- [x] navegação inicial abrir splash antes da shell principal
+
+### 0.5.2 Ajustes visuais prioritarios
+- [x] `Weight Check-in` alinhar ao mock final
+- [x] `Weekly Diet Report` alinhar ao mock final
+
+Critério de aceite:
+- entrada do app reflete a identidade visual aprovada
+- telas críticas deixam de divergir estruturalmente do mock final
+
 ## Sprint 1: Navegação real e pontos de entrada
 Prioridade:
 alta
@@ -37,7 +56,7 @@ tirar o app do estado de mock parcialmente navegável.
 - [x] FAB central visual no contexto Daily
 - [x] Daily e Home já apontam para telas reais
 - [x] Plans deixar de usar placeholder
-- [ ] History deixar de usar placeholder
+- [x] History deixar de usar placeholder
 - [x] FAB central abrir fluxo real de scanner
 
 Critério de aceite:
@@ -156,14 +175,14 @@ Critério de aceite:
 - se câmera estiver ativa, leitura retorna para fluxo de confirmação
 
 ### 3.3 Weight Check-in
-- [ ] tela dedicada de peso
+- [x] tela dedicada de peso
 - [ ] exibição do gato selecionado
-- [ ] valor atual
-- [ ] ajuste de novo peso
-- [ ] observações
-- [ ] CTA `Record Weight`
-- [ ] persistir histórico no Hive
-- [ ] atualizar resumos após salvar
+- [x] valor atual
+- [x] ajuste de novo peso
+- [x] observações
+- [x] CTA `Record Weight`
+- [x] persistir histórico no Hive
+- [-] atualizar resumos após salvar
 
 Critério de aceite:
 - registrar peso gera histórico persistido e altera os cards relevantes

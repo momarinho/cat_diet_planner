@@ -1,5 +1,6 @@
 abstract final class AppRoutes {
-  static const shell = '/';
+  static const splash = '/';
+  static const shell = '/shell';
   static const daily = '/daily';
   static const home = '/home';
   static const plans = '/plans';
