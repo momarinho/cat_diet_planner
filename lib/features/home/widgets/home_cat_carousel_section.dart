@@ -1,16 +1,19 @@
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
+import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/widgets/cat_selector_avatar.dart';
 
-class HomeCatCarouselSection extends StatelessWidget {
+class HomeCatCarouselSection extends ConsumerWidget {
   final void Function(CatProfile cat) onCatTap;
 
   const HomeCatCarouselSection({super.key, required this.onCatTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final primary = Theme.of(context).colorScheme.primary;
+    final selectedCat = ref.watch(selectedCatProvider);
     final now = DateTime.now();
 
     final milo = CatProfile(
@@ -52,6 +55,8 @@ class HomeCatCarouselSection extends StatelessWidget {
           'https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=200&q=80',
     );
 
+    final cats = [milo, luna, oliver];
+
     return SizedBox(
       height: 114,
       child: SingleChildScrollView(
@@ -60,24 +65,19 @@ class HomeCatCarouselSection extends StatelessWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CatSelectorAvatar(
-              imagePath: milo.photoPath!,
-              name: milo.name,
-              isActive: true,
-              onTap: () => onCatTap(milo),
-            ),
-            CatSelectorAvatar(
-              imagePath: luna.photoPath!,
-              name: luna.name,
-              isActive: false,
-              onTap: () => onCatTap(luna),
-            ),
-            CatSelectorAvatar(
-              imagePath: oliver.photoPath!,
-              name: oliver.name,
-              isActive: false,
-              onTap: () => onCatTap(oliver),
-            ),
+            ...cats.map((cat) {
+              final isActive = selectedCat?.id == cat.id;
+
+              return CatSelectorAvatar(
+                imagePath: cat.photoPath!,
+                name: cat.name,
+                isActive: isActive,
+                onTap: () {
+                  ref.read(selectedCatProvider.notifier).state = cat;
+                  onCatTap(cat);
+                },
+              );
+            }),
             const SizedBox(width: 8),
             Column(
               children: [

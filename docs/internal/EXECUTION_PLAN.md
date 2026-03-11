@@ -100,7 +100,7 @@ trocar dados hardcoded por perfis reais persistidos.
 - [x] adapters gerados e registrados
 - [x] app com `ProviderScope`
 - [ ] providers/repositories conectando UI aos dados reais
-- [ ] provider de gato ativo global
+- [x] provider de gato ativo global
 
 Critério de aceite:
 - estado principal do gato não depende mais de mocks locais de widget
@@ -130,7 +130,7 @@ Critério de aceite:
 - [x] stats grid
 - [-] dados ainda mockados
 - [ ] `Add New` abrir cadastro real
-- [ ] seleção de gato atualizar estado global
+- [x] seleção de gato atualizar estado global
 - [ ] dados vindos de Hive/Riverpod
 - [ ] empty state real quando não houver gato
 
