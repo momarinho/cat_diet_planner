@@ -99,21 +99,21 @@ trocar dados hardcoded por perfis reais persistidos.
 - [x] `CatProfile`, `FoodItem`, `WeightRecord`
 - [x] adapters gerados e registrados
 - [x] app com `ProviderScope`
-- [ ] providers/repositories conectando UI aos dados reais
+- [x] providers/repositories conectando UI aos dados reais
 - [x] provider de gato ativo global
 
 Critério de aceite:
 - estado principal do gato não depende mais de mocks locais de widget
 
 ### 2.2 Tela Cat Profile
-- [ ] tela final aderente ao mock
-- [ ] formulário completo: nome, peso, idade
-- [ ] campos de castração, atividade e objetivo
-- [ ] seleção de foto
-- [ ] validação
-- [ ] salvar perfil
-- [ ] editar perfil
-- [ ] excluir perfil
+- [-] tela final aderente ao mock
+- [x] formulário completo: nome, peso, idade
+- [x] campos de castração, atividade e objetivo
+- [x] seleção de foto
+- [x] validação
+- [x] salvar perfil
+- [x] editar perfil
+- [x] excluir perfil
 
 Base atual:
 - [x] existe `ProfileListScreen`
@@ -129,10 +129,10 @@ Critério de aceite:
 - [x] insights card
 - [x] stats grid
 - [-] dados ainda mockados
-- [ ] `Add New` abrir cadastro real
+- [x] `Add New` abrir cadastro real
 - [x] seleção de gato atualizar estado global
-- [ ] dados vindos de Hive/Riverpod
-- [ ] empty state real quando não houver gato
+- [x] dados vindos de Hive/Riverpod
+- [x] empty state real quando não houver gato
 
 Critério de aceite:
 - Home reflete apenas dados persistidos

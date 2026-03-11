@@ -1,6 +1,7 @@
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/features/dashboard/screens/dashboard_overview_screen.dart';
+import 'package:cat_diet_planner/features/cat_profile/screens/cat_profile_screen.dart';
 import 'package:cat_diet_planner/features/food_database/screens/food_database_screen.dart';
 import 'package:cat_diet_planner/features/history/screens/weekly_diet_report_screen.dart';
 import 'package:cat_diet_planner/features/shell/screens/app_shell_screen.dart';
@@ -35,6 +36,12 @@ class AppRouter {
 
         return MaterialPageRoute(
           builder: (_) => DashboardOverviewScreen(cat: cat),
+          settings: settings,
+        );
+      case AppRoutes.catProfile:
+        final cat = settings.arguments as CatProfile?;
+        return MaterialPageRoute(
+          builder: (_) => CatProfileScreen(initialCat: cat),
           settings: settings,
         );
       case AppRoutes.settings:

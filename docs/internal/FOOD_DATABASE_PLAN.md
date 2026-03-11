@@ -60,6 +60,27 @@ Legenda:
 - [ ] nao introduzir backend antes do fluxo local fechar
 - [ ] documentar claramente quando sync remoto passa a fazer sentido
 
+### Bloco H: modelagem de alimento e receita
+- [ ] estender `FoodItem` para suportar `sourceType`
+- [ ] definir `sourceType`: `barcode`, `manual`, `homemade`
+- [ ] manter `FoodItem` simples para alimento industrializado ou cadastro manual
+- [ ] validar campos base do alimento simples:
+  - `name`
+  - `brand?`
+  - `kcalPer100g`
+  - `protein?`
+  - `fat?`
+  - `barcode?`
+- [ ] decidir se `homemade` entra primeiro como `FoodItem` manual ou ja como entidade separada
+- [ ] desenhar entidade de receita composta:
+  - `RecipeItem` ou `HomemadeMeal`
+  - lista de ingredientes
+  - gramas por ingrediente
+  - kcal total
+  - kcal por 100g
+- [ ] definir fluxo de cadastro de receita caseira
+- [ ] definir como `Plans` vai consumir alimento simples vs receita
+
 ## Decisão de arquitetura
 Implementar `Food Database` como `offline-first` com `Hive` local.
 
@@ -85,6 +106,47 @@ Campos atuais:
 - `fat`
 
 Isso já é suficiente para o primeiro fluxo operacional.
+
+## Evolucao planejada do modelo
+### Nivel 1: alimento simples
+Um `FoodItem` deve poder representar:
+- alimento industrializado
+- alimento manual
+
+Campos alvo para este nivel:
+- `name`
+- `brand?`
+- `kcalPer100g`
+- `protein?`
+- `fat?`
+- `barcode?`
+- `sourceType`: `barcode`, `manual`, `homemade`
+
+Decisao pragmatica:
+- fechar primeiro o suporte a alimento simples
+- manter `FoodItem` como unidade minima de consumo em `Plans`
+
+### Nivel 2: receita
+Depois, evoluir para receita composta, por exemplo comida caseira.
+
+Modelo previsto:
+- `RecipeItem` ou `HomemadeMeal`
+- composto por varios ingredientes
+- cada ingrediente com peso em gramas
+- calculo do total da receita
+- derivacao de `kcalPer100g`
+
+Exemplo:
+- frango 200g
+- abobora 100g
+- azeite 5g
+- total da receita
+- kcal total
+- kcal por 100g
+
+Recomendacao:
+- nao tentar resolver receita composta antes de fechar o fluxo local de alimento simples
+- quando entrar receita, tratar como entidade propria em vez de improvisar tudo dentro de um unico `FoodItem`
 
 ## Escopo da feature
 ### Fase 1: rota e tela real
