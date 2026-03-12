@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
+  static const _logoPath = 'assets/images/cat_diet_logo.png';
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -49,11 +51,11 @@ class SplashScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: const [
-                  _Dot(active: true),
+                  _Dot(color: Color(0x33FF85A1)),
                   SizedBox(width: 10),
-                  _Dot(active: true, faded: true),
+                  _Dot(color: Color(0xFFB44D6A)),
                   SizedBox(width: 10),
-                  _Dot(active: false),
+                  _Dot(color: Color(0x33FF85A1)),
                 ],
               ),
               const SizedBox(height: 28),
@@ -61,14 +63,15 @@ class SplashScreen extends StatelessWidget {
                 onPressed: () =>
                     Navigator.of(context).pushReplacementNamed(AppRoutes.shell),
                 style: FilledButton.styleFrom(
-                  minimumSize: const Size(220, 58),
+                  minimumSize: const Size.fromHeight(58),
+                  backgroundColor: AppTheme.primaryNeon,
+                  foregroundColor: Colors.white,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(22),
                   ),
                 ),
                 child: const Text('Login'),
               ),
-              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -83,25 +86,26 @@ class _BrandMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 280,
-      height: 280,
+      width: 320,
+      height: 320,
       child: Stack(
         alignment: Alignment.center,
         children: [
           Container(
-            width: 250,
-            height: 250,
+            width: 252,
+            height: 252,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              border: Border.all(
-                color: AppTheme.primaryNeon.withValues(alpha: 0.55),
-                width: 10,
+              gradient: const LinearGradient(
+                colors: [Color(0xFFF8B7C8), Color(0xFFA32D56)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppTheme.primaryNeon.withValues(alpha: 0.16),
-                  blurRadius: 28,
-                  offset: const Offset(0, 16),
+                  color: const Color(0xFFA32D56).withValues(alpha: 0.12),
+                  blurRadius: 26,
+                  offset: const Offset(0, 14),
                 ),
               ],
             ),
@@ -111,20 +115,32 @@ class _BrandMark extends StatelessWidget {
             height: 220,
             decoration: const BoxDecoration(
               shape: BoxShape.circle,
-              color: Color(0xFFF4EFF1),
+              color: Color(0xFFF7F1F3),
             ),
           ),
           Container(
-            width: 165,
-            height: 165,
-            decoration: const BoxDecoration(
+            width: 204,
+            height: 204,
+            decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppTheme.primaryNeon,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.82),
+                width: 3,
+              ),
             ),
-            child: const Icon(
-              Icons.pets_rounded,
-              color: Colors.white,
-              size: 84,
+          ),
+          ClipOval(
+            child: SizedBox(
+              width: 196,
+              height: 196,
+              child: Transform.scale(
+                scale: 0.9,
+                child: Image.asset(
+                  SplashScreen._logoPath,
+                  fit: BoxFit.contain,
+                  alignment: Alignment.center,
+                ),
+              ),
             ),
           ),
         ],
@@ -134,22 +150,16 @@ class _BrandMark extends StatelessWidget {
 }
 
 class _Dot extends StatelessWidget {
-  const _Dot({required this.active, this.faded = false});
+  const _Dot({required this.color});
 
-  final bool active;
-  final bool faded;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 14,
       height: 14,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: active
-            ? AppTheme.primaryNeon.withValues(alpha: faded ? 0.55 : 0.95)
-            : AppTheme.primaryNeon.withValues(alpha: 0.22),
-      ),
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
     );
   }
 }

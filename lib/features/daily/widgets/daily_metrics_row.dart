@@ -1,23 +1,34 @@
 import 'package:flutter/material.dart';
 
 class DailyMetricsRow extends StatelessWidget {
-  const DailyMetricsRow({super.key});
+  const DailyMetricsRow({
+    super.key,
+    required this.currentWeight,
+    required this.dailyGoalKcal,
+  });
+
+  final double currentWeight;
+  final double dailyGoalKcal;
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final narrow = constraints.maxWidth < 360;
-        final children = const [
+        final children = [
           Expanded(
             child: _MetricCard(
               title: 'CURRENT WEIGHT',
-              value: '4.5',
+              value: currentWeight.toStringAsFixed(1),
               unit: 'kg',
             ),
           ),
           Expanded(
-            child: _MetricCard(title: 'DAILY GOAL', value: '240', unit: 'kcal'),
+            child: _MetricCard(
+              title: 'DAILY GOAL',
+              value: dailyGoalKcal.toStringAsFixed(0),
+              unit: 'kcal',
+            ),
           ),
         ];
 

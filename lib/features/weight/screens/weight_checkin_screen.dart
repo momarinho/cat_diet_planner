@@ -1,15 +1,18 @@
 import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/data/models/weight_record.dart';
+import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class WeightCheckInScreen extends StatefulWidget {
+class WeightCheckInScreen extends ConsumerStatefulWidget {
   const WeightCheckInScreen({super.key});
 
   @override
-  State<WeightCheckInScreen> createState() => _WeightCheckInScreenState();
+  ConsumerState<WeightCheckInScreen> createState() =>
+      _WeightCheckInScreenState();
 }
 
-class _WeightCheckInScreenState extends State<WeightCheckInScreen> {
+class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
   static const List<String> _noteSuggestions = [
     'High Appetite',
     'Energetic',
@@ -80,6 +83,12 @@ class _WeightCheckInScreenState extends State<WeightCheckInScreen> {
     );
 
     await HiveService.weightsBox.add(record);
+    final selectedCat = ref.read(selectedCatProvider);
+    if (selectedCat != null) {
+      selectedCat.weight = _weight;
+      await selectedCat.save();
+      ref.read(selectedCatProvider.notifier).state = selectedCat;
+    }
 
     setState(() {
       _latestRecord = record;
@@ -95,8 +104,26 @@ class _WeightCheckInScreenState extends State<WeightCheckInScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // TODO(selected_cat): leia o gato ativo logo no começo do build.
+    final selectedCat = ref.watch(selectedCatProvider);
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
+
+    if (selectedCat == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Weight Check-in')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Text(
+              'Select a cat from Home before recording weight.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium,
+            ),
+          ),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -126,9 +153,10 @@ class _WeightCheckInScreenState extends State<WeightCheckInScreen> {
                           width: 2,
                         ),
                       ),
-                      child: const CircleAvatar(
+                      child: CircleAvatar(
                         backgroundImage: NetworkImage(
-                          'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=200&q=80',
+                          selectedCat?.photoPath ??
+                              'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=200&q=80',
                         ),
                       ),
                     ),
@@ -160,8 +188,9 @@ class _WeightCheckInScreenState extends State<WeightCheckInScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // TODO(selected_cat): troque o nome fixo pelo gato ativo aqui.
                       Text(
-                        'Milo',
+                        selectedCat.name,
                         style: theme.textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w900,
                         ),

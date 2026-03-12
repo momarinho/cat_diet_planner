@@ -1,4 +1,6 @@
 import 'package:cat_diet_planner/core/theme/theme_provider.dart';
+import 'package:cat_diet_planner/features/settings/providers/app_settings_provider.dart';
+import 'package:cat_diet_planner/features/settings/services/data_export_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -10,13 +12,122 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  bool _mealReminders = true;
+  static const _languageLabels = {
+    'en': 'English',
+    'pt': 'Portuguese',
+    'tl': 'Tagalog',
+  };
+
+  Future<void> _editSchedule(List<String> currentTimes) async {
+    final updatedTimes = [...currentTimes]..sort();
+
+    final shouldSave = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            Future<void> addTime() async {
+              final now = TimeOfDay.now();
+              final picked = await showTimePicker(
+                context: context,
+                initialTime: now,
+              );
+              if (picked == null) return;
+              final formatted =
+                  '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+              if (updatedTimes.contains(formatted)) return;
+              setModalState(() {
+                updatedTimes.add(formatted);
+                updatedTimes.sort();
+              });
+            }
+
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Meal Reminder Times',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    ...updatedTimes.map((time) {
+                      return ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: Text(time),
+                        trailing: IconButton(
+                          onPressed: () {
+                            setModalState(() => updatedTimes.remove(time));
+                          },
+                          icon: const Icon(Icons.delete_outline_rounded),
+                        ),
+                      );
+                    }),
+                    const SizedBox(height: 8),
+                    OutlinedButton.icon(
+                      onPressed: addTime,
+                      icon: const Icon(Icons.add_alarm_rounded),
+                      label: const Text('Add Time'),
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      child: const Text('Save Schedule'),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (shouldSave == true && mounted) {
+      await ref
+          .read(appSettingsProvider.notifier)
+          .setReminderTimes(updatedTimes);
+    }
+  }
+
+  Future<void> _pickLanguage(String currentLanguage) async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: _languageLabels.entries.map((entry) {
+              return ListTile(
+                title: Text(entry.value),
+                trailing: currentLanguage == entry.key
+                    ? const Icon(Icons.check_rounded)
+                    : null,
+                onTap: () => Navigator.of(context).pop(entry.key),
+              );
+            }).toList(),
+          ),
+        );
+      },
+    );
+
+    if (selected != null) {
+      await ref.read(appSettingsProvider.notifier).setLanguageCode(selected);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final themeMode = ref.watch(themeProvider);
+    final appSettings = ref.watch(appSettingsProvider);
     final isDarkMode = themeMode == ThemeMode.dark;
     final secondaryText =
         theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.65) ??
@@ -37,9 +148,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Notifications',
             children: [
               SwitchListTile(
-                value: _mealReminders,
-                onChanged: (value) {
-                  setState(() => _mealReminders = value);
+                value: appSettings.mealReminders,
+                onChanged: (value) async {
+                  await ref
+                      .read(appSettingsProvider.notifier)
+                      .setMealReminders(value);
                 },
                 title: const Text('Meal Reminders'),
                 subtitle: const Text('Enable alerts for feeding times'),
@@ -50,9 +163,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(Icons.schedule_rounded, color: primary),
                 title: const Text('Edit Schedule'),
-                subtitle: const Text('Configure meal reminder times'),
+                subtitle: Text(appSettings.reminderTimes.join(' • ')),
                 trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () {},
+                onTap: () => _editSchedule(appSettings.reminderTimes),
               ),
             ],
           ),
@@ -62,8 +175,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             children: [
               SwitchListTile(
                 value: isDarkMode,
-                onChanged: (_) {
-                  ref.read(themeProvider.notifier).toggleTheme();
+                onChanged: (_) async {
+                  await ref.read(themeProvider.notifier).toggleTheme();
                 },
                 title: const Text('Dark Mode'),
                 subtitle: const Text(
@@ -83,11 +196,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 leading: Icon(Icons.language_rounded, color: primary),
                 title: const Text('App Language'),
                 subtitle: Text(
-                  'English',
+                  _languageLabels[appSettings.languageCode] ?? 'English',
                   style: TextStyle(color: secondaryText),
                 ),
                 trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () {},
+                onTap: () => _pickLanguage(appSettings.languageCode),
               ),
             ],
           ),
@@ -101,15 +214,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 title: const Text('Export to JSON'),
                 subtitle: const Text('Create a portable backup file'),
                 trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () {},
+                onTap: () async {
+                  await DataExportService.exportJsonBackup();
+                },
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(Icons.backup_rounded, color: primary),
                 title: const Text('Backup Data'),
-                subtitle: const Text('Save local app data'),
+                subtitle: const Text(
+                  'Share a backup snapshot of local app data',
+                ),
                 trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () {},
+                onTap: () async {
+                  await DataExportService.exportJsonBackup();
+                },
               ),
             ],
           ),

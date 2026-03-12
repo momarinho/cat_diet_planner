@@ -1,9 +1,12 @@
 import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/data/models/weight_record.dart';
+import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
+import 'package:cat_diet_planner/features/history/services/weekly_report_export_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-class WeeklyDietReportScreen extends StatelessWidget {
+class WeeklyDietReportScreen extends ConsumerWidget {
   const WeeklyDietReportScreen({super.key});
 
   List<WeightRecord> _lastSeven(List<WeightRecord> records) {
@@ -31,7 +34,8 @@ class WeeklyDietReportScreen extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedCat = ref.watch(selectedCatProvider);
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final secondary =
@@ -93,7 +97,7 @@ class WeeklyDietReportScreen extends StatelessWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      'Luna',
+                                      selectedCat?.name ?? 'Active Cat',
                                       style: theme.textTheme.headlineSmall
                                           ?.copyWith(
                                             fontWeight: FontWeight.w900,
@@ -212,7 +216,7 @@ class WeeklyDietReportScreen extends StatelessWidget {
                                 Text(
                                   latest == null
                                       ? 'No weight data was recorded this week.'
-                                      : 'Luna is making great progress. Weight is ${latest.weight.toStringAsFixed(1)}kg and the weekly trend remains stable. Continue current feeding plan and maintain daily 20-minute play sessions.',
+                                      : '${selectedCat?.name ?? 'Your cat'} is making great progress. Weight is ${latest.weight.toStringAsFixed(1)}kg and the weekly trend remains stable. Continue current feeding plan and maintain daily play sessions.',
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     height: 1.5,
                                     color: secondary,
@@ -283,7 +287,12 @@ class WeeklyDietReportScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(22),
                         ),
                         child: OutlinedButton.icon(
-                          onPressed: () {},
+                          onPressed: () async {
+                            await WeeklyReportExportService.downloadPdf(
+                              cat: selectedCat,
+                              records: records,
+                            );
+                          },
                           icon: const Icon(Icons.download_rounded),
                           label: const Text('Download PDF'),
                           style: OutlinedButton.styleFrom(
@@ -297,7 +306,12 @@ class WeeklyDietReportScreen extends StatelessWidget {
                     const SizedBox(width: 12),
                     Expanded(
                       child: FilledButton.icon(
-                        onPressed: () {},
+                        onPressed: () async {
+                          await WeeklyReportExportService.shareReport(
+                            cat: selectedCat,
+                            records: records,
+                          );
+                        },
                         icon: const Icon(Icons.share_rounded),
                         label: const Text('Share via WhatsApp'),
                         style: FilledButton.styleFrom(

@@ -2,7 +2,10 @@ import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
 
 class DailyHeaderAppBar extends StatelessWidget {
-  const DailyHeaderAppBar({super.key});
+  const DailyHeaderAppBar({super.key, required this.catName, this.photoPath});
+
+  final String catName;
+  final String? photoPath;
 
   @override
   Widget build(BuildContext context) {
@@ -33,9 +36,10 @@ class DailyHeaderAppBar extends StatelessWidget {
               ),
             ],
           ),
-          child: const CircleAvatar(
+          child: CircleAvatar(
             backgroundImage: NetworkImage(
-              'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=200&q=80',
+              photoPath ??
+                  'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=200&q=80',
             ),
           ),
         ),
@@ -46,7 +50,7 @@ class DailyHeaderAppBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Good morning, Alex!',
+                'Good morning!',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.headlineMedium?.copyWith(
@@ -56,7 +60,7 @@ class DailyHeaderAppBar extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                'Whiskers is ready for breakfast',
+                '$catName is ready for today\'s meals',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleMedium?.copyWith(

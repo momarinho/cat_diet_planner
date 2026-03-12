@@ -1,8 +1,35 @@
+import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 
 class DailyScheduleSection extends StatelessWidget {
-  const DailyScheduleSection({super.key});
+  const DailyScheduleSection({
+    super.key,
+    required this.schedule,
+    required this.onMealToggle,
+  });
+
+  final List<Map<String, dynamic>> schedule;
+  final ValueChanged<Map<String, dynamic>> onMealToggle;
+
+  String _todayLabel() {
+    final now = DateTime.now();
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return '${months[now.month - 1]} ${now.day}, ${now.year}';
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +68,7 @@ class DailyScheduleSection extends StatelessWidget {
                 ],
               ),
               child: Text(
-                'Oct 24, 2023',
+                _todayLabel(),
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: primary,
                   fontWeight: FontWeight.w800,
@@ -51,50 +78,72 @@ class DailyScheduleSection extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 28),
-        const _ScheduleEntry(
-          icon: Icons.check_rounded,
-          title: 'Morning Meal',
-          subtitle: 'High Protein Mix • 80 kcal',
-          time: '07:30 AM',
-          state: _ScheduleState.completed,
-          badgeText: 'COMPLETED',
-          connectorHeight: 74,
+        ..._buildEntries(context),
+      ],
+    );
+  }
+
+  List<Widget> _buildEntries(BuildContext context) {
+    final entries = <Widget>[];
+    final mealEntries = schedule;
+
+    for (var index = 0; index < mealEntries.length; index++) {
+      final item = mealEntries[index];
+      final completed = item['completed'] == true;
+      final isLastMeal = index == mealEntries.length - 1;
+
+      entries.add(
+        _ScheduleEntry(
+          icon: completed ? Icons.check_rounded : Icons.restaurant_rounded,
+          title: item['title'] as String? ?? 'Meal',
+          subtitle: item['subtitle'] as String? ?? '',
+          time: item['time'] as String? ?? '',
+          state: completed ? _ScheduleState.completed : _ScheduleState.upcoming,
+          badgeText: completed ? 'COMPLETED' : null,
+          actionLabel: completed ? null : 'MARK AS DONE',
+          connectorHeight: isLastMeal ? 74 : 92,
+          isLast: false,
+          onActionTap: completed ? null : () => onMealToggle(item),
         ),
+      );
+
+      if (index == 0) {
+        entries.add(
+          _ScheduleEntry(
+            icon: Icons.monitor_weight_outlined,
+            title: 'Weight Check-in',
+            subtitle: 'Record today\'s weight progress',
+            time: 'Anytime',
+            state: _ScheduleState.active,
+            actionLabel: 'RECORD WEIGHT',
+            connectorHeight: mealEntries.length == 1 ? 74 : 92,
+            onActionTap: () {
+              Navigator.of(context).pushNamed(AppRoutes.weightCheckIn);
+            },
+          ),
+        );
+      }
+    }
+
+    if (entries.isEmpty) {
+      entries.add(
         const _ScheduleEntry(
-          icon: Icons.monitor_weight_outlined,
-          title: 'Weight Check-in',
-          subtitle: 'Weekly progress update',
-          time: '10:00 AM',
-          state: _ScheduleState.active,
-          actionLabel: 'RECORD WEIGHT',
-          connectorHeight: 92,
-        ),
-        const _ScheduleEntry(
-          icon: Icons.restaurant_rounded,
-          title: 'Afternoon Treat',
-          subtitle: 'Dental Chew • 25 kcal',
-          time: '03:00 PM',
-          state: _ScheduleState.upcoming,
-          connectorHeight: 74,
-        ),
-        const _ScheduleEntry(
-          icon: Icons.water_drop_outlined,
-          title: 'Water Fountain Clean',
-          subtitle: 'Weekly maintenance',
-          time: '05:00 PM',
-          state: _ScheduleState.upcoming,
-          connectorHeight: 74,
-        ),
-        const _ScheduleEntry(
-          icon: Icons.dinner_dining_outlined,
-          title: 'Dinner',
-          subtitle: 'Wet Food Mix • 135 kcal',
-          time: '07:00 PM',
+          icon: Icons.info_outline_rounded,
+          title: 'No meals scheduled',
+          subtitle: 'Save a plan in Plans to generate today\'s schedule.',
+          time: '--',
           state: _ScheduleState.upcoming,
           isLast: true,
         ),
-      ],
-    );
+      );
+    } else {
+      final last = entries.removeLast();
+      if (last is _ScheduleEntry) {
+        entries.add(last.copyWith(isLast: true));
+      }
+    }
+
+    return entries;
   }
 }
 
@@ -110,6 +159,7 @@ class _ScheduleEntry extends StatelessWidget {
   final String? actionLabel;
   final bool isLast;
   final double connectorHeight;
+  final VoidCallback? onActionTap;
 
   const _ScheduleEntry({
     required this.icon,
@@ -121,7 +171,23 @@ class _ScheduleEntry extends StatelessWidget {
     this.actionLabel,
     this.isLast = false,
     this.connectorHeight = 74,
+    this.onActionTap,
   });
+
+  _ScheduleEntry copyWith({bool? isLast}) {
+    return _ScheduleEntry(
+      icon: icon,
+      title: title,
+      subtitle: subtitle,
+      time: time,
+      state: state,
+      badgeText: badgeText,
+      actionLabel: actionLabel,
+      isLast: isLast ?? this.isLast,
+      connectorHeight: connectorHeight,
+      onActionTap: onActionTap,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -143,8 +209,12 @@ class _ScheduleEntry extends StatelessWidget {
         : primary.withValues(alpha: isUpcoming ? 0.38 : 0.88);
     final lineColor = primary.withValues(alpha: 0.22);
     final cardColor = theme.brightness == Brightness.dark
-        ? (isActive ? const Color(0xFF372027) : const Color(0xFF2B1A20).withValues(alpha: muted ? 0.7 : 1))
-        : (isActive ? Colors.white : Colors.white.withValues(alpha: muted ? 0.42 : 0.76));
+        ? (isActive
+              ? const Color(0xFF372027)
+              : const Color(0xFF2B1A20).withValues(alpha: muted ? 0.7 : 1))
+        : (isActive
+              ? Colors.white
+              : Colors.white.withValues(alpha: muted ? 0.42 : 0.76));
     final titleColor = muted
         ? theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.62)
         : theme.textTheme.titleLarge?.color;
@@ -153,7 +223,9 @@ class _ScheduleEntry extends StatelessWidget {
         : theme.textTheme.bodyMedium?.color;
     final timeColor = isActive
         ? primary
-        : (muted ? theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.72) : theme.textTheme.bodyMedium?.color);
+        : (muted
+              ? theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.72)
+              : theme.textTheme.bodyMedium?.color);
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -217,7 +289,10 @@ class _ScheduleEntry extends StatelessWidget {
                     alignment: WrapAlignment.spaceBetween,
                     children: [
                       ConstrainedBox(
-                        constraints: const BoxConstraints(minWidth: 120, maxWidth: 220),
+                        constraints: const BoxConstraints(
+                          minWidth: 120,
+                          maxWidth: 220,
+                        ),
                         child: Text(
                           title,
                           maxLines: 2,
@@ -251,7 +326,10 @@ class _ScheduleEntry extends StatelessWidget {
                   if (badgeText != null) ...[
                     const SizedBox(height: 14),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
                         color: AppTheme.successGreen.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(999),
@@ -273,7 +351,7 @@ class _ScheduleEntry extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: onActionTap,
                         style: ElevatedButton.styleFrom(
                           elevation: 0,
                           minimumSize: const Size(0, 56),

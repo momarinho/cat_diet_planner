@@ -1,225 +1,253 @@
 # Checklist Final de Entrega
 
-> Obsoleto como fonte principal. Usar `docs/internal/EXECUTION_PLAN.md`.
-
 Documento consolidado a partir de:
+- `docs/internal/EXECUTION_PLAN.md`
+- `docs/internal/FOOD_DATABASE_PLAN.md`
 - `docs/internal/PLAN.md`
 - `docs/internal/PLANO_TELAS_MOCKUP.md`
+- `docs/internal/SPRINT_PLAN_FINAL.md`
 - `docs/internal/UI_PLAN.md`
 - estado atual do código em `lib/`
-- conjunto de telas finais aprovado no mock
+
+Este passa a ser o checklist final de produto e execução.
+
+## Direção atual do projeto
+- manter `Flutter` como frontend principal para `web` e `iPhone`
+- manter arquitetura `offline-first`
+- usar `Hive` como fonte de verdade local enquanto os fluxos centrais não fecharem
+- manter o projeto 100% em `Dart/Flutter`
 
 ## Legenda
 - `[x]` concluído no código atual
-- `[-]` parcialmente pronto / existe base visual, mas falta fluxo real
+- `[-]` parcialmente pronto / existe base visual ou técnica
 - `[ ]` pendente
 
-## 1. Base técnica e arquitetura
-- [x] `HiveService` inicializado no bootstrap do app
-- [x] Models Hive principais criados: `CatProfile`, `FoodItem`, `WeightRecord`
-- [x] Adapters gerados e registrados
-- [x] App iniciado com `ProviderScope`
-- [x] Tema claro/escuro estruturado
-- [-] Navegação principal com `AppShellScreen` e `IndexedStack`
-- [ ] Rotas internas reais para Scanner, Settings, Weekly Report e Food Database
-- [ ] Persistência de configurações do app (tema, idioma, reminders)
-- [ ] Providers/repositories conectando UI aos dados reais
+## 1. Decisão arquitetural final
+- [x] manter `Flutter` como stack principal deste app
+- [x] priorizar entrega utilizável em `web`
+- [x] priorizar compatibilidade prática para uso no `iPhone`
+- [x] manter `Hive` local como base do produto
+- [x] adiar backend até o fluxo central estar fechado
+- [x] manter todo o app em `Dart/Flutter`
+- [x] manter UI, navegação, regras, persistência e integrações dentro do ecossistema Flutter
 
-## 2. Design system e componentes reutilizáveis
+## 2. Base técnica e arquitetura
+- [x] `HiveService` inicializado no bootstrap do app
+- [x] models principais criados: `CatProfile`, `FoodItem`, `WeightRecord`
+- [x] adapters gerados e registrados
+- [x] app iniciado com `ProviderScope`
+- [x] tema claro/escuro estruturado
+- [x] providers base para perfis e gato ativo
+- [x] repositório de perfil conectado ao `Hive`
+- [x] shell principal com `IndexedStack`
+- [-] rotas internas principais ligadas
+- [ ] persistência completa de preferências do app
+- [ ] padronização final de repositories/providers para todos os fluxos reais
+
+## 3. Design system e componentes reutilizáveis
 - [x] `AppCardContainer`
 - [x] `CatSelectorAvatar`
 - [x] `NeonButton`
 - [x] `GhostButton`
 - [x] `StatusBadge`
-- [x] `MealHorizontalCard`
 - [x] `DailySummaryRing`
 - [x] `VerticalTimelineTile`
-- [ ] Skeleton/loading states consistentes
-- [ ] Estados de erro e empty state padronizados
+- [-] `MealHorizontalCard`
+- [ ] skeleton/loading states consistentes
+- [ ] empty/error states padronizados
 
-## 3. Navegação principal final
-Telas do mock final:
-- Daily / Dashboard do dia
-- Home
-- Plans
-- History
+## 4. Navegação principal final
+- [x] bottom navigation principal implementada
+- [x] FAB central visual no contexto Daily
+- [x] abas `Daily` e `Home` apontam para telas reais
+- [x] aba `Plans` deixou de usar placeholder
+- [x] aba `History` deixou de usar placeholder
+- [x] FAB central abre fluxo de scanner
+- [ ] revisar todos os pontos de entrada secundários para eliminar ações mortas restantes
 
-Checklist:
-- [x] Bottom navigation principal implementada
-- [x] FAB central estilo scanner no contexto Daily
-- [-] Abas Daily e Home apontam para telas reais
-- [ ] Aba Plans deixar de usar placeholder
-- [ ] Aba History deixar de usar placeholder
-- [ ] FAB central abrir fluxo real de scanner
+## 5. Home
+- [x] header com título central e ações
+- [x] carrossel horizontal de gatos
+- [x] card `Next Feeding`
+- [x] card de insights
+- [x] grid de stats
+- [x] ação `Add New` abrir cadastro real
+- [x] seleção de gato refletir estado global
+- [x] dados vindos de `Hive/Riverpod`
+- [x] empty state coerente sem perfis
+- [-] dados ainda parcialmente mockados em blocos da tela
+- [ ] remover dados estáticos restantes
 
-## 4. Tela 1: Home / CatDiet Planner
-Referência visual: primeira tela do mock final.
+## 6. Cat Profile
+- [-] tela final aderente ao mock
+- [x] formulário completo: nome, peso, idade
+- [x] campos para castrado, atividade e objetivo
+- [x] seleção de foto
+- [x] validação de formulário
+- [x] salvar perfil no `Hive`
+- [x] editar perfil existente
+- [x] excluir perfil
+- [x] `ProfileListScreen` existente como base
+- [ ] refinamento visual final contra o mock aprovado
 
-- [x] Header com título central e ações
-- [x] Carrossel horizontal de gatos
-- [x] Card "Next Feeding"
-- [x] Card de health insights
-- [x] Grid de stats inferiores
-- [-] Dados ainda mockados nesta tela
-- [ ] Ação "Add New" abrir fluxo real de cadastro
-- [ ] Seleção de gato refletir estado global do gato ativo
-- [ ] Dados vindos de Hive/Riverpod
+## 7. Scanner de alimento
+- [x] tela visual inicial
+- [x] navegação a partir do FAB e quick actions
+- [x] fallback `Manual Entry`
+- [x] busca de item existente por barcode na base local mockada/atual
+- [x] ação `Confirm Product`
+- [ ] overlay alinhado ao mock
+- [x] ação de flash
+- [x] integração real com câmera
+- [x] leitura de barcode multiplataforma
+- [x] card inferior final de confirmação
 
-## 5. Tela 2: Cat Profile
-Referência visual: tela de edição de perfil com foto, campos, toggles e selects.
+## 8. Daily Dashboard
+- [x] header com avatar, saudação e ação lateral
+- [x] cards de métricas rápidas
+- [x] lista visual de agenda
+- [x] CTA visual de scanner
+- [x] estrutura conectada ao plano salvo
+- [x] marcar refeições como concluídas
+- [x] registrar `weight check-in` pelo fluxo diário
+- [x] persistir schedule/refeições do dia
+- [-] ligar navegação real para scanner e peso em todos os pontos
 
-- [ ] Tela final de edição aderente ao mock
-- [ ] Formulário completo: nome, peso, idade
-- [ ] Campos para castrado/esterilizado, atividade e objetivo de dieta
-- [ ] Upload/seleção de foto
-- [ ] Validação de formulário
-- [ ] Salvar perfil no Hive
-- [ ] Fluxo de editar perfil existente
-- [ ] Fluxo de excluir perfil
+## 9. Health Dashboard
+- [x] app bar visual no estilo do mock
+- [x] hero card do gato ativo
+- [x] quick actions visuais
+- [x] card de resumo diário
+- [x] timeline horizontal de refeições
+- [-] tela abre a partir da Home com base no gato selecionado
+- [ ] conectar resumo diário a dados reais
+- [ ] conectar timeline a refeições reais
+- [ ] fechar ações rápidas ponta a ponta
 
-Observação:
-- [x] Existe base de tela em `ProfileListScreen`
-- [-] Tela atual funciona mais como showcase de componentes do que fluxo final de perfil
+## 10. Plans
+- [x] tela/fluxo real de `Plans`
+- [x] placeholder removido da aba
+- [x] cálculo real em `DietCalculatorService`
+- [x] exibir meta calórica diária
+- [x] exibir porção por refeição
+- [x] selecionar gato e alimento de forma completa
+- [x] implementar fórmulas `RER/MER`
+- [x] validar inputs com limites seguros
+- [x] metas de manutenção/perda/ganho
+- [x] alertas de saúde por faixa
+- [x] persistir plano alimentar atual
 
-## 6. Tela 3: Scanner de alimento
-Referência visual: tela full-screen com overlay de barcode e card de confirmação.
+## 11. Food Database
+- [x] `FoodDatabaseScreen`
+- [x] rota registrada
+- [x] leitura local via `Hive`
+- [x] busca por nome, marca e barcode
+- [x] `AddFoodScreen`
+- [x] cadastro manual com validação mínima
+- [x] salvar `FoodItem` no `Hive`
+- [x] integração inicial com `Scanner`
+- [x] disponibilizar alimentos para `Plans`
+- [-] atualização da lista local validada parcialmente
+- [ ] lista de recentes/populares
+- [x] persistir alimento escolhido no plano
+- [ ] consolidar decisão arquitetural no código, não só na documentação
 
-- [ ] Tela visual do scanner
-- [ ] Overlay de leitura alinhado ao mock
-- [ ] Ação de flash
-- [ ] Integração com câmera
-- [ ] Leitura de barcode via ML Kit
-- [ ] Fallback "Manual Entry"
-- [ ] Card inferior com alimento detectado
-- [ ] Ação "Confirm Product"
-- [ ] Navegação a partir do FAB e quick actions
+## 12. Weight Check-in
+- [x] tela dedicada de check-in
+- [x] exibição do gato selecionado
+- [x] valor atual do peso
+- [x] controle para ajustar novo peso
+- [x] campo de observações
+- [x] CTA `Record Weight`
+- [x] persistir histórico de peso no `Hive`
+- [x] atualizar resumos após salvar
+- [ ] revisar acabamento visual final
 
-## 7. Tela 4: Daily Dashboard
-Referência visual: tela "Today's Schedule" / "Good morning".
+## 13. History e Weekly Diet Report
+- [x] criar tela real de `History`
+- [x] substituir placeholder da aba `History`
+- [x] estado vazio coerente
+- [x] ler `WeightRecord` do `Hive`
+- [x] listar registros reais por data
+- [x] resumo do último peso
+- [x] resumo da variação recente
+- [x] tendência simples de evolução
+- [x] tela de `Weekly Diet Report`
+- [-] gráfico de tendência de peso
+- [-] tabela de calorias por dia
+- [-] notas veterinárias
+- [x] `Download PDF`
+- [x] `Share via WhatsApp`
+- [x] exportação real em PDF
 
-- [x] Header com avatar, saudação e ação lateral
-- [x] Cards de métricas rápidas
-- [x] Lista vertical de agenda
-- [x] CTA visual de scanner no rodapé
-- [-] Estrutura visual próxima do mock, mas ainda com dados estáticos
-- [ ] Marcar refeições como concluídas
-- [ ] Registrar weight check-in
-- [ ] Persistir schedule/refeições do dia
-- [ ] Navegar para scanner e peso por ações reais
+## 14. Settings
+- [x] tela de configurações
+- [x] dark mode
+- [x] toggle de reminders
+- [x] configuração de horários
+- [x] idioma
+- [x] export JSON
+- [x] backup
+- [x] persistência local das preferências
 
-## 8. Tela 5: Health Dashboard do gato
-Referência visual: tela com hero do gato, quick actions, daily summary e meal timeline.
+## 15. Notificações e rotina
+- [ ] solicitar permissões
+- [ ] agendar refeições locais
+- [ ] payload por gato/refeição
+- [ ] snooze
+- [ ] repetir amanhã
+- [ ] integrar com `Settings`
 
-- [x] AppBar visual no estilo do mock
-- [x] Hero card do gato ativo
-- [x] Quick actions de scanner e log weight
-- [x] Card de resumo diário
-- [x] Timeline horizontal de refeições
-- [-] Tela aberta a partir da Home com dados do gato selecionado
-- [ ] Conectar resumo diário a dados reais
-- [ ] Conectar timeline a refeições reais
-- [ ] Ações rápidas abrirem fluxos reais
+## 16. Qualidade e fechamento
+- [ ] remover placeholders restantes
+- [ ] remover dados mockados das telas finais
+- [ ] loading/skeleton states consistentes
+- [ ] error/empty states consistentes
+- [ ] responsividade em telas pequenas
+- [ ] revisão visual final contra o mock
+- [ ] testes de widget da navegação principal
+- [ ] testes do formulário de perfil
+- [ ] testes do registro de peso
+- [ ] testes de persistência `Hive`
 
-## 9. Tela 6: Weekly Diet Report
-Referência visual: tela de relatório semanal com tendência de peso, tabela calórica e notas veterinárias.
+## 17. Roadmap de execução recomendado
 
-- [ ] Tela do relatório semanal
-- [ ] Gráfico de tendência de peso
-- [ ] Tabela de calorias por dia
-- [ ] Card de notas veterinárias
-- [ ] Ação "Download PDF"
-- [ ] Ação "Share via WhatsApp"
-- [ ] Exportação real em PDF
+### Bloco A: fechar o fluxo central do produto
+- [x] fórmulas reais de dieta em `Plans`
+- [x] persistência do plano alimentar
+- [x] `Daily` conectado ao plano salvo
+- [x] refeições do dia com estado real
 
-## 10. Tela 7: Weight Check-in
-Referência visual: tela de registro de peso com valor atual, slider/gráfico e CTA.
+### Bloco B: fechar entrada operacional de alimentos
+- [x] scanner com confirmação real
+- [x] câmera
+- [x] barcode real
+- [ ] itens recentes/populares na base de alimentos
 
-- [ ] Tela dedicada de check-in de peso
-- [ ] Exibição do gato selecionado
-- [ ] Valor atual do peso
-- [ ] Controle para ajustar novo peso
-- [ ] Campo de observações
-- [ ] CTA "Record Weight"
-- [ ] Persistir histórico de peso no Hive
-- [ ] Atualizar gráficos e resumos após salvar
+### Bloco C: fechar analytics e compartilhamento
+- [ ] gráficos finais
+- [x] PDF real
+- [x] compartilhamento
 
-## 11. Tela 8: Settings
-Referência visual: tela com reminders, theme, idioma, export e backup.
+### Bloco D: fechar preferências e rotina
+- [x] settings persistentes
+- [ ] notificações locais
+- [x] export/backup
 
-- [ ] Tela de configurações
-- [ ] Toggle de meal reminders
-- [ ] Configuração de horário/agenda
-- [ ] Toggle de dark mode
-- [ ] Seleção de idioma
-- [ ] Exportar para JSON
-- [ ] Backup de dados
-- [ ] Persistência local das preferências
+## 18. Ordem imediata recomendada
+1. implementar notificações locais integradas a `Settings`
+2. finalizar `History / Weekly Report` visualmente
+3. revisar `Home` e `Health Dashboard` para remover mocks restantes
+3. fechar `Scanner` com confirmação + base local consistente
+4. finalizar `History / Weekly Report` com exportação
+5. persistir `Settings`
+6. implementar notificações
+7. revisar testes, responsividade e mocks restantes
 
-## 12. Tela 9: Food Database
-Referência visual: busca, scan barcode, add manually e lista de alimentos.
-
-- [ ] Tela de Food Database
-- [ ] Busca por nome/marca/tipo
-- [ ] Atalho "Scan Barcode"
-- [ ] Atalho "Add Manually"
-- [ ] Lista "Recently Used & Popular"
-- [ ] Salvar alimentos no Hive
-- [ ] Reaproveitar itens no cálculo/plano
-
-## 13. Regras de negócio e dados reais
-- [ ] Implementar `DietCalculatorService`
-- [ ] Fórmulas RER/MER validadas
-- [ ] Inputs com limites seguros
-- [ ] Cálculo de porção por refeição
-- [ ] Meta de manutenção/perda/ganho
-- [ ] Comparação com histórico de peso
-- [ ] Alertas de saúde por faixa de peso/IMC
-- [ ] Salvar plano alimentar atual
-
-## 14. Notificações e rotina
-- [ ] Solicitar permissões
-- [ ] Agendar refeições locais
-- [ ] Payload por gato/refeição
-- [ ] Snooze
-- [ ] Repetir amanhã
-- [ ] Fluxo configurável via Settings
-
-## 15. Qualidade e fechamento
-- [ ] Remover placeholders restantes
-- [ ] Remover dados mockados das telas finais
-- [ ] Garantir responsividade em telas pequenas
-- [ ] Revisar consistência visual com o mock final
-- [ ] Testes de widget para navegação principal
-- [ ] Testes de formulário de perfil
-- [ ] Testes para registro de peso
-- [ ] Testes para persistência Hive
-
-## 16. Prioridade final recomendada
-### Bloco A: fechar navegação real
-- [ ] Scanner
-- [ ] Settings
-- [ ] Food Database
-- [ ] Weight Check-in
-
-### Bloco B: substituir placeholders da shell
-- [ ] Plans
-- [ ] History / Weekly Report
-
-### Bloco C: conectar dados reais
-- [ ] gato ativo global
-- [ ] perfis no Hive
-- [ ] refeições do dia
-- [ ] histórico de peso
-- [ ] preferências do app
-
-### Bloco D: acabamento
-- [ ] PDF / share
-- [ ] notificações
-- [ ] testes críticos
-
-## 17. Diagnóstico objetivo do estado atual
-- O projeto já tem a base visual principal do design system.
-- Home, Daily Overview e Health Dashboard já existem em nível de mock funcional.
-- A navegação principal existe, mas ainda não representa o conjunto final completo.
-- As lacunas principais estão em fluxos reais, persistência integrada e nas telas finais ainda ausentes.
-- O próximo marco lógico é sair de "mock navegável" para "produto navegável com dados reais".
+## 19. Diagnóstico objetivo do estado atual
+- O projeto já passou da fase de mock puro.
+- A maior parte do valor pendente está em fluxo real, não em layout.
+- `Home`, `Daily`, `Dashboard`, `Settings`, `Food Database`, `Weight Check-in`, `Plans` e `History` já têm base concreta.
+- O maior gargalo atual é consolidar cálculo, persistência do plano e execução diária.
+- Para este app, `Rust puro` deixaria de ser pragmático por causa do alvo `web + iPhone`.
+- A decisão mais consistente é: terminar o produto em `Flutter` e, se ainda fizer sentido depois, extrair um `Rust core` pequeno e bem delimitado.
