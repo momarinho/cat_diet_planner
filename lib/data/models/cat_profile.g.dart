@@ -27,13 +27,14 @@ class CatProfileAdapter extends TypeAdapter<CatProfile> {
       createdAt: fields[7] as DateTime,
       weightHistory: (fields[8] as List).cast<WeightRecord>(),
       photoPath: fields[9] as String?,
+      photoBase64: fields[10] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, CatProfile obj) {
     writer
-      ..writeByte(10)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -53,7 +54,9 @@ class CatProfileAdapter extends TypeAdapter<CatProfile> {
       ..writeByte(8)
       ..write(obj.weightHistory)
       ..writeByte(9)
-      ..write(obj.photoPath);
+      ..write(obj.photoPath)
+      ..writeByte(10)
+      ..write(obj.photoBase64);
   }
 
   @override

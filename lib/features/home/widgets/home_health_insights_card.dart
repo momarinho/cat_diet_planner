@@ -1,16 +1,29 @@
+import 'package:cat_diet_planner/features/home/providers/home_summary_provider.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_card_container.dart';
 
 class HomeHealthInsightsCard extends StatelessWidget {
-  const HomeHealthInsightsCard({super.key});
+  final HomeSummaryData? summary;
+
+  const HomeHealthInsightsCard({super.key, required this.summary});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final isDark = theme.brightness == Brightness.dark;
+    final hasSummary = summary != null;
+    final insightTitle = summary?.insightTitle ?? 'No health insights yet';
+    final insightBody =
+        summary?.insightBody ??
+        'Add a cat and create a plan to unlock daily health guidance.';
+    final trendLabel = summary?.weightTrendLabel ?? 'No trend data';
+    final trendColor = hasSummary && trendLabel.startsWith('+')
+        ? AppTheme.warningYellow
+        : AppTheme.successGreen;
+    final bars = summary?.mealProgressBars ?? const <HomeInsightBarData>[];
 
     return AppCardContainer(
       child: Container(
@@ -65,39 +78,54 @@ class HomeHealthInsightsCard extends StatelessWidget {
                       alignment: WrapAlignment.spaceBetween,
                       children: [
                         Text(
-                          'Weight Alert',
+                          insightTitle,
                           style: theme.textTheme.titleMedium?.copyWith(
-                            color: AppTheme.warningYellow,
+                            color: trendColor,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                         Text(
-                          '+0.2kg vs last week',
+                          trendLabel,
                           style: theme.textTheme.bodyMedium?.copyWith(
-                            color: AppTheme.warningYellow,
+                            color: trendColor,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
                       ],
                     ),
                     const SizedBox(height: 10),
-                    Text(
-                      "Milo's weight trend is slightly above the target. Consider reducing portion sizes by 5% for the next 7 days.",
-                      style: theme.textTheme.bodyLarge,
-                    ),
+                    Text(insightBody, style: theme.textTheme.bodyLarge),
                     const SizedBox(height: 14),
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        _bar(16, primary.withValues(alpha: 0.35)),
-                        _bar(24, primary.withValues(alpha: 0.45)),
-                        _bar(20, primary.withValues(alpha: 0.40)),
-                        _bar(28, primary.withValues(alpha: 0.50)),
-                        _bar(34, primary.withValues(alpha: 0.60)),
-                        _bar(42, primary.withValues(alpha: 0.70)),
-                        _bar(52, AppTheme.warningYellow, isLast: true),
-                      ],
-                    ),
+                    if (bars.isEmpty)
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          _bar(18, primary.withValues(alpha: 0.18)),
+                          _bar(24, primary.withValues(alpha: 0.22)),
+                          _bar(20, primary.withValues(alpha: 0.20)),
+                          _bar(
+                            28,
+                            primary.withValues(alpha: 0.24),
+                            isLast: true,
+                          ),
+                        ],
+                      )
+                    else
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          for (var index = 0; index < bars.length; index++)
+                            _bar(
+                              bars[index].height,
+                              bars[index].isCompleted
+                                  ? AppTheme.successGreen
+                                  : bars[index].isNext
+                                  ? AppTheme.warningYellow
+                                  : primary.withValues(alpha: 0.35),
+                              isLast: index == bars.length - 1,
+                            ),
+                        ],
+                      ),
                   ],
                 ),
               ),
@@ -133,7 +161,9 @@ class HomeHealthInsightsCard extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              'Goal: 30m playtime',
+                              hasSummary
+                                  ? '${summary!.completedMeals}/${summary!.totalMeals} meals completed'
+                                  : 'Waiting for daily data',
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: theme.textTheme.bodyMedium,
@@ -150,7 +180,9 @@ class HomeHealthInsightsCard extends StatelessWidget {
                         : CrossAxisAlignment.end,
                     children: [
                       Text(
-                        '18m / 30m',
+                        hasSummary
+                            ? '${summary!.consumedCalories.toStringAsFixed(0)} / ${summary!.goalCalories.toStringAsFixed(0)} kcal'
+                            : '0 / 0 kcal',
                         style: theme.textTheme.titleMedium?.copyWith(
                           color: primary,
                           fontWeight: FontWeight.w800,
@@ -163,7 +195,11 @@ class HomeHealthInsightsCard extends StatelessWidget {
                           borderRadius: BorderRadius.circular(100),
                           child: LinearProgressIndicator(
                             minHeight: 7,
-                            value: 18 / 30,
+                            value: hasSummary && summary!.goalCalories > 0
+                                ? (summary!.consumedCalories /
+                                          summary!.goalCalories)
+                                      .clamp(0.0, 1.0)
+                                : 0,
                             backgroundColor: primary.withValues(alpha: 0.2),
                             valueColor: AlwaysStoppedAnimation(primary),
                           ),

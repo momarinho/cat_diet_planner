@@ -1,3 +1,4 @@
+import 'package:cat_diet_planner/features/home/providers/home_summary_provider.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
@@ -6,11 +7,25 @@ import '../../../core/widgets/neon_button.dart';
 import '../../../core/widgets/status_badge.dart';
 
 class HomeNextFeedingCard extends StatelessWidget {
-  const HomeNextFeedingCard({super.key});
+  const HomeNextFeedingCard({super.key, required this.summary});
+
+  final HomeSummaryData? summary;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    final hasSummary = summary != null;
+    final nextMealLabel = summary?.nextMealLabel ?? 'No feeding schedule yet';
+    final nextMealTime = summary?.nextMealTime ?? 'Create a plan to see meals';
+    final mealStatus = hasSummary
+        ? '${summary!.remainingMeals} meal(s) remaining today'
+        : 'Create a cat profile and diet plan first';
+    final badgeText = !hasSummary
+        ? 'SETUP'
+        : summary!.remainingMeals == 0
+        ? 'DONE'
+        : '${summary!.remainingMeals} LEFT';
 
     return AppCardContainer(
       child: Column(
@@ -21,20 +36,18 @@ class HomeNextFeedingCard extends StatelessWidget {
             runSpacing: 8,
             crossAxisAlignment: WrapCrossAlignment.center,
             children: [
-              Icon(
-                Icons.schedule_rounded,
-                color: theme.colorScheme.primary,
-                size: 22,
-              ),
+              Icon(Icons.schedule_rounded, color: primary, size: 22),
               Text(
                 'Next Feeding',
                 style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              const StatusBadge(
-                text: '45 MIN LEFT',
-                baseColor: AppTheme.primaryNeon,
+              StatusBadge(
+                text: badgeText,
+                baseColor: summary?.remainingMeals == 0
+                    ? AppTheme.successGreen
+                    : AppTheme.primaryNeon,
               ),
             ],
           ),
@@ -44,11 +57,17 @@ class HomeNextFeedingCard extends StatelessWidget {
             children: [
               ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: Image.network(
-                  'https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&w=300&q=80',
+                child: Container(
                   width: 96,
                   height: 96,
-                  fit: BoxFit.cover,
+                  color: primary.withValues(alpha: 0.10),
+                  child: Icon(
+                    summary?.remainingMeals == 0
+                        ? Icons.check_circle_outline_rounded
+                        : Icons.schedule_rounded,
+                    color: primary,
+                    size: 42,
+                  ),
                 ),
               ),
               const SizedBox(width: 14),
@@ -57,7 +76,7 @@ class HomeNextFeedingCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Evening Feast',
+                      nextMealLabel,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.titleLarge?.copyWith(
@@ -66,14 +85,14 @@ class HomeNextFeedingCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Scheduled: 6:30 PM',
+                      nextMealTime,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodyLarge,
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '85g Wellness Core Wet',
+                      mealStatus,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: theme.textTheme.bodyLarge,
@@ -84,7 +103,10 @@ class HomeNextFeedingCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 18),
-          NeonButton(text: '🍴 Feed Now', onTap: () {}),
+          NeonButton(
+            text: hasSummary ? '🍴 View Today Plan' : '➕ Create Plan',
+            onTap: () {},
+          ),
         ],
       ),
     );

@@ -1,4 +1,5 @@
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
+import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
 
 import '../widgets/active_cat_hero_card.dart';
@@ -22,7 +23,14 @@ class DashboardOverviewScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ActiveCatHeroCard(cat: cat),
+            ActiveCatHeroCard(
+              cat: cat,
+              onEditTap: () {
+                Navigator.of(
+                  context,
+                ).pushNamed(AppRoutes.catProfile, arguments: cat);
+              },
+            ),
             SizedBox(height: 16),
             DashboardQuickActions(),
             SizedBox(height: 16),

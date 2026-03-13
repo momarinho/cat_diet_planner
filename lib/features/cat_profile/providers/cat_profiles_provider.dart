@@ -34,23 +34,30 @@ class CatProfilesNotifier extends StateNotifier<List<CatProfile>> {
     final selected = ref.read(selectedCatProvider);
     if (state.isEmpty) {
       if (selected != null) {
-        ref.read(selectedCatProvider.notifier).state = null;
+        _scheduleSelectedCatUpdate(null);
       }
       return;
     }
 
     if (selected == null) {
-      ref.read(selectedCatProvider.notifier).state = state.first;
+      _scheduleSelectedCatUpdate(state.first);
       return;
     }
 
     final updatedSelected = _findById(selected.id);
     if (updatedSelected == null) {
-      ref.read(selectedCatProvider.notifier).state = state.first;
+      _scheduleSelectedCatUpdate(state.first);
       return;
     }
 
-    ref.read(selectedCatProvider.notifier).state = updatedSelected;
+    _scheduleSelectedCatUpdate(updatedSelected);
+  }
+
+  void _scheduleSelectedCatUpdate(CatProfile? cat) {
+    Future.microtask(() {
+      if (!mounted) return;
+      ref.read(selectedCatProvider.notifier).state = cat;
+    });
   }
 
   CatProfile? _findById(String id) {

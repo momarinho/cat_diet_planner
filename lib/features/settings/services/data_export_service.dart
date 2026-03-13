@@ -49,6 +49,7 @@ class DataExportService {
       'goal': cat.goal,
       'createdAt': cat.createdAt.toIso8601String(),
       'photoPath': cat.photoPath,
+      'photoBase64': cat.photoBase64,
       'weightHistory': cat.weightHistory.map(_weightToMap).toList(),
     };
   }

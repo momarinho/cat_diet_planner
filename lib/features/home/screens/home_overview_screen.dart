@@ -1,7 +1,7 @@
-// lib/features/home/screens/home_overview_screen.dart
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/cat_profiles_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
+import 'package:cat_diet_planner/features/home/providers/home_summary_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -14,6 +14,10 @@ import '../widgets/home_next_feeding_card.dart';
 class HomeOverviewScreen extends ConsumerWidget {
   const HomeOverviewScreen({super.key});
 
+  void _openCatProfile(BuildContext context, Object? cat) {
+    Navigator.of(context).pushNamed(AppRoutes.catProfile, arguments: cat);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cats = ref.watch(catProfilesProvider);
@@ -23,6 +27,7 @@ class HomeOverviewScreen extends ConsumerWidget {
     final secondary =
         theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.70) ??
         const Color(0xFF7A7678);
+    final summary = ref.watch(homeSummaryProvider);
 
     return Scaffold(
       appBar: const HomeHeaderAppBar(),
@@ -69,7 +74,7 @@ class HomeOverviewScreen extends ConsumerWidget {
                     const SizedBox(height: 14),
                     FilledButton.icon(
                       onPressed: () {
-                        Navigator.of(context).pushNamed(AppRoutes.catProfile);
+                        _openCatProfile(context, null);
                       },
                       icon: const Icon(Icons.add_rounded),
                       label: const Text('Create First Profile'),
@@ -83,9 +88,7 @@ class HomeOverviewScreen extends ConsumerWidget {
               InkWell(
                 borderRadius: BorderRadius.circular(20),
                 onTap: () {
-                  Navigator.of(
-                    context,
-                  ).pushNamed(AppRoutes.catProfile, arguments: selectedCat);
+                  _openCatProfile(context, selectedCat);
                 },
                 child: Container(
                   width: double.infinity,
@@ -99,17 +102,38 @@ class HomeOverviewScreen extends ConsumerWidget {
                     border: Border.all(color: primary.withValues(alpha: 0.10)),
                   ),
                   child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Icon(Icons.pets_rounded, color: primary, size: 20),
                       const SizedBox(width: 10),
                       Expanded(
-                        child: Text(
-                          'Active profile: ${selectedCat.name}',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Active profile: ${selectedCat.name}',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Tap to edit this cat profile',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: secondary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
+                      const SizedBox(width: 12),
+                      FilledButton.tonalIcon(
+                        onPressed: () => _openCatProfile(context, selectedCat),
+                        icon: const Icon(Icons.edit_outlined, size: 18),
+                        label: const Text('Edit'),
+                      ),
+                      const SizedBox(width: 10),
                       Text(
                         '${selectedCat.weight.toStringAsFixed(1)} kg',
                         style: theme.textTheme.labelLarge?.copyWith(
@@ -123,11 +147,11 @@ class HomeOverviewScreen extends ConsumerWidget {
               ),
             ],
             const SizedBox(height: 16),
-            const HomeNextFeedingCard(),
+            HomeNextFeedingCard(summary: summary),
             const SizedBox(height: 16),
-            const HomeHealthInsightsCard(),
+            HomeHealthInsightsCard(summary: summary),
             const SizedBox(height: 16),
-            const HomeHealthStatsGrid(),
+            HomeHealthStatsGrid(summary: summary),
           ],
         ),
       ),

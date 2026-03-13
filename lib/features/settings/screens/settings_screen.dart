@@ -1,6 +1,7 @@
 import 'package:cat_diet_planner/core/theme/theme_provider.dart';
 import 'package:cat_diet_planner/features/settings/providers/app_settings_provider.dart';
 import 'package:cat_diet_planner/features/settings/services/data_export_service.dart';
+import 'package:cat_diet_planner/features/settings/services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -93,6 +94,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       await ref
           .read(appSettingsProvider.notifier)
           .setReminderTimes(updatedTimes);
+      await NotificationService.syncWithSettings(ref.read(appSettingsProvider));
     }
   }
 
@@ -153,11 +155,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   await ref
                       .read(appSettingsProvider.notifier)
                       .setMealReminders(value);
+                  await NotificationService.syncWithSettings(
+                    ref.read(appSettingsProvider),
+                  );
                 },
                 title: const Text('Meal Reminders'),
                 subtitle: const Text('Enable alerts for feeding times'),
                 activeThumbColor: primary,
                 contentPadding: EdgeInsets.zero,
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(
+                  Icons.notifications_active_rounded,
+                  color: primary,
+                ),
+                title: const Text('Test Notification'),
+                subtitle: const Text(
+                  'Verify the current platform notification flow',
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () async {
+                  await NotificationService.showTestNotification();
+                },
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,

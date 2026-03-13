@@ -1,5 +1,8 @@
+import 'package:cat_diet_planner/core/utils/cat_photo.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
+import 'package:cat_diet_planner/features/cat_profile/services/cat_photo_service.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/cat_profiles_provider.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -29,6 +32,7 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
   String _activityLevel = 'moderate';
   String _goal = 'maintenance';
   String? _photoPath;
+  String? _photoBase64;
 
   bool get _isEditing => widget.initialCat != null;
 
@@ -40,6 +44,7 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
       _weightController.text = '4.5';
       _ageController.text = '3';
       _photoPath = _presetPhotos.first;
+      _photoBase64 = null;
       return;
     }
 
@@ -49,7 +54,9 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
     _neutered = cat.neutered;
     _activityLevel = cat.activityLevel;
     _goal = cat.goal;
-    _photoPath = cat.photoPath ?? _presetPhotos.first;
+    _photoBase64 = cat.photoBase64;
+    _photoPath =
+        cat.photoPath ?? (_photoBase64 == null ? _presetPhotos.first : null);
   }
 
   @override
@@ -75,6 +82,7 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
       createdAt: initial?.createdAt ?? DateTime.now(),
       weightHistory: initial?.weightHistory ?? const [],
       photoPath: _photoPath,
+      photoBase64: _photoBase64,
     );
 
     await ref.read(catProfilesProvider.notifier).saveProfile(profile);
@@ -115,6 +123,28 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
     Navigator.of(context).pop();
   }
 
+  Future<void> _pickPhoto() async {
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.image,
+      withData: true,
+    );
+    final bytes = result?.files.single.bytes;
+    if (bytes == null) return;
+
+    try {
+      final encoded = CatPhotoService.compressAndEncode(bytes);
+      setState(() {
+        _photoBase64 = encoded;
+        _photoPath = null;
+      });
+    } on ArgumentError catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message.toString())));
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -148,8 +178,9 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                           ),
                         ),
                         child: CircleAvatar(
-                          backgroundImage: NetworkImage(
-                            _photoPath ?? _presetPhotos.first,
+                          backgroundImage: catPhotoProvider(
+                            photoPath: _photoPath,
+                            photoBase64: _photoBase64,
                           ),
                         ),
                       ),
@@ -184,13 +215,22 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
+                  OutlinedButton.icon(
+                    onPressed: _pickPhoto,
+                    icon: const Icon(Icons.upload_rounded),
+                    label: const Text('Upload Photo'),
+                  ),
+                  const SizedBox(height: 14),
                   Wrap(
                     spacing: 10,
                     runSpacing: 10,
                     children: _presetPhotos.map((photo) {
                       final selected = _photoPath == photo;
                       return GestureDetector(
-                        onTap: () => setState(() => _photoPath = photo),
+                        onTap: () => setState(() {
+                          _photoPath = photo;
+                          _photoBase64 = null;
+                        }),
                         child: Container(
                           width: 56,
                           height: 56,

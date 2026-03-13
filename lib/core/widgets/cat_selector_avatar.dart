@@ -1,14 +1,17 @@
+import 'package:cat_diet_planner/core/utils/cat_photo.dart';
 import 'package:flutter/material.dart';
 
 class CatSelectorAvatar extends StatelessWidget {
-  final String imagePath;
+  final String? imagePath;
+  final String? photoBase64;
   final String name;
   final bool isActive;
   final VoidCallback onTap;
 
   const CatSelectorAvatar({
     super.key,
-    required this.imagePath,
+    this.imagePath,
+    this.photoBase64,
     required this.name,
     this.isActive = false,
     required this.onTap,
@@ -52,9 +55,10 @@ class CatSelectorAvatar extends StatelessWidget {
                           ]
                         : null,
                     image: DecorationImage(
-                      image: NetworkImage(
-                        imagePath,
-                      ), // Usando internet para teste
+                      image: catPhotoProvider(
+                        photoPath: imagePath,
+                        photoBase64: photoBase64,
+                      ),
                       fit: BoxFit.cover,
                     ),
                   ),

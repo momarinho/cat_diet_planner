@@ -34,9 +34,8 @@ class HomeCatCarouselSection extends ConsumerWidget {
               final isActive = selectedCat?.id == cat.id;
 
               return CatSelectorAvatar(
-                imagePath:
-                    cat.photoPath ??
-                    'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=200&q=80',
+                imagePath: cat.photoPath,
+                photoBase64: cat.photoBase64,
                 name: cat.name,
                 isActive: isActive,
                 onTap: () {

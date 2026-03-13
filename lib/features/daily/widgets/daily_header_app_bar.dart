@@ -1,11 +1,18 @@
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
+import 'package:cat_diet_planner/core/utils/cat_photo.dart';
 import 'package:flutter/material.dart';
 
 class DailyHeaderAppBar extends StatelessWidget {
-  const DailyHeaderAppBar({super.key, required this.catName, this.photoPath});
+  const DailyHeaderAppBar({
+    super.key,
+    required this.catName,
+    this.photoPath,
+    this.photoBase64,
+  });
 
   final String catName;
   final String? photoPath;
+  final String? photoBase64;
 
   @override
   Widget build(BuildContext context) {
@@ -37,9 +44,9 @@ class DailyHeaderAppBar extends StatelessWidget {
             ],
           ),
           child: CircleAvatar(
-            backgroundImage: NetworkImage(
-              photoPath ??
-                  'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=200&q=80',
+            backgroundImage: catPhotoProvider(
+              photoPath: photoPath,
+              photoBase64: photoBase64,
             ),
           ),
         ),

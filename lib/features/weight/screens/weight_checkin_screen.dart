@@ -1,3 +1,4 @@
+import 'package:cat_diet_planner/core/utils/cat_photo.dart';
 import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/data/models/weight_record.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
@@ -154,9 +155,9 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                         ),
                       ),
                       child: CircleAvatar(
-                        backgroundImage: NetworkImage(
-                          selectedCat?.photoPath ??
-                              'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?auto=format&fit=crop&w=200&q=80',
+                        backgroundImage: catPhotoProvider(
+                          photoPath: selectedCat.photoPath,
+                          photoBase64: selectedCat.photoBase64,
                         ),
                       ),
                     ),

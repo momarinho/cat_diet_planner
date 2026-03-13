@@ -1,34 +1,69 @@
+import 'package:cat_diet_planner/features/home/providers/home_summary_provider.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_card_container.dart';
 
 class HomeHealthStatsGrid extends StatelessWidget {
-  const HomeHealthStatsGrid({super.key});
+  final HomeSummaryData? summary;
+
+  const HomeHealthStatsGrid({super.key, required this.summary});
 
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isNarrow = constraints.maxWidth < 360;
+        final weightValue = summary == null
+            ? '--'
+            : '${summary!.currentWeight.toStringAsFixed(1)} kg';
+        final weightStatus = summary?.weightTrendLabel ?? 'No data';
+        final weightStatusColor =
+            summary != null && summary!.weightTrendLabel.startsWith('+')
+            ? AppTheme.warningYellow
+            : AppTheme.successGreen;
+        final goalValue = summary == null
+            ? '--'
+            : '${summary!.goalCalories.toStringAsFixed(0)} kcal';
+        final goalStatus = summary == null
+            ? 'No plan'
+            : '${summary!.consumedCalories.toStringAsFixed(0)} consumed';
+        final mealsValue = summary == null
+            ? '--'
+            : '${summary!.completedMeals}/${summary!.totalMeals}';
+        final mealsStatus = summary == null
+            ? 'No schedule'
+            : '${summary!.remainingMeals} pending';
+        final mealsStatusColor = summary != null && summary!.remainingMeals == 0
+            ? AppTheme.successGreen
+            : AppTheme.warningYellow;
 
         final cards = [
-          const Expanded(
-            child: _StatCard(
-              icon: Icons.opacity_rounded,
-              title: 'HYDRATION',
-              value: 'Normal',
-              status: '↗ Good',
-              statusColor: AppTheme.successGreen,
-            ),
-          ),
-          const Expanded(
+          Expanded(
             child: _StatCard(
               icon: Icons.monitor_weight_outlined,
               title: 'WEIGHT',
-              value: '4.8 kg',
-              status: '↗ Over goal',
-              statusColor: AppTheme.warningYellow,
+              value: weightValue,
+              status: weightStatus,
+              statusColor: weightStatusColor,
+            ),
+          ),
+          Expanded(
+            child: _StatCard(
+              icon: Icons.local_fire_department_rounded,
+              title: 'DAILY GOAL',
+              value: goalValue,
+              status: goalStatus,
+              statusColor: AppTheme.primaryNeon,
+            ),
+          ),
+          Expanded(
+            child: _StatCard(
+              icon: Icons.restaurant_rounded,
+              title: 'MEALS',
+              value: mealsValue,
+              status: mealsStatus,
+              statusColor: mealsStatusColor,
             ),
           ),
         ];
@@ -39,6 +74,8 @@ class HomeHealthStatsGrid extends StatelessWidget {
               Row(children: [cards[0]]),
               const SizedBox(height: 12),
               Row(children: [cards[1]]),
+              const SizedBox(height: 12),
+              Row(children: [cards[2]]),
             ],
           );
         }
@@ -48,6 +85,8 @@ class HomeHealthStatsGrid extends StatelessWidget {
             cards[0],
             const SizedBox(width: 12),
             cards[1],
+            const SizedBox(width: 12),
+            cards[2],
           ],
         );
       },

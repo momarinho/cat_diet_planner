@@ -81,6 +81,7 @@ class DailyOverviewScreen extends ConsumerWidget {
                     DailyHeaderAppBar(
                       catName: selectedCat.name,
                       photoPath: selectedCat.photoPath,
+                      photoBase64: selectedCat.photoBase64,
                     ),
                     const SizedBox(height: 24),
                     DailyMetricsRow(

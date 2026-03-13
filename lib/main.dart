@@ -1,6 +1,7 @@
 import 'package:cat_diet_planner/core/navigation/app_router.dart';
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/core/theme/theme_provider.dart';
+import 'package:cat_diet_planner/features/settings/services/notification_service.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,6 +14,7 @@ void main() async {
 
   // Inicializa o Hive e os Boxes através do serviço centralizado
   await HiveService.init();
+  await NotificationService.init();
 
   runApp(const ProviderScope(child: MyApp()));
 }

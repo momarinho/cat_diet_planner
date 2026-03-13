@@ -75,14 +75,18 @@ Este passa a ser o checklist final de produto e execução.
 - [x] seleção de gato refletir estado global
 - [x] dados vindos de `Hive/Riverpod`
 - [x] empty state coerente sem perfis
-- [-] dados ainda parcialmente mockados em blocos da tela
-- [ ] remover dados estáticos restantes
+- [x] provider consolidado de resumo da Home
+- [x] dados reais ligados a `Next Feeding`
+- [x] dados reais ligados a insights
+- [x] mini-gráfico de insights ligado às refeições reais do dia
+- [x] dados reais ligados ao grid de stats
+- [x] remover dados estáticos restantes
 
 ## 6. Cat Profile
 - [-] tela final aderente ao mock
 - [x] formulário completo: nome, peso, idade
 - [x] campos para castrado, atividade e objetivo
-- [x] seleção de foto
+- [x] seleção/upload de foto
 - [x] validação de formulário
 - [x] salvar perfil no `Hive`
 - [x] editar perfil existente
@@ -191,12 +195,12 @@ Este passa a ser o checklist final de produto e execução.
 - [x] persistência local das preferências
 
 ## 15. Notificações e rotina
-- [ ] solicitar permissões
-- [ ] agendar refeições locais
+- [-] solicitar permissões
+- [-] agendar refeições locais
 - [ ] payload por gato/refeição
 - [ ] snooze
 - [ ] repetir amanhã
-- [ ] integrar com `Settings`
+- [x] integrar com `Settings`
 
 ## 16. Qualidade e fechamento
 - [ ] remover placeholders restantes

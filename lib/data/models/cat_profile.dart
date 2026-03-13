@@ -35,6 +35,9 @@ class CatProfile extends HiveObject {
   @HiveField(9)
   String? photoPath;
 
+  @HiveField(10)
+  String? photoBase64;
+
   CatProfile({
     required this.id,
     required this.name,
@@ -46,5 +49,6 @@ class CatProfile extends HiveObject {
     required this.createdAt,
     this.weightHistory = const [],
     this.photoPath,
+    this.photoBase64,
   });
 }
