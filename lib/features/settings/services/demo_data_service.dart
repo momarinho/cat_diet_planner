@@ -122,10 +122,14 @@ class DemoDataService {
       age: 36,
       neutered: true,
       activityLevel: 'moderate',
-      goal: 'maintenance',
+      goal: 'senior_support',
       createdAt: now.subtract(const Duration(days: 45)),
       weightHistory: lunaWeights,
       photoPath: _photoLuna,
+      preferredMealsPerDay: 4,
+      manualTargetKcal: 235,
+      notes:
+          'Prefers smaller meals and benefits from a gentle maintenance target.',
     );
     await HiveService.catsBox.put(luna.id, luna);
 

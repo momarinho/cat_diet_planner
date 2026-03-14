@@ -3,6 +3,26 @@ import 'weight_record.dart';
 
 part 'cat_profile.g.dart';
 
+const Map<String, String> kCatGoalLabels = {
+  'maintenance': 'Maintenance',
+  'loss': 'Weight loss',
+  'gain': 'Weight gain',
+  'kitten_growth': 'Kitten growth',
+  'senior_support': 'Senior support',
+  'recovery': 'Recovery',
+  'post_surgery': 'Post-surgery',
+};
+
+const Map<String, String> kCatActivityLabels = {
+  'sedentary': 'Sedentary',
+  'moderate': 'Moderate',
+  'active': 'Active',
+};
+
+String catGoalLabel(String goal) => kCatGoalLabels[goal] ?? goal;
+
+String catActivityLabel(String level) => kCatActivityLabels[level] ?? level;
+
 @HiveType(typeId: 0)
 class CatProfile extends HiveObject {
   @HiveField(0)
@@ -38,6 +58,15 @@ class CatProfile extends HiveObject {
   @HiveField(10)
   String? photoBase64;
 
+  @HiveField(11)
+  int preferredMealsPerDay;
+
+  @HiveField(12)
+  double? manualTargetKcal;
+
+  @HiveField(13)
+  String? notes;
+
   CatProfile({
     required this.id,
     required this.name,
@@ -50,5 +79,8 @@ class CatProfile extends HiveObject {
     this.weightHistory = const [],
     this.photoPath,
     this.photoBase64,
+    this.preferredMealsPerDay = 4,
+    this.manualTargetKcal,
+    this.notes,
   });
 }

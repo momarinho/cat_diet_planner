@@ -86,6 +86,7 @@ Este passa a ser o checklist final de produto e execução.
 - [-] tela final aderente ao mock
 - [x] formulário completo: nome, peso, idade
 - [x] campos para castrado, atividade e objetivo
+- [x] objetivos expandidos, refeições preferidas, meta manual e notas clínicas
 - [x] seleção/upload de foto
 - [x] validação de formulário
 - [x] salvar perfil no `Hive`
@@ -156,6 +157,7 @@ Este passa a ser o checklist final de produto e execução.
 - [x] exibir meta calórica diária
 - [x] exibir porção por refeição
 - [x] selecionar gato e alimento de forma completa
+- [x] respeitar meta manual e refeições preferidas do perfil individual
 - [x] implementar fórmulas `RER/MER`
 - [x] validar inputs com limites seguros
 - [x] metas de manutenção/perda/ganho

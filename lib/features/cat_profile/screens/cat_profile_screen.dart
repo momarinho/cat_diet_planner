@@ -29,10 +29,13 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
   final _nameController = TextEditingController();
   final _weightController = TextEditingController();
   final _ageController = TextEditingController();
+  final _manualTargetKcalController = TextEditingController();
+  final _notesController = TextEditingController();
 
   bool _neutered = true;
   String _activityLevel = 'moderate';
   String _goal = 'maintenance';
+  int _preferredMealsPerDay = 4;
   String? _photoPath;
   String? _photoBase64;
   bool _isSaving = false;
@@ -46,6 +49,8 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
     if (cat == null) {
       _weightController.text = '4.5';
       _ageController.text = '3';
+      _manualTargetKcalController.text = '';
+      _notesController.text = '';
       _photoPath = _presetPhotos.first;
       _photoBase64 = null;
       return;
@@ -57,6 +62,11 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
     _neutered = cat.neutered;
     _activityLevel = cat.activityLevel;
     _goal = cat.goal;
+    _preferredMealsPerDay = cat.preferredMealsPerDay;
+    _manualTargetKcalController.text = cat.manualTargetKcal == null
+        ? ''
+        : cat.manualTargetKcal!.toStringAsFixed(0);
+    _notesController.text = cat.notes ?? '';
     _photoBase64 = cat.photoBase64;
     _photoPath =
         cat.photoPath ?? (_photoBase64 == null ? _presetPhotos.first : null);
@@ -67,6 +77,8 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
     _nameController.dispose();
     _weightController.dispose();
     _ageController.dispose();
+    _manualTargetKcalController.dispose();
+    _notesController.dispose();
     super.dispose();
   }
 
@@ -76,6 +88,9 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
     setState(() => _isSaving = true);
 
     final initial = widget.initialCat;
+    final manualTarget = double.tryParse(
+      _manualTargetKcalController.text.trim(),
+    );
     final profile = CatProfile(
       id: initial?.id ?? DateTime.now().microsecondsSinceEpoch.toString(),
       name: _nameController.text.trim(),
@@ -88,6 +103,13 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
       weightHistory: initial?.weightHistory ?? const [],
       photoPath: _photoPath,
       photoBase64: _photoBase64,
+      preferredMealsPerDay: _preferredMealsPerDay,
+      manualTargetKcal: manualTarget == null || manualTarget <= 0
+          ? null
+          : manualTarget,
+      notes: _notesController.text.trim().isEmpty
+          ? null
+          : _notesController.text.trim(),
     );
 
     try {
@@ -379,10 +401,77 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                         value: 'gain',
                         child: Text('Weight gain'),
                       ),
+                      DropdownMenuItem(
+                        value: 'kitten_growth',
+                        child: Text('Kitten growth'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'senior_support',
+                        child: Text('Senior support'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'recovery',
+                        child: Text('Recovery'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'post_surgery',
+                        child: Text('Post-surgery'),
+                      ),
                     ],
                     onChanged: (value) {
                       if (value != null) setState(() => _goal = value);
                     },
+                  ),
+                  const SizedBox(height: 14),
+                  DropdownButtonFormField<int>(
+                    initialValue: _preferredMealsPerDay,
+                    decoration: const InputDecoration(
+                      labelText: 'Preferred meals per day',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(value: 3, child: Text('3 meals')),
+                      DropdownMenuItem(value: 4, child: Text('4 meals')),
+                      DropdownMenuItem(value: 5, child: Text('5 meals')),
+                      DropdownMenuItem(value: 6, child: Text('6 meals')),
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        setState(() => _preferredMealsPerDay = value);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _manualTargetKcalController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Manual target kcal/day (optional)',
+                      helperText: 'Leave empty to keep automatic calculation',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) return null;
+                      final parsed = double.tryParse(value.trim());
+                      if (parsed == null || parsed <= 0) {
+                        return 'Invalid kcal target';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _notesController,
+                    minLines: 3,
+                    maxLines: 5,
+                    decoration: const InputDecoration(
+                      labelText: 'Clinical notes / preferences',
+                      helperText:
+                          'Examples: sensitive stomach, picky eater, post-surgery, senior support',
+                      border: OutlineInputBorder(),
+                    ),
                   ),
                   const SizedBox(height: 14),
                   Text(

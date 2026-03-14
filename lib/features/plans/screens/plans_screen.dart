@@ -69,13 +69,13 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
     return null;
   }
 
-  void _hydratePlanForCat(String catId) {
-    final existingPlan = HiveService.dietPlansBox.get(catId);
-    _hydratedCatId = catId;
+  void _hydratePlanForCat(CatProfile cat) {
+    final existingPlan = HiveService.dietPlansBox.get(cat.id);
+    _hydratedCatId = cat.id;
     _selectedFood = existingPlan == null
         ? null
         : _findFoodByKey(existingPlan.foodKey);
-    _mealsPerDay = existingPlan?.mealsPerDay ?? 4;
+    _mealsPerDay = existingPlan?.mealsPerDay ?? cat.preferredMealsPerDay;
     setState(() {});
   }
 
@@ -105,13 +105,15 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         mealsPerDay: _mealsPerDay,
       );
 
-      final targetKcalPerDay = DietCalculatorService.calculateMer(
-        weightKg: cat.weight,
-        ageMonths: cat.age,
-        neutered: cat.neutered,
-        activityLevel: cat.activityLevel,
-        goal: cat.goal,
-      );
+      final targetKcalPerDay =
+          cat.manualTargetKcal ??
+          DietCalculatorService.calculateMer(
+            weightKg: cat.weight,
+            ageMonths: cat.age,
+            neutered: cat.neutered,
+            activityLevel: cat.activityLevel,
+            goal: cat.goal,
+          );
       final dailyPortionGrams =
           DietCalculatorService.calculateDailyPortionGrams(
             targetKcal: targetKcalPerDay,
@@ -236,7 +238,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         _hydratedCatId != selectedCat.id) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
-        _hydratePlanForCat(selectedCat.id);
+        _hydratePlanForCat(selectedCat);
       });
     }
 
@@ -744,13 +746,15 @@ class _IndividualPlanSummaryCard extends StatelessWidget {
     final secondary =
         theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.65) ??
         const Color(0xFF7A7678);
-    final targetKcal = DietCalculatorService.calculateMer(
-      weightKg: cat.weight,
-      ageMonths: cat.age,
-      neutered: cat.neutered,
-      activityLevel: cat.activityLevel,
-      goal: cat.goal,
-    );
+    final targetKcal =
+        cat.manualTargetKcal ??
+        DietCalculatorService.calculateMer(
+          weightKg: cat.weight,
+          ageMonths: cat.age,
+          neutered: cat.neutered,
+          activityLevel: cat.activityLevel,
+          goal: cat.goal,
+        );
     final dailyPortion = DietCalculatorService.calculateDailyPortionGrams(
       targetKcal: targetKcal,
       kcalPer100g: food.kcalPer100g,
@@ -801,7 +805,8 @@ class _IndividualPlanSummaryCard extends StatelessWidget {
                 label: 'Per Meal',
                 value: '${perMeal.toStringAsFixed(1)} g',
               ),
-              _PlanMetric(label: 'Goal', value: cat.goal),
+              _PlanMetric(label: 'Goal', value: catGoalLabel(cat.goal)),
+              _PlanMetric(label: 'Meals/day', value: mealsPerDay.toString()),
             ],
           ),
           const SizedBox(height: 16),

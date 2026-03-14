@@ -102,6 +102,14 @@ class DietCalculatorService {
         return 0.8;
       case 'gain':
         return 1.15;
+      case 'kitten_growth':
+        return 1.2;
+      case 'senior_support':
+        return 0.95;
+      case 'recovery':
+        return 1.2;
+      case 'post_surgery':
+        return 1.1;
       case 'maintenance':
       default:
         return 1.0;

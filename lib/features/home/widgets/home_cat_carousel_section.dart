@@ -135,7 +135,7 @@ class _HomeCatCarouselSectionState
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${cat.weight.toStringAsFixed(1)} kg • ${cat.goal}',
+                                  '${cat.weight.toStringAsFixed(1)} kg • ${catGoalLabel(cat.goal)}',
                                   style: theme.textTheme.bodyMedium?.copyWith(
                                     color: theme.textTheme.bodyMedium?.color
                                         ?.withValues(alpha: 0.7),
