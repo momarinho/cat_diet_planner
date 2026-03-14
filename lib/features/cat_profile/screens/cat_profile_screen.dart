@@ -1,4 +1,6 @@
+import 'package:cat_diet_planner/core/constants/app_limits.dart';
 import 'package:cat_diet_planner/core/utils/cat_photo.dart';
+import 'package:cat_diet_planner/core/widgets/app_loading_state.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/features/cat_profile/services/cat_photo_service.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/cat_profiles_provider.dart';
@@ -33,6 +35,7 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
   String _goal = 'maintenance';
   String? _photoPath;
   String? _photoBase64;
+  bool _isSaving = false;
 
   bool get _isEditing => widget.initialCat != null;
 
@@ -70,6 +73,8 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
   Future<void> _saveProfile() async {
     if (!_formKey.currentState!.validate()) return;
 
+    setState(() => _isSaving = true);
+
     final initial = widget.initialCat;
     final profile = CatProfile(
       id: initial?.id ?? DateTime.now().microsecondsSinceEpoch.toString(),
@@ -85,7 +90,18 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
       photoBase64: _photoBase64,
     );
 
-    await ref.read(catProfilesProvider.notifier).saveProfile(profile);
+    try {
+      await ref.read(catProfilesProvider.notifier).saveProfile(profile);
+    } on StateError catch (error) {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(error.message)));
+      return;
+    }
 
     if (!mounted) return;
     Navigator.of(context).pop();
@@ -368,14 +384,25 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                       if (value != null) setState(() => _goal = value);
                     },
                   ),
+                  const SizedBox(height: 14),
+                  Text(
+                    'Limit: ${AppLimits.maxCats} individual cats. Groups are created separately as lightweight operational units.',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: secondary,
+                    ),
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
             FilledButton.icon(
-              onPressed: _saveProfile,
-              icon: const Icon(Icons.save_outlined),
-              label: Text(_isEditing ? 'Save Changes' : 'Save Profile'),
+              onPressed: _isSaving ? null : _saveProfile,
+              icon: _isSaving
+                  ? const SizedBox.shrink()
+                  : const Icon(Icons.save_outlined),
+              label: _isSaving
+                  ? const AppLoadingState(compact: true, label: 'Saving...')
+                  : Text(_isEditing ? 'Save Changes' : 'Save Profile'),
             ),
             if (_isEditing) ...[
               const SizedBox(height: 12),

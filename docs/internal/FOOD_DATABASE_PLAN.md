@@ -49,6 +49,7 @@ Legenda:
 - [x] scanner procurar alimento por barcode na base local
 - [x] scanner reaproveitar item existente quando encontrado
 - [x] scanner oferecer complemento manual quando nao encontrar
+- [x] scanner persistir apenas resultado estruturado, sem imagem
 
 ### Bloco F: integracao com Plans
 - [x] disponibilizar lista de alimentos para `Plans`
@@ -93,6 +94,7 @@ Motivos:
 Decisão prática:
 - agora: banco local com `Hive`
 - depois: camada opcional de sincronização remota
+- scanner: nao persistir imagem capturada; manter apenas `barcode` e metadados do alimento
 
 ## Modelo atual de dados
 Arquivo base: [food_item.dart](/run/media/mateus/f8271cf2-fe57-43a3-a203-4b4c407bd599/CatDiet/cat_diet_planner/lib/data/models/food_item.dart)

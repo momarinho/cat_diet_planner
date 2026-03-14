@@ -1,3 +1,4 @@
+import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:flutter/material.dart';
 
 class DailyScannerCta extends StatelessWidget {
@@ -14,7 +15,9 @@ class DailyScannerCta extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () {},
+          onTap: () {
+            Navigator.of(context).pushNamed(AppRoutes.scanner);
+          },
           customBorder: const CircleBorder(),
           child: Container(
             width: 88,

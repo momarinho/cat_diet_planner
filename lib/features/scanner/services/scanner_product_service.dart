@@ -30,8 +30,4 @@ class ScannerProductService {
 
     return ScannerLookupResult(exists: false, barcode: normalizedBarcode);
   }
-
-  static Future<ScannerLookupResult> lookupMockProduct() async {
-    return lookupByBarcode('123456789');
-  }
 }

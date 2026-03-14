@@ -7,6 +7,7 @@ import 'package:cat_diet_planner/features/settings/models/app_settings.dart';
 import 'package:web/web.dart' as web;
 
 import 'notification_service_impl_stub.dart';
+import 'notification_support.dart';
 
 class WebNotificationServiceImpl implements NotificationServiceImpl {
   final List<Timer> _timers = [];
@@ -44,7 +45,11 @@ class WebNotificationServiceImpl implements NotificationServiceImpl {
       final duration = _durationUntil(rawTime);
       if (duration == null) continue;
 
-      _scheduleReminder(duration);
+      _scheduleReminder(
+        duration,
+        rawTime: rawTime,
+        mealIndex: settings.reminderTimes.indexOf(rawTime),
+      );
     }
   }
 
@@ -55,23 +60,56 @@ class WebNotificationServiceImpl implements NotificationServiceImpl {
 
     _showBrowserNotification(
       title: 'CatDiet Planner',
-      body: 'Browser notifications are working.',
+      body: 'Browser notifications are working while the app stays open.',
     );
   }
 
-  void _scheduleReminder(Duration initialDelay) {
+  @override
+  Future<void> setActiveCatContext({
+    required String catId,
+    required String catName,
+  }) async {
+    await NotificationSupport.saveActiveCatContext(
+      catId: catId,
+      catName: catName,
+    );
+    await syncWithSettings(NotificationSupport.readStoredSettings());
+  }
+
+  @override
+  Future<void> setActiveGroupContext({
+    required String groupId,
+    required String groupName,
+  }) async {
+    await NotificationSupport.saveActiveGroupContext(
+      groupId: groupId,
+      groupName: groupName,
+    );
+    await syncWithSettings(NotificationSupport.readStoredSettings());
+  }
+
+  void _scheduleReminder(
+    Duration initialDelay, {
+    required String rawTime,
+    required int mealIndex,
+  }) {
     Timer? recurringTimer;
 
     final initialTimer = Timer(initialDelay, () {
-      _showBrowserNotification(
-        title: 'Meal Reminder',
-        body: 'Time to feed your cat',
+      final content = NotificationSupport.buildContentForReminder(
+        mealIndex: mealIndex,
+        reminderTime: rawTime,
       );
+      _showBrowserNotification(title: content.title, body: content.body);
 
       recurringTimer = Timer.periodic(const Duration(days: 1), (_) {
+        final dailyContent = NotificationSupport.buildContentForReminder(
+          mealIndex: mealIndex,
+          reminderTime: rawTime,
+        );
         _showBrowserNotification(
-          title: 'Meal Reminder',
-          body: 'Time to feed your cat',
+          title: dailyContent.title,
+          body: dailyContent.body,
         );
       });
 

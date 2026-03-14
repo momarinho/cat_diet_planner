@@ -176,13 +176,13 @@ Critério de aceite:
 
 ### 3.3 Weight Check-in
 - [x] tela dedicada de peso
-- [ ] exibição do gato selecionado
+- [x] exibição do gato selecionado
 - [x] valor atual
 - [x] ajuste de novo peso
 - [x] observações
 - [x] CTA `Record Weight`
 - [x] persistir histórico no Hive
-- [-] atualizar resumos após salvar
+- [x] atualizar resumos após salvar
 
 Critério de aceite:
 - registrar peso gera histórico persistido e altera os cards relevantes

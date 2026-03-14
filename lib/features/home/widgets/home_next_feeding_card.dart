@@ -1,6 +1,7 @@
 import 'package:cat_diet_planner/features/home/providers/home_summary_provider.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/app_card_container.dart';
 import '../../../core/widgets/neon_button.dart';
@@ -105,7 +106,11 @@ class HomeNextFeedingCard extends StatelessWidget {
           const SizedBox(height: 18),
           NeonButton(
             text: hasSummary ? '🍴 View Today Plan' : '➕ Create Plan',
-            onTap: () {},
+            onTap: () {
+              Navigator.of(
+                context,
+              ).pushNamed(hasSummary ? AppRoutes.daily : AppRoutes.plans);
+            },
           ),
         ],
       ),

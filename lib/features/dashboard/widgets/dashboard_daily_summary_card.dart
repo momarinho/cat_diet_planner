@@ -1,17 +1,25 @@
+import 'package:cat_diet_planner/features/dashboard/providers/dashboard_summary_provider.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/widgets/app_card_container.dart';
 import '../../../core/widgets/daily_summary_ring.dart';
 
 class DashboardDailySummaryCard extends StatelessWidget {
-  const DashboardDailySummaryCard({super.key});
+  const DashboardDailySummaryCard({super.key, required this.summary});
+
+  final DashboardSummaryData? summary;
 
   @override
   Widget build(BuildContext context) {
-    const consumed = 250;
-    const goal = 400;
+    final consumed = summary?.consumedCalories ?? 0;
+    final goal = summary?.goalCalories ?? 0;
     final progress = (consumed / goal).clamp(0.0, 1.0).toDouble();
     final primary = Theme.of(context).colorScheme.primary;
+    final remainingLabel = summary == null
+        ? 'Create a plan to unlock your daily summary'
+        : summary!.remainingCalories == 0
+        ? 'Today is fully completed'
+        : '${summary!.remainingCalories} kcal remaining for ${summary!.nextMealLabel.toLowerCase()}';
 
     return AppCardContainer(
       child: Column(
@@ -39,7 +47,7 @@ class DashboardDailySummaryCard extends StatelessWidget {
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const DailySummaryRing(
+              DailySummaryRing(
                 consumedCalories: consumed,
                 goalCalories: goal,
                 size: 92,
@@ -86,13 +94,13 @@ class DashboardDailySummaryCard extends StatelessWidget {
                       child: LinearProgressIndicator(
                         minHeight: 8,
                         value: progress,
-                        backgroundColor: primary.withOpacity(0.15),
+                        backgroundColor: primary.withValues(alpha: 0.15),
                         valueColor: AlwaysStoppedAnimation(primary),
                       ),
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '${goal - consumed} kcal remaining for dinner',
+                      remainingLabel,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         fontStyle: FontStyle.italic,
                       ),

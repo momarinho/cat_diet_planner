@@ -20,4 +20,20 @@ class NotificationService {
 
   static Future<void> showTestNotification() =>
       notificationServiceImpl.showTestNotification();
+
+  static Future<void> setActiveCatContext({
+    required String catId,
+    required String catName,
+  }) => notificationServiceImpl.setActiveCatContext(
+    catId: catId,
+    catName: catName,
+  );
+
+  static Future<void> setActiveGroupContext({
+    required String groupId,
+    required String groupName,
+  }) => notificationServiceImpl.setActiveGroupContext(
+    groupId: groupId,
+    groupName: groupName,
+  );
 }

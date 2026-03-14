@@ -5,14 +5,16 @@ import 'package:flutter/material.dart';
 class DailyHeaderAppBar extends StatelessWidget {
   const DailyHeaderAppBar({
     super.key,
-    required this.catName,
+    required this.titleName,
     this.photoPath,
     this.photoBase64,
+    this.isGroup = false,
   });
 
-  final String catName;
+  final String titleName;
   final String? photoPath;
   final String? photoBase64;
+  final bool isGroup;
 
   @override
   Widget build(BuildContext context) {
@@ -43,12 +45,21 @@ class DailyHeaderAppBar extends StatelessWidget {
               ),
             ],
           ),
-          child: CircleAvatar(
-            backgroundImage: catPhotoProvider(
-              photoPath: photoPath,
-              photoBase64: photoBase64,
-            ),
-          ),
+          child: isGroup
+              ? CircleAvatar(
+                  backgroundColor: primary.withValues(alpha: 0.08),
+                  child: Icon(
+                    Icons.groups_2_outlined,
+                    color: primary,
+                    size: 34,
+                  ),
+                )
+              : CircleAvatar(
+                  backgroundImage: catPhotoProvider(
+                    photoPath: photoPath,
+                    photoBase64: photoBase64,
+                  ),
+                ),
         ),
         const SizedBox(width: 16),
         Expanded(
@@ -67,7 +78,9 @@ class DailyHeaderAppBar extends StatelessWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '$catName is ready for today\'s meals',
+                isGroup
+                    ? '$titleName group is ready for today\'s routine'
+                    : '$titleName is ready for today\'s meals',
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleMedium?.copyWith(

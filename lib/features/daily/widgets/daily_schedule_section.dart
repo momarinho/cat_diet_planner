@@ -7,10 +7,14 @@ class DailyScheduleSection extends StatelessWidget {
     super.key,
     required this.schedule,
     required this.onMealToggle,
+    this.showWeightCheckIn = true,
+    this.title = "Today's Schedule",
   });
 
   final List<Map<String, dynamic>> schedule;
   final ValueChanged<Map<String, dynamic>> onMealToggle;
+  final bool showWeightCheckIn;
+  final String title;
 
   String _todayLabel() {
     final now = DateTime.now();
@@ -48,7 +52,7 @@ class DailyScheduleSection extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
-              "Today's Schedule",
+              title,
               style: theme.textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.w900,
                 letterSpacing: -1.2,
@@ -107,7 +111,7 @@ class DailyScheduleSection extends StatelessWidget {
         ),
       );
 
-      if (index == 0) {
+      if (index == 0 && showWeightCheckIn) {
         entries.add(
           _ScheduleEntry(
             icon: Icons.monitor_weight_outlined,

@@ -7,6 +7,7 @@ abstract final class AppRoutes {
   static const history = '/history';
   static const dashboard = '/dashboard';
   static const catProfile = '/cat-profile';
+  static const catGroup = '/cat-group';
   static const settings = '/settings';
   static const scanner = '/scanner';
   static const weightCheckIn = '/weight-check-in';

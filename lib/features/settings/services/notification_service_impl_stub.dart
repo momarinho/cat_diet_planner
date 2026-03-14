@@ -6,6 +6,14 @@ abstract class NotificationServiceImpl {
   Future<void> cancelMealReminders();
   Future<void> syncWithSettings(AppSettings settings);
   Future<void> showTestNotification();
+  Future<void> setActiveCatContext({
+    required String catId,
+    required String catName,
+  });
+  Future<void> setActiveGroupContext({
+    required String groupId,
+    required String groupName,
+  });
 }
 
 class UnsupportedNotificationServiceImpl implements NotificationServiceImpl {
@@ -23,6 +31,18 @@ class UnsupportedNotificationServiceImpl implements NotificationServiceImpl {
 
   @override
   Future<void> showTestNotification() async {}
+
+  @override
+  Future<void> setActiveCatContext({
+    required String catId,
+    required String catName,
+  }) async {}
+
+  @override
+  Future<void> setActiveGroupContext({
+    required String groupId,
+    required String groupName,
+  }) async {}
 }
 
 final NotificationServiceImpl notificationServiceImpl =

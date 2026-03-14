@@ -1,4 +1,8 @@
+import 'dart:math' as math;
+
+import 'package:cat_diet_planner/core/utils/cat_photo.dart';
 import 'package:cat_diet_planner/data/local/hive_service.dart';
+import 'package:cat_diet_planner/data/models/diet_plan.dart';
 import 'package:cat_diet_planner/data/models/weight_record.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
 import 'package:cat_diet_planner/features/history/services/weekly_report_export_service.dart';
@@ -9,28 +13,117 @@ import 'package:hive_flutter/hive_flutter.dart';
 class WeeklyDietReportScreen extends ConsumerWidget {
   const WeeklyDietReportScreen({super.key});
 
-  List<WeightRecord> _lastSeven(List<WeightRecord> records) {
-    final sorted = [...records]..sort((a, b) => a.date.compareTo(b.date));
+  static const _months = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  List<WeightRecord> _resolveRecords(
+    List<WeightRecord> globalRecords,
+    List<WeightRecord> catRecords,
+  ) {
+    final source = catRecords.isNotEmpty ? catRecords : globalRecords;
+    final sorted = [...source]..sort((a, b) => a.date.compareTo(b.date));
     if (sorted.length <= 7) return sorted;
     return sorted.sublist(sorted.length - 7);
   }
 
   String _formatRange(DateTime start, DateTime end) {
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${months[start.month - 1]} ${start.day} - ${months[end.month - 1]} ${end.day}, ${end.year}';
+    return '${_months[start.month - 1]} ${start.day} - ${_months[end.month - 1]} ${end.day}, ${end.year}';
+  }
+
+  List<_DailyIntakeRow> _buildIntakeRows({
+    required String catId,
+    required DietPlan? plan,
+  }) {
+    final now = DateTime.now();
+    final rows = <_DailyIntakeRow>[];
+
+    for (var offset = 6; offset >= 0; offset--) {
+      final date = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).subtract(Duration(days: offset));
+      final key = DailyKeyHelper.catKey(catId, date);
+      final raw = HiveService.mealsBox.get(key);
+      final schedule = raw == null ? null : Map<String, dynamic>.from(raw);
+      final items = ((schedule?['items'] as List?) ?? const [])
+          .map((item) => Map<String, dynamic>.from(item as Map))
+          .where((item) => item['type'] == 'meal')
+          .toList();
+
+      final intake = items
+          .where((item) => item['completed'] == true)
+          .fold<double>(0, (sum, item) => sum + _extractKcal(item['subtitle']));
+      final goal = plan?.targetKcalPerDay ?? 0.0;
+      final status = goal <= 0
+          ? _DailyIntakeStatus.none
+          : intake > goal * 1.05
+          ? _DailyIntakeStatus.above
+          : intake < goal * 0.8
+          ? _DailyIntakeStatus.below
+          : _DailyIntakeStatus.onTrack;
+
+      rows.add(
+        _DailyIntakeRow(
+          label: '${_months[date.month - 1]} ${date.day}',
+          intake: intake,
+          goal: goal,
+          status: status,
+        ),
+      );
+    }
+
+    return rows;
+  }
+
+  double _extractKcal(dynamic subtitle) {
+    final text = subtitle?.toString() ?? '';
+    final match = RegExp(r'(\d+(?:\.\d+)?)\s*kcal').firstMatch(text);
+    return double.tryParse(match?.group(1) ?? '') ?? 0.0;
+  }
+
+  String _buildNote({
+    required String catName,
+    required List<WeightRecord> records,
+    required List<_DailyIntakeRow> rows,
+  }) {
+    if (records.isEmpty && rows.every((row) => row.intake == 0)) {
+      return 'No weekly data was recorded yet. Start logging meals and weight to unlock more reliable guidance.';
+    }
+
+    final latest = records.isNotEmpty ? records.last.weight : null;
+    final first = records.length > 1 ? records.first.weight : latest;
+    final delta = latest != null && first != null ? latest - first : null;
+    final onTrackDays = rows
+        .where((row) => row.status == _DailyIntakeStatus.onTrack)
+        .length;
+    final completedDays = rows.where((row) => row.intake > 0).length;
+
+    final trendSentence = delta == null
+        ? '$catName still needs more weight records for a reliable trend.'
+        : delta.abs() < 0.1
+        ? '$catName stayed stable this week.'
+        : delta > 0
+        ? '$catName gained ${delta.toStringAsFixed(1)} kg this week.'
+        : '$catName lost ${delta.abs().toStringAsFixed(1)} kg this week.';
+
+    final intakeSentence = completedDays == 0
+        ? 'No meals were marked as completed during the last 7 days.'
+        : '$onTrackDays of the last 7 days stayed close to the calorie target.';
+
+    return '$trendSentence $intakeSentence Continue monitoring appetite, hydration, and daily activity.';
   }
 
   @override
@@ -46,24 +139,31 @@ class WeeklyDietReportScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Weekly Diet Report'),
         centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.more_horiz_rounded),
-          ),
-        ],
       ),
       body: ValueListenableBuilder(
         valueListenable: HiveService.weightsBox.listenable(),
         builder: (context, Box<WeightRecord> box, _) {
-          final allRecords = box.values.toList()
+          final globalRecords = box.values.toList()
             ..sort((a, b) => a.date.compareTo(b.date));
-          final records = _lastSeven(allRecords);
+          final catRecords =
+              selectedCat?.weightHistory ?? const <WeightRecord>[];
+          final records = _resolveRecords(globalRecords, catRecords);
           final latest = records.isNotEmpty ? records.last : null;
           final first = records.isNotEmpty ? records.first : null;
           final rangeLabel = records.isEmpty
               ? 'No period selected'
               : _formatRange(first!.date, latest!.date);
+          final plan = selectedCat == null
+              ? null
+              : HiveService.dietPlansBox.get(selectedCat.id);
+          final intakeRows = selectedCat == null
+              ? const <_DailyIntakeRow>[]
+              : _buildIntakeRows(catId: selectedCat.id, plan: plan);
+          final note = _buildNote(
+            catName: selectedCat?.name ?? 'Your cat',
+            records: records,
+            rows: intakeRows,
+          );
 
           return Column(
             children: [
@@ -85,10 +185,21 @@ class WeeklyDietReportScreen extends ConsumerWidget {
                         children: [
                           Row(
                             children: [
-                              const CircleAvatar(
-                                radius: 28,
-                                backgroundImage: NetworkImage(
-                                  'https://images.unsplash.com/photo-1543852786-1cf6624b9987?auto=format&fit=crop&w=200&q=80',
+                              Container(
+                                width: 56,
+                                height: 56,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: primary.withValues(alpha: 0.20),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: CircleAvatar(
+                                  backgroundImage: catPhotoProvider(
+                                    photoPath: selectedCat?.photoPath,
+                                    photoBase64: selectedCat?.photoBase64,
+                                  ),
                                 ),
                               ),
                               const SizedBox(width: 14),
@@ -147,18 +258,22 @@ class WeeklyDietReportScreen extends ConsumerWidget {
                           ),
                           const SizedBox(height: 16),
                           SizedBox(
-                            height: 180,
-                            child: _WeightTrendChart(records: records),
+                            height: 200,
+                            child: _WeightTrendChart(
+                              records: records,
+                              targetWeight: latest?.weight,
+                            ),
                           ),
                           const SizedBox(height: 12),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
+                          Wrap(
+                            alignment: WrapAlignment.center,
+                            spacing: 18,
+                            runSpacing: 8,
                             children: [
                               _LegendDot(color: primary, label: 'Actual'),
-                              const SizedBox(width: 18),
                               _LegendDot(
                                 color: const Color(0xFF31C178),
-                                label: 'Target (4.2kg)',
+                                label: 'Current target',
                               ),
                             ],
                           ),
@@ -180,7 +295,11 @@ class WeeklyDietReportScreen extends ConsumerWidget {
                             ],
                           ),
                           const SizedBox(height: 16),
-                          _CalorieTable(primary: primary, secondary: secondary),
+                          _CalorieTable(
+                            rows: intakeRows,
+                            primary: primary,
+                            secondary: secondary,
+                          ),
                           const SizedBox(height: 28),
                           Row(
                             children: [
@@ -214,9 +333,7 @@ class WeeklyDietReportScreen extends ConsumerWidget {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  latest == null
-                                      ? 'No weight data was recorded this week.'
-                                      : '${selectedCat?.name ?? 'Your cat'} is making great progress. Weight is ${latest.weight.toStringAsFixed(1)}kg and the weekly trend remains stable. Continue current feeding plan and maintain daily play sessions.',
+                                  note,
                                   style: theme.textTheme.titleMedium?.copyWith(
                                     height: 1.5,
                                     color: secondary,
@@ -224,36 +341,99 @@ class WeeklyDietReportScreen extends ConsumerWidget {
                                   ),
                                 ),
                                 const SizedBox(height: 18),
-                                Row(
-                                  children: [
-                                    Text(
-                                      '- Dr. Sarah Jenkins',
-                                      style: theme.textTheme.titleMedium
-                                          ?.copyWith(
-                                            color: const Color(0xFF7B8DA8),
-                                            fontWeight: FontWeight.w700,
-                                          ),
-                                    ),
-                                    const Spacer(),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 8,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: primary.withValues(alpha: 0.12),
-                                        borderRadius: BorderRadius.circular(14),
-                                      ),
-                                      child: Text(
-                                        'VERIFIED',
-                                        style: theme.textTheme.labelMedium
-                                            ?.copyWith(
-                                              color: primary,
-                                              fontWeight: FontWeight.w900,
-                                            ),
-                                      ),
-                                    ),
-                                  ],
+                                LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final narrow = constraints.maxWidth < 360;
+                                    return narrow
+                                        ? Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                'CatDiet Planner Summary',
+                                                style: theme
+                                                    .textTheme
+                                                    .titleMedium
+                                                    ?.copyWith(
+                                                      color: const Color(
+                                                        0xFF7B8DA8,
+                                                      ),
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
+                                              ),
+                                              const SizedBox(height: 10),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 8,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: primary.withValues(
+                                                    alpha: 0.12,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(14),
+                                                ),
+                                                child: Text(
+                                                  'AUTO',
+                                                  style: theme
+                                                      .textTheme
+                                                      .labelMedium
+                                                      ?.copyWith(
+                                                        color: primary,
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                      ),
+                                                ),
+                                              ),
+                                            ],
+                                          )
+                                        : Row(
+                                            children: [
+                                              Text(
+                                                'CatDiet Planner Summary',
+                                                style: theme
+                                                    .textTheme
+                                                    .titleMedium
+                                                    ?.copyWith(
+                                                      color: const Color(
+                                                        0xFF7B8DA8,
+                                                      ),
+                                                      fontWeight:
+                                                          FontWeight.w700,
+                                                    ),
+                                              ),
+                                              const Spacer(),
+                                              Container(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 8,
+                                                    ),
+                                                decoration: BoxDecoration(
+                                                  color: primary.withValues(
+                                                    alpha: 0.12,
+                                                  ),
+                                                  borderRadius:
+                                                      BorderRadius.circular(14),
+                                                ),
+                                                child: Text(
+                                                  'AUTO',
+                                                  style: theme
+                                                      .textTheme
+                                                      .labelMedium
+                                                      ?.copyWith(
+                                                        color: primary,
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                      ),
+                                                ),
+                                              ),
+                                            ],
+                                          );
+                                  },
                                 ),
                               ],
                             ),
@@ -278,53 +458,117 @@ class WeeklyDietReportScreen extends ConsumerWidget {
               SafeArea(
                 top: false,
                 minimum: const EdgeInsets.fromLTRB(16, 10, 16, 16),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(22),
-                        ),
-                        child: OutlinedButton.icon(
-                          onPressed: () async {
-                            await WeeklyReportExportService.downloadPdf(
-                              cat: selectedCat,
-                              records: records,
-                            );
-                          },
-                          icon: const Icon(Icons.download_rounded),
-                          label: const Text('Download PDF'),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide.none,
-                            foregroundColor: theme.colorScheme.onSurface,
-                            padding: const EdgeInsets.symmetric(vertical: 18),
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final narrow = constraints.maxWidth < 420;
+                    if (narrow) {
+                      return Column(
+                        children: [
+                          SizedBox(
+                            width: double.infinity,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.surface,
+                                borderRadius: BorderRadius.circular(22),
+                              ),
+                              child: OutlinedButton.icon(
+                                onPressed: () async {
+                                  await WeeklyReportExportService.downloadPdf(
+                                    cat: selectedCat,
+                                    records: records,
+                                  );
+                                },
+                                icon: const Icon(Icons.download_rounded),
+                                label: const Text('Download PDF'),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide.none,
+                                  foregroundColor: theme.colorScheme.onSurface,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 18,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: FilledButton.icon(
+                              onPressed: () async {
+                                await WeeklyReportExportService.shareReport(
+                                  cat: selectedCat,
+                                  records: records,
+                                );
+                              },
+                              icon: const Icon(Icons.share_rounded),
+                              label: const Text('Share via WhatsApp'),
+                              style: FilledButton.styleFrom(
+                                backgroundColor: const Color(0xFF31C178),
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 18,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(22),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+
+                    return Row(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.surface,
+                              borderRadius: BorderRadius.circular(22),
+                            ),
+                            child: OutlinedButton.icon(
+                              onPressed: () async {
+                                await WeeklyReportExportService.downloadPdf(
+                                  cat: selectedCat,
+                                  records: records,
+                                );
+                              },
+                              icon: const Icon(Icons.download_rounded),
+                              label: const Text('Download PDF'),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide.none,
+                                foregroundColor: theme.colorScheme.onSurface,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 18,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: () async {
-                          await WeeklyReportExportService.shareReport(
-                            cat: selectedCat,
-                            records: records,
-                          );
-                        },
-                        icon: const Icon(Icons.share_rounded),
-                        label: const Text('Share via WhatsApp'),
-                        style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF31C178),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 18),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(22),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: () async {
+                              await WeeklyReportExportService.shareReport(
+                                cat: selectedCat,
+                                records: records,
+                              );
+                            },
+                            icon: const Icon(Icons.share_rounded),
+                            label: const Text('Share via WhatsApp'),
+                            style: FilledButton.styleFrom(
+                              backgroundColor: const Color(0xFF31C178),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(vertical: 18),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(22),
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  ],
+                      ],
+                    );
+                  },
                 ),
               ),
             ],
@@ -336,24 +580,45 @@ class WeeklyDietReportScreen extends ConsumerWidget {
 }
 
 class _WeightTrendChart extends StatelessWidget {
-  const _WeightTrendChart({required this.records});
+  const _WeightTrendChart({required this.records, required this.targetWeight});
 
   final List<WeightRecord> records;
+  final double? targetWeight;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final secondary =
-        theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.70) ??
-        const Color(0xFF7A7678);
+    final values = records.map((record) => record.weight).toList();
+    final allValues = [...values];
+    final target = targetWeight;
+    if (target != null) {
+      allValues.add(target);
+    }
+    final minWeight = allValues.isEmpty
+        ? 3.5
+        : allValues.reduce(math.min) - 0.2;
+    final maxWeight = allValues.isEmpty
+        ? 5.0
+        : allValues.reduce(math.max) + 0.2;
+    final labels = records.isEmpty
+        ? const ['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7']
+        : records
+              .map(
+                (record) =>
+                    '${WeeklyDietReportScreen._months[record.date.month - 1]} ${record.date.day}',
+              )
+              .toList();
 
     return Column(
       children: [
         Expanded(
           child: CustomPaint(
-            size: const Size(double.infinity, 140),
+            size: const Size(double.infinity, 150),
             painter: _TrendPainter(
               records: records,
+              targetWeight: targetWeight,
+              minWeight: minWeight,
+              maxWeight: maxWeight,
               lineColor: theme.colorScheme.primary,
               targetColor: const Color(0xFF31C178),
               gridColor: theme.dividerColor.withValues(alpha: 0.30),
@@ -363,24 +628,36 @@ class _WeightTrendChart extends StatelessWidget {
         const SizedBox(height: 10),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: const [
-            _AxisDayLabel('Mon'),
-            _AxisDayLabel('Tue'),
-            _AxisDayLabel('Wed'),
-            _AxisDayLabel('Thu'),
-            _AxisDayLabel('Fri'),
-            _AxisDayLabel('Sat'),
-            _AxisDayLabel('Sun'),
-          ],
+          children: labels
+              .map((label) => Flexible(child: _AxisDayLabel(label)))
+              .toList(),
         ),
         const SizedBox(height: 8),
         Row(
           children: [
-            Text('4.0', style: TextStyle(color: secondary, fontSize: 11)),
+            Text(
+              minWeight.toStringAsFixed(1),
+              style: TextStyle(
+                color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                fontSize: 11,
+              ),
+            ),
             const Spacer(),
-            Text('4.2', style: TextStyle(color: secondary, fontSize: 11)),
+            Text(
+              ((minWeight + maxWeight) / 2).toStringAsFixed(1),
+              style: TextStyle(
+                color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                fontSize: 11,
+              ),
+            ),
             const Spacer(),
-            Text('4.4', style: TextStyle(color: secondary, fontSize: 11)),
+            Text(
+              maxWeight.toStringAsFixed(1),
+              style: TextStyle(
+                color: theme.textTheme.bodySmall?.color?.withValues(alpha: 0.7),
+                fontSize: 11,
+              ),
+            ),
           ],
         ),
       ],
@@ -391,12 +668,18 @@ class _WeightTrendChart extends StatelessWidget {
 class _TrendPainter extends CustomPainter {
   _TrendPainter({
     required this.records,
+    required this.targetWeight,
+    required this.minWeight,
+    required this.maxWeight,
     required this.lineColor,
     required this.targetColor,
     required this.gridColor,
   });
 
   final List<WeightRecord> records;
+  final double? targetWeight;
+  final double minWeight;
+  final double maxWeight;
   final Color lineColor;
   final Color targetColor;
   final Color gridColor;
@@ -409,36 +692,31 @@ class _TrendPainter extends CustomPainter {
 
     for (var i = 0; i < 3; i++) {
       final y = size.height * (i / 2);
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), gridPaint);
+    }
+
+    if (targetWeight != null) {
+      final targetPaint = Paint()
+        ..color = targetColor
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke
+        ..strokeCap = StrokeCap.round;
+      final targetY = _weightToY(targetWeight!, size.height);
       canvas.drawLine(
-        Offset.zero.translate(0, y),
-        Offset(size.width, y),
-        gridPaint,
+        Offset(0, targetY),
+        Offset(size.width, targetY),
+        targetPaint,
       );
     }
 
-    final targetPaint = Paint()
-      ..color = targetColor
-      ..strokeWidth = 2
-      ..style = PaintingStyle.stroke;
-    const targetWeight = 4.2;
-    final targetY = _weightToY(targetWeight, size.height);
-    canvas.drawLine(
-      Offset(0, targetY),
-      Offset(size.width, targetY),
-      targetPaint..strokeCap = StrokeCap.round,
-    );
-
     if (records.isEmpty) return;
 
-    final values = records.map((r) => r.weight).toList();
-    while (values.length < 7) {
-      values.insert(0, values.isNotEmpty ? values.first : 4.2);
-    }
-
-    final stepX = size.width / 6;
+    final stepX = records.length == 1
+        ? size.width / 2
+        : size.width / (records.length - 1);
     final points = <Offset>[];
-    for (var i = 0; i < values.length; i++) {
-      points.add(Offset(i * stepX, _weightToY(values[i], size.height)));
+    for (var i = 0; i < records.length; i++) {
+      points.add(Offset(i * stepX, _weightToY(records[i].weight, size.height)));
     }
 
     final linePaint = Paint()
@@ -467,8 +745,6 @@ class _TrendPainter extends CustomPainter {
   }
 
   double _weightToY(double weight, double height) {
-    const minWeight = 4.0;
-    const maxWeight = 4.4;
     final normalized = ((weight - minWeight) / (maxWeight - minWeight)).clamp(
       0.0,
       1.0,
@@ -478,25 +754,32 @@ class _TrendPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _TrendPainter oldDelegate) {
-    return oldDelegate.records != records;
+    return oldDelegate.records != records ||
+        oldDelegate.targetWeight != targetWeight ||
+        oldDelegate.minWeight != minWeight ||
+        oldDelegate.maxWeight != maxWeight;
   }
 }
 
 class _CalorieTable extends StatelessWidget {
-  const _CalorieTable({required this.primary, required this.secondary});
+  const _CalorieTable({
+    required this.rows,
+    required this.primary,
+    required this.secondary,
+  });
 
+  final List<_DailyIntakeRow> rows;
   final Color primary;
   final Color secondary;
 
   @override
   Widget build(BuildContext context) {
-    const rows = [
-      ('Mon', 245, 250, true, false),
-      ('Tue', 255, 250, true, false),
-      ('Wed', 280, 250, false, true),
-      ('Thu', 240, 250, true, false),
-      ('Fri', 250, 250, true, false),
-    ];
+    final average = rows.isEmpty
+        ? 0.0
+        : rows.fold<double>(0, (sum, row) => sum + row.intake) / rows.length;
+    final averageGoal = rows.isEmpty
+        ? 0.0
+        : rows.fold<double>(0, (sum, row) => sum + row.goal) / rows.length;
 
     return Container(
       decoration: BoxDecoration(
@@ -507,7 +790,7 @@ class _CalorieTable extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         child: Table(
           columnWidths: const {
-            0: FlexColumnWidth(1.2),
+            0: FlexColumnWidth(1.4),
             1: FlexColumnWidth(1.1),
             2: FlexColumnWidth(1.0),
             3: FlexColumnWidth(0.8),
@@ -522,26 +805,49 @@ class _CalorieTable extends StatelessWidget {
                 _TableHeader('STATUS'),
               ],
             ),
-            ...rows.map((row) {
-              return TableRow(
+            if (rows.isEmpty)
+              const TableRow(
                 children: [
-                  _TableCell(text: row.$1),
-                  _TableCell(
-                    text: '${row.$2}',
-                    color: row.$5 ? const Color(0xFFE48A18) : null,
-                    fontWeight: row.$5 ? FontWeight.w900 : FontWeight.w700,
-                  ),
-                  _TableCell(text: '${row.$3}', color: secondary),
-                  _StatusCell(success: row.$4, warning: row.$5),
+                  _TableCell(text: '--'),
+                  _TableCell(text: '--'),
+                  _TableCell(text: '--'),
+                  SizedBox.shrink(),
                 ],
-              );
-            }),
-            const TableRow(
+              )
+            else
+              ...rows.map((row) {
+                return TableRow(
+                  children: [
+                    _TableCell(text: row.label),
+                    _TableCell(
+                      text: row.intake.toStringAsFixed(0),
+                      color: row.status == _DailyIntakeStatus.above
+                          ? const Color(0xFFE48A18)
+                          : null,
+                      fontWeight: row.status == _DailyIntakeStatus.above
+                          ? FontWeight.w900
+                          : FontWeight.w700,
+                    ),
+                    _TableCell(
+                      text: row.goal.toStringAsFixed(0),
+                      color: secondary,
+                    ),
+                    _StatusCell(status: row.status),
+                  ],
+                );
+              }),
+            TableRow(
               children: [
-                _TableCell(text: 'Avg', fontWeight: FontWeight.w700),
-                _TableCell(text: '254', fontWeight: FontWeight.w900),
-                _TableCell(text: '250', fontWeight: FontWeight.w700),
-                SizedBox.shrink(),
+                const _TableCell(text: 'Avg', fontWeight: FontWeight.w700),
+                _TableCell(
+                  text: average.toStringAsFixed(0),
+                  fontWeight: FontWeight.w900,
+                ),
+                _TableCell(
+                  text: averageGoal.toStringAsFixed(0),
+                  fontWeight: FontWeight.w700,
+                ),
+                const SizedBox.shrink(),
               ],
             ),
           ],
@@ -596,9 +902,11 @@ class _AxisDayLabel extends StatelessWidget {
         const Color(0xFF7A7678);
     return Text(
       label,
+      textAlign: TextAlign.center,
+      overflow: TextOverflow.ellipsis,
       style: TextStyle(
         color: secondary,
-        fontSize: 12,
+        fontSize: 11,
         fontWeight: FontWeight.w700,
       ),
     );
@@ -659,21 +967,57 @@ class _TableCell extends StatelessWidget {
 }
 
 class _StatusCell extends StatelessWidget {
-  const _StatusCell({required this.success, required this.warning});
+  const _StatusCell({required this.status});
 
-  final bool success;
-  final bool warning;
+  final _DailyIntakeStatus status;
 
   @override
   Widget build(BuildContext context) {
-    final icon = success
-        ? Icons.check_circle_outline_rounded
-        : Icons.warning_amber_rounded;
-    final color = success ? const Color(0xFF31C178) : const Color(0xFFE48A18);
+    final (IconData icon, Color color) = switch (status) {
+      _DailyIntakeStatus.onTrack => (
+        Icons.check_circle_outline_rounded,
+        const Color(0xFF31C178),
+      ),
+      _DailyIntakeStatus.above => (
+        Icons.warning_amber_rounded,
+        const Color(0xFFE48A18),
+      ),
+      _DailyIntakeStatus.below => (
+        Icons.remove_circle_outline_rounded,
+        const Color(0xFF7B8DA8),
+      ),
+      _DailyIntakeStatus.none => (
+        Icons.horizontal_rule_rounded,
+        const Color(0xFFB0B7C3),
+      ),
+    };
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
       child: Icon(icon, color: color),
     );
+  }
+}
+
+class _DailyIntakeRow {
+  const _DailyIntakeRow({
+    required this.label,
+    required this.intake,
+    required this.goal,
+    required this.status,
+  });
+
+  final String label;
+  final double intake;
+  final double goal;
+  final _DailyIntakeStatus status;
+}
+
+enum _DailyIntakeStatus { onTrack, above, below, none }
+
+abstract final class DailyKeyHelper {
+  static String catKey(String catId, DateTime date) {
+    final day = date.toIso8601String().split('T').first;
+    return '$catId:$day';
   }
 }

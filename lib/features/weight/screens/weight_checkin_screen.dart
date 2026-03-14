@@ -1,4 +1,6 @@
 import 'package:cat_diet_planner/core/utils/cat_photo.dart';
+import 'package:cat_diet_planner/core/widgets/app_empty_state.dart';
+import 'package:cat_diet_planner/core/widgets/app_loading_state.dart';
 import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/data/models/weight_record.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
@@ -23,6 +25,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
   double _weight = 5.0;
   WeightRecord? _latestRecord;
   final TextEditingController _notesController = TextEditingController();
+  bool _isSaving = false;
 
   @override
   void initState() {
@@ -75,37 +78,45 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
   }
 
   Future<void> _recordWeight() async {
-    final notes = _notesController.text.trim();
+    setState(() => _isSaving = true);
+    try {
+      final notes = _notesController.text.trim();
 
-    final record = WeightRecord(
-      date: DateTime.now(),
-      weight: _weight,
-      notes: notes.isEmpty ? null : notes,
-    );
+      final record = WeightRecord(
+        date: DateTime.now(),
+        weight: _weight,
+        notes: notes.isEmpty ? null : notes,
+      );
 
-    await HiveService.weightsBox.add(record);
-    final selectedCat = ref.read(selectedCatProvider);
-    if (selectedCat != null) {
-      selectedCat.weight = _weight;
-      await selectedCat.save();
-      ref.read(selectedCatProvider.notifier).state = selectedCat;
+      await HiveService.weightsBox.add(record);
+      final selectedCat = ref.read(selectedCatProvider);
+      if (selectedCat != null) {
+        selectedCat.weight = _weight;
+        selectedCat.weightHistory = [...selectedCat.weightHistory, record]
+          ..sort((a, b) => a.date.compareTo(b.date));
+        await selectedCat.save();
+        ref.read(selectedCatProvider.notifier).state = selectedCat;
+      }
+
+      if (!mounted) return;
+
+      setState(() {
+        _latestRecord = record;
+      });
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Weight recorded')));
+      Navigator.of(context).pop();
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
     }
-
-    setState(() {
-      _latestRecord = record;
-    });
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Weight recorded')));
-    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    // TODO(selected_cat): leia o gato ativo logo no começo do build.
     final selectedCat = ref.watch(selectedCatProvider);
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
@@ -116,10 +127,10 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: Text(
-              'Select a cat from Home before recording weight.',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleMedium,
+            child: const AppEmptyState(
+              icon: Icons.monitor_weight_outlined,
+              title: 'No active cat',
+              description: 'Select a cat from Home before recording weight.',
             ),
           ),
         ),
@@ -138,9 +149,10 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 140),
         children: [
           _SectionCard(
-            child: Row(
-              children: [
-                Stack(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final narrow = constraints.maxWidth < 430;
+                final avatar = Stack(
                   clipBehavior: Clip.none,
                   children: [
                     Container(
@@ -183,38 +195,38 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                       ),
                     ),
                   ],
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // TODO(selected_cat): troque o nome fixo pelo gato ativo aqui.
-                      Text(
-                        selectedCat.name,
-                        style: theme.textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w900,
-                        ),
+                );
+
+                final details = Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      selectedCat.name,
+                      style: theme.textTheme.headlineSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        _latestRecord == null
-                            ? 'No previous check-in'
-                            : 'Last check-in: ${_formatDate(_latestRecord!.date)}',
-                        style: theme.textTheme.titleMedium?.copyWith(
-                          color: const Color(0xFF7B8DA8),
-                          fontWeight: FontWeight.w600,
-                        ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _latestRecord == null
+                          ? 'No previous check-in'
+                          : 'Last check-in: ${_formatDate(_latestRecord!.date)}',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        color: const Color(0xFF7B8DA8),
+                        fontWeight: FontWeight.w600,
                       ),
-                    ],
-                  ),
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                    ),
+                  ],
+                );
+
+                final latestWeight = Column(
+                  crossAxisAlignment: narrow
+                      ? CrossAxisAlignment.start
+                      : CrossAxisAlignment.end,
                   children: [
                     Text(
                       'LAST\nWEIGHT',
-                      textAlign: TextAlign.right,
+                      textAlign: narrow ? TextAlign.left : TextAlign.right,
                       style: theme.textTheme.labelMedium?.copyWith(
                         color: primary,
                         fontWeight: FontWeight.w900,
@@ -244,8 +256,35 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                       ),
                     ),
                   ],
-                ),
-              ],
+                );
+
+                if (narrow) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          avatar,
+                          const SizedBox(width: 16),
+                          Expanded(child: details),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      latestWeight,
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    avatar,
+                    const SizedBox(width: 16),
+                    Expanded(child: details),
+                    latestWeight,
+                  ],
+                );
+              },
             ),
           ),
           const SizedBox(height: 18),
@@ -313,7 +352,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                   maxLines: 4,
                   decoration: InputDecoration(
                     hintText:
-                        'How is Milo\'s appetite today? Any changes in mood or energy levels?',
+                        'How is your cat\'s appetite today? Any changes in mood or energy levels?',
                     hintStyle: theme.textTheme.titleMedium?.copyWith(
                       color: const Color(0xFF9AA8BE),
                       fontWeight: FontWeight.w500,
@@ -361,9 +400,13 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.fromLTRB(16, 0, 16, 16),
         child: FilledButton.icon(
-          onPressed: _recordWeight,
-          icon: const Icon(Icons.monitor_weight_outlined),
-          label: const Text('Record Weight'),
+          onPressed: _isSaving ? null : _recordWeight,
+          icon: _isSaving
+              ? const SizedBox.shrink()
+              : const Icon(Icons.monitor_weight_outlined),
+          label: _isSaving
+              ? const AppLoadingState(compact: true, label: 'Saving...')
+              : const Text('Record Weight'),
           style: FilledButton.styleFrom(
             minimumSize: const Size.fromHeight(68),
             shape: RoundedRectangleBorder(
@@ -456,8 +499,10 @@ class _WeightRuler extends StatelessWidget {
             onChanged: onChanged,
           ),
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Wrap(
+          alignment: WrapAlignment.spaceBetween,
+          spacing: 10,
+          runSpacing: 6,
           children: [
             _ScaleLabel(label: '2.0 kg', color: secondary),
             _ScaleLabel(label: '5.0 kg', color: secondary),

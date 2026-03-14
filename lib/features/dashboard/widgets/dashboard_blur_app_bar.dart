@@ -65,7 +65,8 @@ class DashboardBlurAppBar extends ConsumerWidget
             children: [
               _IconCircleButton(
                 icon: Icons.notifications_outlined,
-                onTap: () {},
+                onTap: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.settings),
               ),
               Positioned(
                 right: 2,

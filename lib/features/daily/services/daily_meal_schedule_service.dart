@@ -1,6 +1,8 @@
 import 'package:cat_diet_planner/data/local/hive_service.dart';
+import 'package:cat_diet_planner/data/models/cat_group.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/data/models/diet_plan.dart';
+import 'package:cat_diet_planner/data/models/group_diet_plan.dart';
 
 class DailyMealScheduleService {
   static const List<String> _defaultTimes = [
@@ -18,8 +20,23 @@ class DailyMealScheduleService {
     return '$catId:$day';
   }
 
+  static String todayKeyForGroup(String groupId, [DateTime? date]) {
+    final target = date ?? DateTime.now();
+    final day = target.toIso8601String().split('T').first;
+    return 'group:$groupId:$day';
+  }
+
   static Map<String, dynamic>? loadTodayForCat(String catId, [DateTime? date]) {
     final raw = HiveService.mealsBox.get(todayKeyForCat(catId, date));
+    if (raw == null) return null;
+    return Map<String, dynamic>.from(raw);
+  }
+
+  static Map<String, dynamic>? loadTodayForGroup(
+    String groupId, [
+    DateTime? date,
+  ]) {
+    final raw = HiveService.mealsBox.get(todayKeyForGroup(groupId, date));
     if (raw == null) return null;
     return Map<String, dynamic>.from(raw);
   }
@@ -59,6 +76,41 @@ class DailyMealScheduleService {
     return schedule;
   }
 
+  static Map<String, dynamic> ensureTodayGroupSchedule({
+    required CatGroup group,
+    required GroupDietPlan plan,
+    DateTime? date,
+  }) {
+    final key = todayKeyForGroup(group.id, date);
+    final existing = HiveService.mealsBox.get(key);
+    if (existing != null) {
+      return Map<String, dynamic>.from(existing);
+    }
+
+    final items = List.generate(plan.mealsPerDay, (index) {
+      final kcal = plan.targetKcalPerGroupPerDay / plan.mealsPerDay;
+      return <String, dynamic>{
+        'id': 'group_meal_${index + 1}',
+        'title': _mealTitle(index),
+        'subtitle':
+            '${plan.foodName} • ${kcal.toStringAsFixed(0)} kcal • ${plan.portionGramsPerGroupPerMeal.toStringAsFixed(1)} g total',
+        'time': _defaultTimes[index],
+        'completed': false,
+        'type': 'meal',
+      };
+    });
+
+    final schedule = <String, dynamic>{
+      'groupId': group.id,
+      'date': (date ?? DateTime.now()).toIso8601String(),
+      'planCreatedAt': plan.createdAt.toIso8601String(),
+      'items': items,
+    };
+
+    HiveService.mealsBox.put(key, schedule);
+    return schedule;
+  }
+
   static Future<void> markMealCompleted({
     required String catId,
     required String mealId,
@@ -66,6 +118,31 @@ class DailyMealScheduleService {
     DateTime? date,
   }) async {
     final key = todayKeyForCat(catId, date);
+    final current = HiveService.mealsBox.get(key);
+    if (current == null) return;
+
+    final schedule = Map<String, dynamic>.from(current);
+    final items = ((schedule['items'] as List?) ?? const [])
+        .map((item) => Map<String, dynamic>.from(item as Map))
+        .toList();
+
+    for (final item in items) {
+      if (item['id'] == mealId) {
+        item['completed'] = completed;
+      }
+    }
+
+    schedule['items'] = items;
+    await HiveService.mealsBox.put(key, schedule);
+  }
+
+  static Future<void> markGroupMealCompleted({
+    required String groupId,
+    required String mealId,
+    required bool completed,
+    DateTime? date,
+  }) async {
+    final key = todayKeyForGroup(groupId, date);
     final current = HiveService.mealsBox.get(key);
     if (current == null) return;
 

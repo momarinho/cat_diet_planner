@@ -47,7 +47,7 @@ class HomeHeaderAppBar extends ConsumerWidget implements PreferredSizeWidget {
             children: [
               _CircleIconButton(
                 icon: Icons.notifications_outlined,
-                onTap: () {},
+                onTap: () => Navigator.pushNamed(context, AppRoutes.settings),
               ),
               Positioned(
                 right: 2,

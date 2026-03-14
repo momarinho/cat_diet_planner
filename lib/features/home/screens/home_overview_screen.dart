@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../widgets/home_cat_carousel_section.dart';
+import '../widgets/home_groups_section.dart';
 import '../widgets/home_header_app_bar.dart';
 import '../widgets/home_health_insights_card.dart';
 import '../widgets/home_health_stats_grid.dart';
@@ -45,6 +46,46 @@ class HomeOverviewScreen extends ConsumerWidget {
                 ).pushNamed(AppRoutes.dashboard, arguments: cat);
               },
             ),
+            const SizedBox(height: 12),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final narrow = constraints.maxWidth < 380;
+                final profileButton = OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(AppRoutes.catProfile);
+                  },
+                  icon: const Icon(Icons.pets_outlined),
+                  label: const Text('New Profile'),
+                );
+                final groupButton = FilledButton.tonalIcon(
+                  onPressed: () {
+                    Navigator.of(context).pushNamed(AppRoutes.catGroup);
+                  },
+                  icon: const Icon(Icons.groups_outlined),
+                  label: const Text('New Group'),
+                );
+
+                if (narrow) {
+                  return Column(
+                    children: [
+                      SizedBox(width: double.infinity, child: profileButton),
+                      const SizedBox(height: 12),
+                      SizedBox(width: double.infinity, child: groupButton),
+                    ],
+                  );
+                }
+
+                return Row(
+                  children: [
+                    Expanded(child: profileButton),
+                    const SizedBox(width: 12),
+                    Expanded(child: groupButton),
+                  ],
+                );
+              },
+            ),
+            const SizedBox(height: 16),
+            const HomeGroupsSection(),
             if (cats.isEmpty) ...[
               const SizedBox(height: 12),
               Container(
@@ -101,12 +142,11 @@ class HomeOverviewScreen extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(color: primary.withValues(alpha: 0.10)),
                   ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.pets_rounded, color: primary, size: 20),
-                      const SizedBox(width: 10),
-                      Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final narrow = constraints.maxWidth < 420;
+
+                      final info = Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -126,22 +166,88 @@ class HomeOverviewScreen extends ConsumerWidget {
                             ),
                           ],
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      FilledButton.tonalIcon(
-                        onPressed: () => _openCatProfile(context, selectedCat),
-                        icon: const Icon(Icons.edit_outlined, size: 18),
-                        label: const Text('Edit'),
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        '${selectedCat.weight.toStringAsFixed(1)} kg',
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: secondary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    ],
+                      );
+
+                      final trailing = narrow
+                          ? Wrap(
+                              spacing: 10,
+                              runSpacing: 10,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                FilledButton.tonalIcon(
+                                  onPressed: () =>
+                                      _openCatProfile(context, selectedCat),
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    size: 18,
+                                  ),
+                                  label: const Text('Edit'),
+                                ),
+                                Text(
+                                  '${selectedCat.weight.toStringAsFixed(1)} kg',
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: secondary,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            )
+                          : Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                FilledButton.tonalIcon(
+                                  onPressed: () =>
+                                      _openCatProfile(context, selectedCat),
+                                  icon: const Icon(
+                                    Icons.edit_outlined,
+                                    size: 18,
+                                  ),
+                                  label: const Text('Edit'),
+                                ),
+                                const SizedBox(width: 10),
+                                Text(
+                                  '${selectedCat.weight.toStringAsFixed(1)} kg',
+                                  style: theme.textTheme.labelLarge?.copyWith(
+                                    color: secondary,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                              ],
+                            );
+
+                      if (narrow) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Icon(
+                                  Icons.pets_rounded,
+                                  color: primary,
+                                  size: 20,
+                                ),
+                                const SizedBox(width: 10),
+                                info,
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            trailing,
+                          ],
+                        );
+                      }
+
+                      return Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Icon(Icons.pets_rounded, color: primary, size: 20),
+                          const SizedBox(width: 10),
+                          info,
+                          const SizedBox(width: 12),
+                          trailing,
+                        ],
+                      );
+                    },
                   ),
                 ),
               ),

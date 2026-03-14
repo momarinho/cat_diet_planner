@@ -50,6 +50,12 @@ Funcao:
 - capturar barcode
 - permitir entrada manual
 - confirmar alimento escaneado
+- persistir apenas metadados do produto escaneado
+
+Decisao de persistencia:
+- nao salvar frame, screenshot ou foto do scanner no `Hive`
+- salvar apenas dados estruturados como `barcode`, nome, marca e macros
+- manter o scanner leve para uso em `web` e `iPhone` via navegador
 
 Status:
 - tela inicial e navegacao prontas
