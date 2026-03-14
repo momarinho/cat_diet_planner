@@ -1,6 +1,11 @@
 import 'package:cat_diet_planner/core/theme/theme_provider.dart';
+import 'package:cat_diet_planner/data/local/hive_service.dart';
+import 'package:cat_diet_planner/features/cat_group/providers/selected_group_provider.dart';
+import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
+import 'package:cat_diet_planner/features/settings/models/app_settings.dart';
 import 'package:cat_diet_planner/features/settings/providers/app_settings_provider.dart';
 import 'package:cat_diet_planner/features/settings/services/data_export_service.dart';
+import 'package:cat_diet_planner/features/settings/services/demo_data_service.dart';
 import 'package:cat_diet_planner/features/settings/services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,6 +23,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     'pt': 'Portuguese',
     'tl': 'Tagalog',
   };
+  bool _isGeneratingDemoData = false;
+  bool _isClearingDemoData = false;
 
   Future<void> _editSchedule(List<String> currentTimes) async {
     final updatedTimes = [...currentTimes]..sort();
@@ -121,6 +128,114 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     if (selected != null) {
       await ref.read(appSettingsProvider.notifier).setLanguageCode(selected);
+    }
+  }
+
+  Future<void> _generateDemoData() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Generate demo data'),
+          content: const Text(
+            'This will replace the current local data with a ready-to-test scenario containing one group, one individual cat, foods, plans, meals and weight history.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Generate'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isGeneratingDemoData = true);
+    try {
+      final summary = await DemoDataService.seedReadyToTestScenario();
+      ref.invalidate(appSettingsProvider);
+      ref.invalidate(themeProvider);
+
+      final seededCat = HiveService.catsBox.values.isNotEmpty
+          ? HiveService.catsBox.values.first
+          : null;
+      ref.read(selectedCatProvider.notifier).state = seededCat;
+      ref.read(selectedGroupProvider.notifier).state = null;
+
+      final settings = AppSettings.fromMap(
+        HiveService.appSettingsBox.get('settings') as Map<dynamic, dynamic>?,
+      );
+      await NotificationService.syncWithSettings(settings);
+      if (seededCat != null) {
+        await NotificationService.setActiveCatContext(
+          catId: seededCat.id,
+          catName: seededCat.name,
+        );
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Demo data ready: ${summary.groups} group, ${summary.cats} cat, ${summary.foods} foods, ${summary.mealSchedules} schedules.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isGeneratingDemoData = false);
+      }
+    }
+  }
+
+  Future<void> _clearDemoData() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Clear demo data'),
+          content: const Text(
+            'This will remove the local demo data from the app, including cats, groups, foods, plans, meals and history.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Clear'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isClearingDemoData = true);
+    try {
+      await DemoDataService.clearAllLocalData();
+      ref.invalidate(appSettingsProvider);
+      ref.invalidate(themeProvider);
+      ref.read(selectedCatProvider.notifier).state = null;
+      ref.read(selectedGroupProvider.notifier).state = null;
+      await NotificationService.cancelMealReminders();
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Local demo data cleared.')));
+    } finally {
+      if (mounted) {
+        setState(() => _isClearingDemoData = false);
+      }
     }
   }
 
@@ -249,6 +364,44 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 onTap: () async {
                   await DataExportService.exportJsonBackup();
                 },
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: _isGeneratingDemoData
+                    ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          valueColor: AlwaysStoppedAnimation(primary),
+                        ),
+                      )
+                    : Icon(Icons.auto_awesome_rounded, color: primary),
+                title: const Text('Generate Demo Data'),
+                subtitle: const Text(
+                  'Create one group, one solo cat, foods, plans, meals and weight history',
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: _isGeneratingDemoData ? null : _generateDemoData,
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: _isClearingDemoData
+                    ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          valueColor: AlwaysStoppedAnimation(primary),
+                        ),
+                      )
+                    : Icon(Icons.delete_sweep_rounded, color: primary),
+                title: const Text('Clear Demo Data'),
+                subtitle: const Text(
+                  'Remove local cats, groups, foods, plans, meals and history',
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: _isClearingDemoData ? null : _clearDemoData,
               ),
             ],
           ),

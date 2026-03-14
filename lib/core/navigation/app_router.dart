@@ -27,6 +27,26 @@ class AppRouter {
           builder: (_) => const AppShellScreen(),
           settings: settings,
         );
+      case AppRoutes.daily:
+        return MaterialPageRoute(
+          builder: (_) => const AppShellScreen(initialTab: AppShellTab.daily),
+          settings: settings,
+        );
+      case AppRoutes.home:
+        return MaterialPageRoute(
+          builder: (_) => const AppShellScreen(initialTab: AppShellTab.home),
+          settings: settings,
+        );
+      case AppRoutes.plans:
+        return MaterialPageRoute(
+          builder: (_) => const AppShellScreen(initialTab: AppShellTab.plans),
+          settings: settings,
+        );
+      case AppRoutes.history:
+        return MaterialPageRoute(
+          builder: (_) => const AppShellScreen(initialTab: AppShellTab.history),
+          settings: settings,
+        );
       case AppRoutes.dashboard:
         final cat = settings.arguments as CatProfile?;
         if (cat == null) {

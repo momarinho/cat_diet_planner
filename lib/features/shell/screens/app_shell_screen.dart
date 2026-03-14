@@ -20,14 +20,16 @@ enum AppShellTab {
 }
 
 class AppShellScreen extends StatefulWidget {
-  const AppShellScreen({super.key});
+  const AppShellScreen({super.key, this.initialTab = AppShellTab.daily});
+
+  final AppShellTab initialTab;
 
   @override
   State<AppShellScreen> createState() => _AppShellScreenState();
 }
 
 class _AppShellScreenState extends State<AppShellScreen> {
-  AppShellTab _currentTab = AppShellTab.daily;
+  late AppShellTab _currentTab;
 
   final Map<AppShellTab, Widget> _tabScreens = const {
     AppShellTab.daily: DailyOverviewScreen(),
@@ -35,6 +37,12 @@ class _AppShellScreenState extends State<AppShellScreen> {
     AppShellTab.plans: PlansScreen(),
     AppShellTab.history: HistoryScreen(),
   };
+
+  @override
+  void initState() {
+    super.initState();
+    _currentTab = widget.initialTab;
+  }
 
   void _onTabTap(AppShellTab tab) {
     setState(() => _currentTab = tab);

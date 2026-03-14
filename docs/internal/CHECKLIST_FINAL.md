@@ -213,6 +213,7 @@ Este passa a ser o checklist final de produto e execução.
 - [x] idioma
 - [x] export JSON
 - [x] backup
+- [x] geração de dados demo locais para teste manual
 - [x] persistência local das preferências
 
 ## 15. Notificações e rotina
