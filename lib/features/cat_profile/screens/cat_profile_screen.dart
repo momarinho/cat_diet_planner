@@ -41,6 +41,10 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
   final _allergiesController = TextEditingController();
   final _dietaryPreferencesController = TextEditingController();
   final _vetNotesController = TextEditingController();
+  final _weightGoalMinController = TextEditingController();
+  final _weightGoalMaxController = TextEditingController();
+  final _weightAlertDeltaKgController = TextEditingController();
+  final _weightAlertDeltaPercentController = TextEditingController();
 
   bool _neutered = true;
   String _activityLevel = 'moderate';
@@ -51,7 +55,6 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
   bool _isSaving = false;
 
   // clinical/routine state
-  double? _idealWeight;
   int? _bcs;
   String _sex = 'unknown';
   DateTime? _birthDate;
@@ -75,9 +78,12 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
       _allergiesController.text = '';
       _dietaryPreferencesController.text = '';
       _vetNotesController.text = '';
+      _weightGoalMinController.text = '';
+      _weightGoalMaxController.text = '';
+      _weightAlertDeltaKgController.text = '';
+      _weightAlertDeltaPercentController.text = '';
       _photoPath = _presetPhotos.first;
       _photoBase64 = null;
-      _idealWeight = null;
       _bcs = null;
       _sex = 'unknown';
       _birthDate = null;
@@ -100,7 +106,6 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
         cat.photoPath ?? (_photoBase64 == null ? _presetPhotos.first : null);
 
     // clinical / routine
-    _idealWeight = cat.idealWeight;
     _idealWeightController.text = cat.idealWeight != null
         ? cat.idealWeight!.toStringAsFixed(1)
         : '';
@@ -116,6 +121,14 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
     _allergiesController.text = (cat.allergies).join(', ');
     _dietaryPreferencesController.text = (cat.dietaryPreferences).join(', ');
     _vetNotesController.text = cat.vetNotes ?? '';
+    _weightGoalMinController.text =
+        cat.weightGoalMinKg?.toStringAsFixed(1) ?? '';
+    _weightGoalMaxController.text =
+        cat.weightGoalMaxKg?.toStringAsFixed(1) ?? '';
+    _weightAlertDeltaKgController.text =
+        cat.weightAlertDeltaKg?.toStringAsFixed(1) ?? '';
+    _weightAlertDeltaPercentController.text =
+        cat.weightAlertDeltaPercent?.toStringAsFixed(1) ?? '';
   }
 
   @override
@@ -135,6 +148,10 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
     _allergiesController.dispose();
     _dietaryPreferencesController.dispose();
     _vetNotesController.dispose();
+    _weightGoalMinController.dispose();
+    _weightGoalMaxController.dispose();
+    _weightAlertDeltaKgController.dispose();
+    _weightAlertDeltaPercentController.dispose();
 
     super.dispose();
   }
@@ -150,7 +167,7 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
     );
 
     // parse comma-separated lists for structured fields
-    List<String> _parseTags(String text) {
+    List<String> parseTags(String text) {
       return text
           .split(',')
           .map((s) => s.trim())
@@ -160,6 +177,14 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
 
     final idealWeightParsed = double.tryParse(
       _idealWeightController.text.trim(),
+    );
+    final goalMin = double.tryParse(_weightGoalMinController.text.trim());
+    final goalMax = double.tryParse(_weightGoalMaxController.text.trim());
+    final alertDeltaKg = double.tryParse(
+      _weightAlertDeltaKgController.text.trim(),
+    );
+    final alertDeltaPercent = double.tryParse(
+      _weightAlertDeltaPercentController.text.trim(),
     );
     final profile = CatProfile(
       id: initial?.id ?? DateTime.now().microsecondsSinceEpoch.toString(),
@@ -193,12 +218,21 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
       customActivityLevel: _customActivityController.text.trim().isEmpty
           ? null
           : _customActivityController.text.trim(),
-      clinicalConditions: _parseTags(_clinicalConditionsController.text),
-      allergies: _parseTags(_allergiesController.text),
-      dietaryPreferences: _parseTags(_dietaryPreferencesController.text),
+      clinicalConditions: parseTags(_clinicalConditionsController.text),
+      allergies: parseTags(_allergiesController.text),
+      dietaryPreferences: parseTags(_dietaryPreferencesController.text),
       vetNotes: _vetNotesController.text.trim().isEmpty
           ? null
           : _vetNotesController.text.trim(),
+      weightGoalMinKg: goalMin == null || goalMin <= 0 ? null : goalMin,
+      weightGoalMaxKg: goalMax == null || goalMax <= 0 ? null : goalMax,
+      weightAlertDeltaKg: alertDeltaKg == null || alertDeltaKg <= 0
+          ? null
+          : alertDeltaKg,
+      weightAlertDeltaPercent:
+          alertDeltaPercent == null || alertDeltaPercent <= 0
+          ? null
+          : alertDeltaPercent,
     );
 
     try {
@@ -593,7 +627,7 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                   const SizedBox(height: 8),
                   // Sex dropdown
                   DropdownButtonFormField<String>(
-                    value: _sex,
+                    initialValue: _sex,
                     decoration: const InputDecoration(
                       labelText: 'Sex',
                       border: OutlineInputBorder(),
@@ -693,6 +727,57 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     maxLines: 4,
                     decoration: const InputDecoration(
                       labelText: 'Veterinary notes (optional)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Text(
+                    'Weight Goals & Alerts',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _weightGoalMinController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Goal min weight (kg)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _weightGoalMaxController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Goal max weight (kg)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _weightAlertDeltaKgController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Alert delta (kg) per check-in',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextFormField(
+                    controller: _weightAlertDeltaPercentController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Alert delta (%) per check-in',
                       border: OutlineInputBorder(),
                     ),
                   ),

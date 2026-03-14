@@ -42,7 +42,13 @@ class WebNotificationServiceImpl implements NotificationServiceImpl {
     if (_permission != 'granted') return;
 
     for (final rawTime in settings.reminderTimes) {
-      final duration = _durationUntil(rawTime);
+      final effectiveTime = NotificationSupport.adjustTimeForQuietHours(
+        rawTime,
+        enabled: settings.quietHoursEnabled,
+        start: settings.quietHoursStart,
+        end: settings.quietHoursEnd,
+      );
+      final duration = _durationUntil(effectiveTime);
       if (duration == null) continue;
 
       _scheduleReminder(

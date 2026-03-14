@@ -173,8 +173,10 @@ class NotificationSupport {
     required int mealIndex,
     required String reminderTime,
   }) {
+    final settings = readStoredSettings();
+    final lang = settings.languageCode;
     final context = readActiveContext();
-    final mealLabel = mealTitle(mealIndex);
+    final mealLabel = mealTitle(mealIndex, languageCode: lang);
 
     if (context == null) {
       final payload = NotificationPayloadData(
@@ -186,8 +188,8 @@ class NotificationSupport {
         reminderTime: reminderTime,
       );
       return NotificationContent(
-        title: '$mealLabel Reminder',
-        body: 'Time to feed your cat at $reminderTime.',
+        title: localizedTitle('$mealLabel Reminder', lang),
+        body: localizedBodyForGeneric(reminderTime, lang),
         payload: payload.encode(),
       );
     }
@@ -204,34 +206,146 @@ class NotificationSupport {
     );
 
     return NotificationContent(
-      title: '$mealLabel for $name',
+      title: localizedTitle('$mealLabel for $name', lang),
       body: context.isGroup
-          ? 'Feed $name$groupSuffix at $reminderTime.'
-          : 'Feed $name at $reminderTime.',
+          ? localizedBodyForGroup(name, groupSuffix, reminderTime, lang)
+          : localizedBodyForCat(name, reminderTime, lang),
       payload: payload.encode(),
     );
   }
 
-  static String mealTitle(int index) {
+  static String mealTitle(int index, {String languageCode = 'en'}) {
+    final isPt = languageCode == 'pt';
+    final isTl = languageCode == 'tl';
     switch (index) {
       case 0:
-        return 'Breakfast';
+        return isPt
+            ? 'Cafe da manha'
+            : isTl
+            ? 'Almusal'
+            : 'Breakfast';
       case 1:
-        return 'Lunch';
+        return isPt
+            ? 'Almoco'
+            : isTl
+            ? 'Tanghalian'
+            : 'Lunch';
       case 2:
-        return 'Afternoon Meal';
+        return isPt
+            ? 'Refeicao da tarde'
+            : isTl
+            ? 'Meryenda'
+            : 'Afternoon Meal';
       case 3:
-        return 'Dinner';
+        return isPt
+            ? 'Jantar'
+            : isTl
+            ? 'Hapunan'
+            : 'Dinner';
       case 4:
-        return 'Late Meal';
+        return isPt
+            ? 'Refeicao noturna'
+            : isTl
+            ? 'Huling kainan'
+            : 'Late Meal';
       default:
-        return 'Meal ${index + 1}';
+        return isPt
+            ? 'Refeicao ${index + 1}'
+            : isTl
+            ? 'Kainan ${index + 1}'
+            : 'Meal ${index + 1}';
     }
+  }
+
+  static String localizedTitle(String fallback, String languageCode) {
+    if (languageCode == 'pt') {
+      return fallback.replaceAll('Reminder', 'Lembrete');
+    }
+    if (languageCode == 'tl') {
+      return fallback.replaceAll('Reminder', 'Paalala');
+    }
+    return fallback;
+  }
+
+  static String localizedBodyForGeneric(String reminderTime, String lang) {
+    if (lang == 'pt') {
+      return 'Hora de alimentar seu gato as $reminderTime.';
+    }
+    if (lang == 'tl') {
+      return 'Oras na para pakainin ang pusa mo sa $reminderTime.';
+    }
+    return 'Time to feed your cat at $reminderTime.';
+  }
+
+  static String localizedBodyForCat(
+    String name,
+    String reminderTime,
+    String lang,
+  ) {
+    if (lang == 'pt') return 'Alimente $name as $reminderTime.';
+    if (lang == 'tl') return 'Pakainin si $name sa $reminderTime.';
+    return 'Feed $name at $reminderTime.';
+  }
+
+  static String localizedBodyForGroup(
+    String name,
+    String groupSuffix,
+    String reminderTime,
+    String lang,
+  ) {
+    if (lang == 'pt') return 'Alimente $name$groupSuffix as $reminderTime.';
+    if (lang == 'tl') return 'Pakainin ang $name$groupSuffix sa $reminderTime.';
+    return 'Feed $name$groupSuffix at $reminderTime.';
   }
 
   static String _groupSuffix(String groupId) {
     final group = HiveService.catGroupsBox.get(groupId);
     if (group == null) return '';
     return ' (${group.catCount} cats)';
+  }
+
+  static bool isWithinQuietHours(
+    DateTime now, {
+    required bool enabled,
+    required String start,
+    required String end,
+  }) {
+    if (!enabled) return false;
+    final startParts = start.split(':');
+    final endParts = end.split(':');
+    if (startParts.length != 2 || endParts.length != 2) return false;
+    final startHour = int.tryParse(startParts[0]) ?? 22;
+    final startMinute = int.tryParse(startParts[1]) ?? 0;
+    final endHour = int.tryParse(endParts[0]) ?? 7;
+    final endMinute = int.tryParse(endParts[1]) ?? 0;
+
+    final nowMinutes = now.hour * 60 + now.minute;
+    final startMinutes = startHour * 60 + startMinute;
+    final endMinutes = endHour * 60 + endMinute;
+
+    if (startMinutes == endMinutes) return true;
+    if (startMinutes < endMinutes) {
+      return nowMinutes >= startMinutes && nowMinutes < endMinutes;
+    }
+    return nowMinutes >= startMinutes || nowMinutes < endMinutes;
+  }
+
+  static String adjustTimeForQuietHours(
+    String rawTime, {
+    required bool enabled,
+    required String start,
+    required String end,
+  }) {
+    if (!enabled) return rawTime;
+    final parts = rawTime.split(':');
+    if (parts.length != 2) return rawTime;
+    final hour = int.tryParse(parts[0]);
+    final minute = int.tryParse(parts[1]);
+    if (hour == null || minute == null) return rawTime;
+    final probe = DateTime(2026, 1, 1, hour, minute);
+    if (!isWithinQuietHours(probe, enabled: enabled, start: start, end: end)) {
+      return rawTime;
+    }
+    return end;
   }
 }

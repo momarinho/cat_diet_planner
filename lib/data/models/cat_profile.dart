@@ -101,6 +101,18 @@ class CatProfile extends HiveObject {
   @HiveField(24)
   String? activePlanId; // currently selected active individual diet plan
 
+  @HiveField(25)
+  double? weightGoalMinKg;
+
+  @HiveField(26)
+  double? weightGoalMaxKg;
+
+  @HiveField(27)
+  double? weightAlertDeltaKg; // threshold vs previous check-in
+
+  @HiveField(28)
+  double? weightAlertDeltaPercent; // threshold vs previous check-in
+
   CatProfile({
     required this.id,
     required this.name,
@@ -128,5 +140,9 @@ class CatProfile extends HiveObject {
     this.dietaryPreferences = const [],
     this.vetNotes,
     this.activePlanId,
+    this.weightGoalMinKg,
+    this.weightGoalMaxKg,
+    this.weightAlertDeltaKg,
+    this.weightAlertDeltaPercent,
   });
 }

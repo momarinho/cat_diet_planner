@@ -24,7 +24,126 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     'tl': 'Tagalog',
   };
   bool _isGeneratingDemoData = false;
+  bool _isGeneratingStressData = false;
   bool _isClearingDemoData = false;
+
+  String _notificationProfileValue(
+    AppSettings settings,
+    String type,
+    String field,
+  ) {
+    final defaults = AppSettings.defaults().notificationProfiles;
+    final fallback = defaults[type]?[field] ?? '';
+    return settings.notificationProfiles[type]?[field] ?? fallback;
+  }
+
+  Future<void> _setNotificationProfile({
+    required String type,
+    String? sound,
+    String? intensity,
+  }) async {
+    await ref
+        .read(appSettingsProvider.notifier)
+        .setNotificationProfile(type: type, sound: sound, intensity: intensity);
+    await NotificationService.syncWithSettings(ref.read(appSettingsProvider));
+  }
+
+  Widget _buildNotificationProfileControls({
+    required AppSettings appSettings,
+    required String type,
+    required String label,
+    required Color primary,
+  }) {
+    final sound = _notificationProfileValue(appSettings, type, 'sound');
+    final intensity = _notificationProfileValue(appSettings, type, 'intensity');
+    return Column(
+      children: [
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(Icons.volume_up_rounded, color: primary),
+          title: Text('$label Notification Sound'),
+          subtitle: Text(sound),
+          trailing: DropdownButton<String>(
+            value: sound,
+            items: const [
+              DropdownMenuItem(value: 'default', child: Text('default')),
+              DropdownMenuItem(value: 'soft', child: Text('soft')),
+              DropdownMenuItem(value: 'mute', child: Text('mute')),
+            ],
+            onChanged: (value) async {
+              if (value == null) return;
+              await _setNotificationProfile(type: type, sound: value);
+            },
+          ),
+        ),
+        ListTile(
+          contentPadding: EdgeInsets.zero,
+          leading: Icon(Icons.notifications_rounded, color: primary),
+          title: Text('$label Notification Intensity'),
+          subtitle: Text(intensity),
+          trailing: DropdownButton<String>(
+            value: intensity,
+            items: const [
+              DropdownMenuItem(value: 'low', child: Text('low')),
+              DropdownMenuItem(value: 'default', child: Text('default')),
+              DropdownMenuItem(value: 'high', child: Text('high')),
+              DropdownMenuItem(value: 'max', child: Text('max')),
+            ],
+            onChanged: (value) async {
+              if (value == null) return;
+              await _setNotificationProfile(type: type, intensity: value);
+            },
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<String?> _pickTimeString(String current) async {
+    final parts = current.split(':');
+    final initial = TimeOfDay(
+      hour: int.tryParse(parts.first) ?? 22,
+      minute: int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0,
+    );
+    final picked = await showTimePicker(context: context, initialTime: initial);
+    if (picked == null) return null;
+    return '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _editShareMessage(String current) async {
+    final controller = TextEditingController(text: current);
+    final shouldSave = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Share message'),
+        content: TextField(
+          controller: controller,
+          minLines: 2,
+          maxLines: 4,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            hintText: 'Message used when sharing report files',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    if (shouldSave == true) {
+      await ref
+          .read(appSettingsProvider.notifier)
+          .setShareMessageTemplate(controller.text.trim());
+    }
+    controller.dispose();
+  }
 
   Future<void> _editSchedule(List<String> currentTimes) async {
     final updatedTimes = [...currentTimes]..sort();
@@ -239,6 +358,69 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _generateStressData() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Generate stress test data'),
+          content: const Text(
+            'This will load a heavy operational scenario (up to 10 cats and 5 groups) to validate navigation, lists and daily routines in high-volume usage.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: const Text('Generate'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isGeneratingStressData = true);
+    try {
+      final summary = await DemoDataService.seedOperationalStressScenario();
+      ref.invalidate(appSettingsProvider);
+      ref.invalidate(themeProvider);
+
+      final seededCat = HiveService.catsBox.values.isNotEmpty
+          ? HiveService.catsBox.values.first
+          : null;
+      ref.read(selectedCatProvider.notifier).state = seededCat;
+      ref.read(selectedGroupProvider.notifier).state = null;
+
+      final settings = AppSettings.fromMap(
+        HiveService.appSettingsBox.get('settings') as Map<dynamic, dynamic>?,
+      );
+      await NotificationService.syncWithSettings(settings);
+      if (seededCat != null) {
+        await NotificationService.setActiveCatContext(
+          catId: seededCat.id,
+          catName: seededCat.name,
+        );
+      }
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Stress scenario ready: ${summary.groups} groups, ${summary.cats} cats, ${summary.foods} foods, ${summary.mealSchedules} schedules.',
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isGeneratingStressData = false);
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -297,10 +479,92 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(Icons.schedule_rounded, color: primary),
-                title: const Text('Edit Schedule'),
+                title: const Text('Edit Independent Reminder Schedule'),
                 subtitle: Text(appSettings.reminderTimes.join(' • ')),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => _editSchedule(appSettings.reminderTimes),
+              ),
+              SwitchListTile(
+                value: appSettings.quietHoursEnabled,
+                onChanged: (value) async {
+                  await ref
+                      .read(appSettingsProvider.notifier)
+                      .setQuietHours(
+                        enabled: value,
+                        start: appSettings.quietHoursStart,
+                        end: appSettings.quietHoursEnd,
+                      );
+                  await NotificationService.syncWithSettings(
+                    ref.read(appSettingsProvider),
+                  );
+                },
+                title: const Text('Quiet Hours'),
+                subtitle: Text(
+                  '${appSettings.quietHoursStart} - ${appSettings.quietHoursEnd}',
+                ),
+                contentPadding: EdgeInsets.zero,
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.bedtime_rounded, color: primary),
+                title: const Text('Quiet Start'),
+                subtitle: Text(appSettings.quietHoursStart),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () async {
+                  final next = await _pickTimeString(
+                    appSettings.quietHoursStart,
+                  );
+                  if (next == null) return;
+                  await ref
+                      .read(appSettingsProvider.notifier)
+                      .setQuietHours(
+                        enabled: appSettings.quietHoursEnabled,
+                        start: next,
+                        end: appSettings.quietHoursEnd,
+                      );
+                  await NotificationService.syncWithSettings(
+                    ref.read(appSettingsProvider),
+                  );
+                },
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.wb_sunny_outlined, color: primary),
+                title: const Text('Quiet End'),
+                subtitle: Text(appSettings.quietHoursEnd),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () async {
+                  final next = await _pickTimeString(appSettings.quietHoursEnd);
+                  if (next == null) return;
+                  await ref
+                      .read(appSettingsProvider.notifier)
+                      .setQuietHours(
+                        enabled: appSettings.quietHoursEnabled,
+                        start: appSettings.quietHoursStart,
+                        end: next,
+                      );
+                  await NotificationService.syncWithSettings(
+                    ref.read(appSettingsProvider),
+                  );
+                },
+              ),
+              _buildNotificationProfileControls(
+                appSettings: appSettings,
+                type: 'meal',
+                label: 'Meal',
+                primary: primary,
+              ),
+              _buildNotificationProfileControls(
+                appSettings: appSettings,
+                type: 'weight',
+                label: 'Weight',
+                primary: primary,
+              ),
+              _buildNotificationProfileControls(
+                appSettings: appSettings,
+                type: 'health',
+                label: 'Health',
+                primary: primary,
               ),
             ],
           ),
@@ -336,6 +600,156 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () => _pickLanguage(appSettings.languageCode),
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.translate_rounded, color: primary),
+                title: const Text('Localized content scope'),
+                subtitle: const Text(
+                  'Notifications and report/share texts now follow selected language.',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _SectionCard(
+            title: 'Reports',
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.date_range_rounded, color: primary),
+                title: const Text('Report Interval'),
+                subtitle: Text(
+                  appSettings.reportRangeDays == -1
+                      ? 'Custom (${appSettings.customReportRangeDays} days)'
+                      : '${appSettings.reportRangeDays} days',
+                ),
+                trailing: DropdownButton<int>(
+                  value: appSettings.reportRangeDays,
+                  items: const [
+                    DropdownMenuItem(value: 7, child: Text('7d')),
+                    DropdownMenuItem(value: 14, child: Text('14d')),
+                    DropdownMenuItem(value: 30, child: Text('30d')),
+                    DropdownMenuItem(value: -1, child: Text('Custom')),
+                  ],
+                  onChanged: (value) async {
+                    if (value == null) return;
+                    await ref
+                        .read(appSettingsProvider.notifier)
+                        .setReportRangeDays(value);
+                  },
+                ),
+              ),
+              if (appSettings.reportRangeDays == -1)
+                ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.tune_rounded, color: primary),
+                  title: const Text('Custom range days'),
+                  subtitle: Text('${appSettings.customReportRangeDays} days'),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () async {
+                    final controller = TextEditingController(
+                      text: appSettings.customReportRangeDays.toString(),
+                    );
+                    final save = await showDialog<bool>(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('Custom range'),
+                        content: TextField(
+                          controller: controller,
+                          keyboardType: TextInputType.number,
+                          decoration: const InputDecoration(
+                            labelText: 'Days',
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(false),
+                            child: const Text('Cancel'),
+                          ),
+                          FilledButton(
+                            onPressed: () => Navigator.of(context).pop(true),
+                            child: const Text('Save'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (save == true) {
+                      final days = int.tryParse(controller.text.trim());
+                      if (days != null && days > 0) {
+                        await ref
+                            .read(appSettingsProvider.notifier)
+                            .setCustomReportRangeDays(days);
+                      }
+                    }
+                    controller.dispose();
+                  },
+                ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.picture_as_pdf_rounded, color: primary),
+                title: const Text('PDF Layout'),
+                subtitle: Text(appSettings.pdfLayout),
+                trailing: DropdownButton<String>(
+                  value: appSettings.pdfLayout,
+                  items: const [
+                    DropdownMenuItem(value: 'compact', child: Text('compact')),
+                    DropdownMenuItem(
+                      value: 'detailed',
+                      child: Text('detailed'),
+                    ),
+                  ],
+                  onChanged: (value) async {
+                    if (value == null) return;
+                    await ref
+                        .read(appSettingsProvider.notifier)
+                        .setPdfConfig(layout: value);
+                  },
+                ),
+              ),
+              SwitchListTile(
+                value: appSettings.pdfIncludeWeightTrend,
+                onChanged: (value) async {
+                  await ref
+                      .read(appSettingsProvider.notifier)
+                      .setPdfConfig(includeWeightTrend: value);
+                },
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Include weight trend in PDF'),
+              ),
+              SwitchListTile(
+                value: appSettings.pdfIncludeCalorieTable,
+                onChanged: (value) async {
+                  await ref
+                      .read(appSettingsProvider.notifier)
+                      .setPdfConfig(includeCalorieTable: value);
+                },
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Include table in PDF'),
+              ),
+              SwitchListTile(
+                value: appSettings.pdfIncludeVetNotes,
+                onChanged: (value) async {
+                  await ref
+                      .read(appSettingsProvider.notifier)
+                      .setPdfConfig(includeVetNotes: value);
+                },
+                contentPadding: EdgeInsets.zero,
+                title: const Text('Include notes in PDF'),
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.share_rounded, color: primary),
+                title: const Text('Share message'),
+                subtitle: Text(
+                  appSettings.shareMessageTemplate,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () =>
+                    _editShareMessage(appSettings.shareMessageTemplate),
               ),
             ],
           ),
@@ -383,6 +797,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: _isGeneratingDemoData ? null : _generateDemoData,
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: _isGeneratingStressData
+                    ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          valueColor: AlwaysStoppedAnimation(primary),
+                        ),
+                      )
+                    : Icon(Icons.groups_3_rounded, color: primary),
+                title: const Text('Generate Stress Test Data'),
+                subtitle: const Text(
+                  'Create a high-volume scenario to validate many cats/groups UX',
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: _isGeneratingStressData ? null : _generateStressData,
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,

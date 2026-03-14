@@ -25,7 +25,16 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
   double _weight = 5.0;
   WeightRecord? _latestRecord;
   final TextEditingController _notesController = TextEditingController();
+  final TextEditingController _clinicalAssessmentController =
+      TextEditingController();
+  final TextEditingController _clinicalPlanController = TextEditingController();
   bool _isSaving = false;
+  DateTime _checkInDateTime = DateTime.now();
+  String _weightContext = 'fasting';
+  String _appetite = 'normal';
+  String _stool = 'normal';
+  String _vomit = 'none';
+  String _energy = 'normal';
 
   @override
   void initState() {
@@ -34,8 +43,12 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
   }
 
   void _loadLatestWeight() {
-    final records = HiveService.weightsBox.values.toList()
-      ..sort((a, b) => b.date.compareTo(a.date));
+    final selectedCat = ref.read(selectedCatProvider);
+    final records =
+        (selectedCat?.weightHistory.isNotEmpty ?? false)
+              ? [...selectedCat!.weightHistory]
+              : HiveService.weightsBox.values.toList()
+          ..sort((a, b) => b.date.compareTo(a.date));
 
     if (records.isEmpty) return;
 
@@ -74,6 +87,8 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
   @override
   void dispose() {
     _notesController.dispose();
+    _clinicalAssessmentController.dispose();
+    _clinicalPlanController.dispose();
     super.dispose();
   }
 
@@ -81,15 +96,57 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
     setState(() => _isSaving = true);
     try {
       final notes = _notesController.text.trim();
+      final selectedCat = ref.read(selectedCatProvider);
+      final previousWeight =
+          selectedCat != null && selectedCat.weightHistory.isNotEmpty
+          ? (selectedCat.weightHistory
+                  ..sort((a, b) => a.date.compareTo(b.date)))
+                .last
+                .weight
+          : _latestRecord?.weight;
+      final deltaAbs = previousWeight == null
+          ? 0.0
+          : (_weight - previousWeight).abs();
+      final deltaPercent = previousWeight == null || previousWeight == 0
+          ? 0.0
+          : (deltaAbs / previousWeight) * 100;
+      final thresholdByKg = selectedCat?.weightAlertDeltaKg;
+      final thresholdByPercent = selectedCat?.weightAlertDeltaPercent;
+      final goalMin = selectedCat?.weightGoalMinKg;
+      final goalMax = selectedCat?.weightGoalMaxKg;
+      final outOfGoalRange =
+          (goalMin != null && _weight < goalMin) ||
+          (goalMax != null && _weight > goalMax);
+      final alertTriggered =
+          (thresholdByKg != null && deltaAbs >= thresholdByKg) ||
+          (thresholdByPercent != null && deltaPercent >= thresholdByPercent) ||
+          outOfGoalRange;
+      final clinicalAlertLevel = alertTriggered
+          ? 'high'
+          : outOfGoalRange
+          ? 'watch'
+          : 'none';
 
       final record = WeightRecord(
-        date: DateTime.now(),
+        date: _checkInDateTime,
         weight: _weight,
         notes: notes.isEmpty ? null : notes,
+        weightContext: _weightContext,
+        appetite: _appetite,
+        stool: _stool,
+        vomit: _vomit,
+        energy: _energy,
+        clinicalAssessment: _clinicalAssessmentController.text.trim().isEmpty
+            ? null
+            : _clinicalAssessmentController.text.trim(),
+        clinicalPlan: _clinicalPlanController.text.trim().isEmpty
+            ? null
+            : _clinicalPlanController.text.trim(),
+        clinicalAlertLevel: clinicalAlertLevel,
+        alertTriggered: alertTriggered,
       );
 
       await HiveService.weightsBox.add(record);
-      final selectedCat = ref.read(selectedCatProvider);
       if (selectedCat != null) {
         selectedCat.weight = _weight;
         selectedCat.weightHistory = [...selectedCat.weightHistory, record]
@@ -104,9 +161,15 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
         _latestRecord = record;
       });
 
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Weight recorded')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            alertTriggered
+                ? 'Weight recorded with alert. Review goals/clinical notes.'
+                : 'Weight recorded',
+          ),
+        ),
+      );
       Navigator.of(context).pop();
     } finally {
       if (mounted) {
@@ -289,6 +352,78 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
           ),
           const SizedBox(height: 18),
           _SectionCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Check-in Date & Time',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: _checkInDateTime,
+                          firstDate: DateTime.now().subtract(
+                            const Duration(days: 3650),
+                          ),
+                          lastDate: DateTime.now().add(
+                            const Duration(days: 365),
+                          ),
+                        );
+                        if (picked == null) return;
+                        setState(() {
+                          _checkInDateTime = DateTime(
+                            picked.year,
+                            picked.month,
+                            picked.day,
+                            _checkInDateTime.hour,
+                            _checkInDateTime.minute,
+                          );
+                        });
+                      },
+                      icon: const Icon(Icons.event_rounded),
+                      label: Text(_formatDate(_checkInDateTime)),
+                    ),
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final picked = await showTimePicker(
+                          context: context,
+                          initialTime: TimeOfDay(
+                            hour: _checkInDateTime.hour,
+                            minute: _checkInDateTime.minute,
+                          ),
+                        );
+                        if (picked == null) return;
+                        setState(() {
+                          _checkInDateTime = DateTime(
+                            _checkInDateTime.year,
+                            _checkInDateTime.month,
+                            _checkInDateTime.day,
+                            picked.hour,
+                            picked.minute,
+                          );
+                        });
+                      },
+                      icon: const Icon(Icons.schedule_rounded),
+                      label: Text(
+                        '${_checkInDateTime.hour.toString().padLeft(2, '0')}:${_checkInDateTime.minute.toString().padLeft(2, '0')}',
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          _SectionCard(
             padding: const EdgeInsets.fromLTRB(22, 18, 22, 22),
             child: Column(
               children: [
@@ -334,6 +469,119 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text(
+                  'Check-in Context',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: _weightContext,
+                  decoration: const InputDecoration(
+                    labelText: 'Weight context',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'fasting', child: Text('Fasting')),
+                    DropdownMenuItem(
+                      value: 'after_meal',
+                      child: Text('After meal'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'different_scale',
+                      child: Text('Different scale'),
+                    ),
+                    DropdownMenuItem(value: 'other', child: Text('Other')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) setState(() => _weightContext = value);
+                  },
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: _appetite,
+                  decoration: const InputDecoration(
+                    labelText: 'Appetite',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'poor', child: Text('Poor')),
+                    DropdownMenuItem(value: 'reduced', child: Text('Reduced')),
+                    DropdownMenuItem(value: 'normal', child: Text('Normal')),
+                    DropdownMenuItem(value: 'high', child: Text('High')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) setState(() => _appetite = value);
+                  },
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: _stool,
+                  decoration: const InputDecoration(
+                    labelText: 'Stool',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'none', child: Text('None')),
+                    DropdownMenuItem(value: 'normal', child: Text('Normal')),
+                    DropdownMenuItem(value: 'soft', child: Text('Soft')),
+                    DropdownMenuItem(value: 'hard', child: Text('Hard')),
+                    DropdownMenuItem(
+                      value: 'diarrhea',
+                      child: Text('Diarrhea'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) setState(() => _stool = value);
+                  },
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: _vomit,
+                  decoration: const InputDecoration(
+                    labelText: 'Vomit',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'none', child: Text('None')),
+                    DropdownMenuItem(
+                      value: 'occasional',
+                      child: Text('Occasional'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'frequent',
+                      child: Text('Frequent'),
+                    ),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) setState(() => _vomit = value);
+                  },
+                ),
+                const SizedBox(height: 12),
+                DropdownButtonFormField<String>(
+                  initialValue: _energy,
+                  decoration: const InputDecoration(
+                    labelText: 'Energy',
+                    border: OutlineInputBorder(),
+                  ),
+                  items: const [
+                    DropdownMenuItem(value: 'low', child: Text('Low')),
+                    DropdownMenuItem(value: 'normal', child: Text('Normal')),
+                    DropdownMenuItem(value: 'high', child: Text('High')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) setState(() => _energy = value);
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 18),
+          _SectionCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 Row(
                   children: [
                     Icon(Icons.edit_note_rounded, color: primary, size: 24),
@@ -357,6 +605,40 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                       color: const Color(0xFF9AA8BE),
                       fontWeight: FontWeight.w500,
                     ),
+                    filled: true,
+                    fillColor: theme.brightness == Brightness.dark
+                        ? const Color(0xFF2B2426)
+                        : const Color(0xFFFFF0F4),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.all(20),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: _clinicalAssessmentController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: 'Clinical assessment (structured)',
+                    filled: true,
+                    fillColor: theme.brightness == Brightness.dark
+                        ? const Color(0xFF2B2426)
+                        : const Color(0xFFFFF0F4),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(24),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: const EdgeInsets.all(20),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: _clinicalPlanController,
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: 'Clinical plan / follow-up',
                     filled: true,
                     fillColor: theme.brightness == Brightness.dark
                         ? const Color(0xFF2B2426)

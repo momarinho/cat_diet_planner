@@ -43,13 +43,17 @@ class CatProfileAdapter extends TypeAdapter<CatProfile> {
       dietaryPreferences: (fields[22] as List?)?.cast<String>() ?? const [],
       vetNotes: fields[23] as String?,
       activePlanId: fields[24] as String?,
+      weightGoalMinKg: (fields[25] as num?)?.toDouble(),
+      weightGoalMaxKg: (fields[26] as num?)?.toDouble(),
+      weightAlertDeltaKg: (fields[27] as num?)?.toDouble(),
+      weightAlertDeltaPercent: (fields[28] as num?)?.toDouble(),
     );
   }
 
   @override
   void write(BinaryWriter writer, CatProfile obj) {
     writer
-      ..writeByte(25)
+      ..writeByte(29)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -100,7 +104,15 @@ class CatProfileAdapter extends TypeAdapter<CatProfile> {
       ..writeByte(23)
       ..write(obj.vetNotes)
       ..writeByte(24)
-      ..write(obj.activePlanId);
+      ..write(obj.activePlanId)
+      ..writeByte(25)
+      ..write(obj.weightGoalMinKg)
+      ..writeByte(26)
+      ..write(obj.weightGoalMaxKg)
+      ..writeByte(27)
+      ..write(obj.weightAlertDeltaKg)
+      ..writeByte(28)
+      ..write(obj.weightAlertDeltaPercent);
   }
 
   @override

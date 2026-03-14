@@ -10,7 +10,9 @@ class WeightRecordCard extends StatelessWidget {
     final day = date.day.toString().padLeft(2, '0');
     final month = date.month.toString().padLeft(2, '0');
     final year = date.year.toString();
-    return '$day/$month/$year';
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    return '$day/$month/$year $hour:$minute';
   }
 
   @override
@@ -51,6 +53,27 @@ class WeightRecordCard extends StatelessWidget {
                   _formatDate(record.date),
                   style: theme.textTheme.bodyMedium?.copyWith(color: secondary),
                 ),
+                if ((record.weightContext ?? '').isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Context: ${record.weightContext}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: secondary,
+                    ),
+                  ),
+                ],
+                if ((record.appetite ?? '').isNotEmpty ||
+                    (record.energy ?? '').isNotEmpty ||
+                    (record.stool ?? '').isNotEmpty ||
+                    (record.vomit ?? '').isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Appetite: ${record.appetite ?? '-'} • Energy: ${record.energy ?? '-'} • Stool: ${record.stool ?? '-'} • Vomit: ${record.vomit ?? '-'}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: secondary,
+                    ),
+                  ),
+                ],
                 if (record.notes != null &&
                     record.notes!.trim().isNotEmpty) ...[
                   const SizedBox(height: 6),
@@ -61,9 +84,42 @@ class WeightRecordCard extends StatelessWidget {
                     ),
                   ),
                 ],
+                if ((record.clinicalAssessment ?? '').trim().isNotEmpty) ...[
+                  const SizedBox(height: 6),
+                  Text(
+                    'Assessment: ${record.clinicalAssessment}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: secondary,
+                    ),
+                  ),
+                ],
+                if ((record.clinicalPlan ?? '').trim().isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Plan: ${record.clinicalPlan}',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: secondary,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
+          if (record.alertTriggered)
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.error.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(999),
+              ),
+              child: Text(
+                'ALERT',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.error,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ),
         ],
       ),
     );

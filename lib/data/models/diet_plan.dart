@@ -71,7 +71,7 @@ class DietPlan extends HiveObject {
 
   /// Optional per-weekday overrides. Key is weekday (1 = Monday .. 7 = Sunday).
   /// Each value can include a map with keys such as:
-  /// { 'targetKcalPerDay': double, 'mealsPerDay': int, 'mealTimes': List<String>, 'mealPortionGrams': List<double> }
+  /// { 'targetKcalPerDay': double, 'mealsPerDay': int, 'mealTimes': List(String), 'mealPortionGrams': List(double) }
   @HiveField(18)
   final Map<int, Map<dynamic, dynamic>> dailyOverrides;
 

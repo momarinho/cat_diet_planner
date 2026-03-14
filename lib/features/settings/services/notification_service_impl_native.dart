@@ -101,7 +101,12 @@ class NativeNotificationServiceImpl implements NotificationServiceImpl {
     await requestPermissions();
 
     for (var i = 0; i < settings.reminderTimes.length; i++) {
-      final time = settings.reminderTimes[i];
+      final time = NotificationSupport.adjustTimeForQuietHours(
+        settings.reminderTimes[i],
+        enabled: settings.quietHoursEnabled,
+        start: settings.quietHoursStart,
+        end: settings.quietHoursEnd,
+      );
       final parts = time.split(':');
       if (parts.length != 2) continue;
 
@@ -111,7 +116,7 @@ class NativeNotificationServiceImpl implements NotificationServiceImpl {
 
       final content = NotificationSupport.buildContentForReminder(
         mealIndex: i,
-        reminderTime: time,
+        reminderTime: settings.reminderTimes[i],
       );
 
       await _plugin.zonedSchedule(
@@ -234,13 +239,28 @@ class NativeNotificationServiceImpl implements NotificationServiceImpl {
   }
 
   static NotificationDetails get _details {
+    final settings = NotificationSupport.readStoredSettings();
+    final mealProfile = settings.notificationProfiles['meal'] ?? const {};
+    final intensity = mealProfile['intensity'] ?? 'high';
+    final sound = mealProfile['sound'] ?? 'default';
+    final importance = intensity == 'low'
+        ? Importance.defaultImportance
+        : intensity == 'max'
+        ? Importance.max
+        : Importance.high;
+    final priority = intensity == 'low'
+        ? Priority.defaultPriority
+        : intensity == 'max'
+        ? Priority.max
+        : Priority.high;
     return NotificationDetails(
       android: AndroidNotificationDetails(
         _channelId,
         _channelName,
         channelDescription: 'Meal reminder notifications',
-        importance: Importance.high,
-        priority: Priority.high,
+        importance: importance,
+        priority: priority,
+        playSound: sound != 'mute',
         actions: <AndroidNotificationAction>[
           AndroidNotificationAction(
             NotificationSupport.snoozeActionId,
@@ -254,7 +274,10 @@ class NativeNotificationServiceImpl implements NotificationServiceImpl {
           ),
         ],
       ),
-      iOS: const DarwinNotificationDetails(categoryIdentifier: _categoryId),
+      iOS: DarwinNotificationDetails(
+        categoryIdentifier: _categoryId,
+        presentSound: sound != 'mute',
+      ),
     );
   }
 

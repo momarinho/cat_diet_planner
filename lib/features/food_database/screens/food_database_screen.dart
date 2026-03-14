@@ -32,7 +32,15 @@ class _FoodDatabaseScreenState extends State<FoodDatabaseScreen> {
     final q = query.toLowerCase().trim();
     return food.name.toLowerCase().contains(q) ||
         (food.brand?.toLowerCase().contains(q) ?? false) ||
-        (food.barcode?.toLowerCase().contains(q) ?? false);
+        (food.barcode?.toLowerCase().contains(q) ?? false) ||
+        (food.category?.toLowerCase().contains(q) ?? false) ||
+        (food.manufacturer?.toLowerCase().contains(q) ?? false) ||
+        (food.productLine?.toLowerCase().contains(q) ?? false) ||
+        (food.flavor?.toLowerCase().contains(q) ?? false) ||
+        (food.texture?.toLowerCase().contains(q) ?? false) ||
+        (food.packageSize?.toLowerCase().contains(q) ?? false) ||
+        (food.servingUnit?.toLowerCase().contains(q) ?? false) ||
+        food.userTags.any((tag) => tag.toLowerCase().contains(q));
   }
 
   List<FoodItem> _buildRecentFoods(Box<FoodItem> box) {
@@ -83,7 +91,7 @@ class _FoodDatabaseScreenState extends State<FoodDatabaseScreen> {
             onChanged: (value) => setState(() => _query = value),
             onSubmitted: (_) => FocusScope.of(context).unfocus(),
             decoration: InputDecoration(
-              hintText: 'Search by name, brand, or barcode',
+              hintText: 'Search by name, brand, category, tags, barcode...',
               prefixIcon: const Icon(Icons.search_rounded),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(16),

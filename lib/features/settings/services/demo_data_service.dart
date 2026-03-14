@@ -5,6 +5,7 @@ import 'package:cat_diet_planner/data/models/diet_plan.dart';
 import 'package:cat_diet_planner/data/models/food_item.dart';
 import 'package:cat_diet_planner/data/models/group_diet_plan.dart';
 import 'package:cat_diet_planner/data/models/weight_record.dart';
+import 'package:cat_diet_planner/core/constants/app_limits.dart';
 import 'package:cat_diet_planner/features/daily/services/daily_meal_schedule_service.dart';
 import 'package:cat_diet_planner/features/plans/services/diet_calculator_service.dart';
 import 'package:cat_diet_planner/features/settings/models/app_settings.dart';
@@ -37,7 +38,7 @@ class DemoDataService {
     final now = DateTime.now();
 
     await AppSettingsService().save(
-      const AppSettings(
+      AppSettings.defaults().copyWith(
         mealReminders: true,
         languageCode: 'en',
         reminderTimes: ['07:30', '12:30', '19:00'],
@@ -240,6 +241,225 @@ class DemoDataService {
       mealId: 'group_meal_1',
       completed: true,
     );
+
+    return DemoDataSummary(
+      cats: HiveService.catsBox.length,
+      groups: HiveService.catGroupsBox.length,
+      foods: HiveService.foodsBox.length,
+      mealSchedules: HiveService.mealsBox.length,
+    );
+  }
+
+  static Future<DemoDataSummary> seedOperationalStressScenario({
+    int cats = AppLimits.maxCats,
+    int groups = AppLimits.maxGroups,
+  }) async {
+    final safeCats = cats.clamp(1, AppLimits.maxCats);
+    final safeGroups = groups.clamp(1, AppLimits.maxGroups);
+    final preservedThemeMode = HiveService.appSettingsBox.get('theme_mode');
+    await clearAllLocalData();
+
+    final now = DateTime.now();
+    await AppSettingsService().save(
+      AppSettings.defaults().copyWith(
+        mealReminders: true,
+        languageCode: 'en',
+        reminderTimes: const ['06:30', '11:30', '16:30', '21:00'],
+      ),
+    );
+    await HiveService.appSettingsBox.put(
+      'theme_mode',
+      preservedThemeMode is String ? preservedThemeMode : 'light',
+    );
+
+    final foods = <String, FoodItem>{
+      'food_stress_dry_1': FoodItem(
+        barcode: '7891000201010',
+        name: 'Stress Dry Mix',
+        brand: 'CatDiet',
+        kcalPer100g: 360,
+        protein: 30,
+        fat: 13,
+      ),
+      'food_stress_wet_1': FoodItem(
+        barcode: '7891000202024',
+        name: 'Stress Wet Turkey',
+        brand: 'CatDiet',
+        kcalPer100g: 112,
+        protein: 10,
+        fat: 5,
+      ),
+      'food_stress_light_1': FoodItem(
+        barcode: '7891000203038',
+        name: 'Stress Light Control',
+        brand: 'CatDiet',
+        kcalPer100g: 319,
+        protein: 29,
+        fat: 9,
+      ),
+    };
+    for (final entry in foods.entries) {
+      await HiveService.foodsBox.put(entry.key, entry.value);
+    }
+
+    final foodKeys = foods.keys.toList(growable: false);
+    final createdCatIds = <String>[];
+
+    for (var i = 0; i < safeCats; i++) {
+      final id = 'cat-stress-${i + 1}';
+      final weight = 3.2 + ((i % 5) * 0.5);
+      final ageMonths = 12 + (i * 4);
+      final weights = <WeightRecord>[
+        WeightRecord(
+          date: now.subtract(Duration(days: 14 - (i % 4))),
+          weight: weight + 0.1,
+          notes: 'Initial baseline',
+        ),
+        WeightRecord(
+          date: now.subtract(Duration(days: 7 - (i % 3))),
+          weight: weight,
+          notes: 'Follow-up',
+        ),
+      ];
+
+      final cat = CatProfile(
+        id: id,
+        name: 'Cat ${i + 1}',
+        weight: weight,
+        age: ageMonths,
+        neutered: i % 2 == 0,
+        activityLevel: i % 3 == 0 ? 'active' : 'moderate',
+        goal: i % 4 == 0 ? 'loss' : 'maintenance',
+        createdAt: now.subtract(Duration(days: 60 - i)),
+        weightHistory: weights,
+        preferredMealsPerDay: i % 2 == 0 ? 4 : 3,
+        idealWeight: weight - 0.2,
+        bcs: 5 + (i % 2),
+        sex: i % 2 == 0 ? 'female' : 'male',
+      );
+      await HiveService.catsBox.put(cat.id, cat);
+      createdCatIds.add(cat.id);
+      for (final record in weights) {
+        await HiveService.weightsBox.add(record);
+      }
+
+      final foodKey = foodKeys[i % foodKeys.length];
+      final food = foods[foodKey]!;
+      final targetKcal = DietCalculatorService.suggestTargetKcal(
+        weightKg: cat.weight,
+        idealWeightKg: cat.idealWeight,
+        ageMonths: cat.age,
+        neutered: cat.neutered,
+        activityLevel: cat.activityLevel,
+        goal: cat.goal,
+        bcs: cat.bcs,
+      );
+      final portionPerDay = DietCalculatorService.calculateDailyPortionGrams(
+        targetKcal: targetKcal,
+        kcalPer100g: food.kcalPer100g,
+      );
+      final mealsPerDay = cat.preferredMealsPerDay;
+      final plan = DietPlan(
+        catId: cat.id,
+        foodKey: foodKey,
+        foodName: food.name,
+        targetKcalPerDay: targetKcal,
+        portionGramsPerDay: portionPerDay,
+        mealsPerDay: mealsPerDay,
+        portionGramsPerMeal: DietCalculatorService.calculatePortionPerMealGrams(
+          portionPerDayGrams: portionPerDay,
+          mealsPerDay: mealsPerDay,
+        ),
+        createdAt: now.subtract(Duration(hours: i)),
+        goal: cat.goal,
+        mealTimes: DailyMealScheduleService.suggestedMealTimes(mealsPerDay),
+        mealLabels: DailyMealScheduleService.suggestedMealLabels(mealsPerDay),
+        mealPortionGrams: DailyMealScheduleService.normalizeMealPortions(
+          mealPortions: null,
+          totalPortionGrams: portionPerDay,
+          mealsPerDay: mealsPerDay,
+        ),
+        startDate: now.subtract(const Duration(days: 1)),
+        planId: 'plan-${cat.id}-default',
+      );
+      await HiveService.dietPlansBox.put(cat.id, plan);
+      DailyMealScheduleService.ensureTodaySchedule(cat: cat, plan: plan);
+    }
+
+    final catChunks = <List<String>>[];
+    final chunkSize = (safeCats / safeGroups).ceil();
+    for (var i = 0; i < createdCatIds.length; i += chunkSize) {
+      final end = (i + chunkSize > createdCatIds.length)
+          ? createdCatIds.length
+          : i + chunkSize;
+      catChunks.add(createdCatIds.sublist(i, end));
+    }
+
+    for (var i = 0; i < safeGroups; i++) {
+      final members = i < catChunks.length ? catChunks[i] : <String>[];
+      final groupId = 'group-stress-${i + 1}';
+      final group = CatGroup(
+        id: groupId,
+        name: 'Group ${i + 1}',
+        catCount: members.length,
+        description: 'Operational stress scenario group ${i + 1}.',
+        colorValue: 0xFF6EA8FE + (i * 3333),
+        createdAt: now.subtract(Duration(days: 10 + i)),
+        catIds: members,
+        subgroup: i % 2 == 0 ? 'ward_a' : 'ward_b',
+        category: i % 2 == 0 ? 'recovery' : 'maintenance',
+        feedingShareByCat: {for (final catId in members) catId: 1.0},
+        enclosure: 'Room ${i + 1}',
+        environment: i % 2 == 0 ? 'indoor' : 'mixed',
+        shiftMorningNotes: 'Morning checklist for group ${i + 1}.',
+      );
+      await HiveService.catGroupsBox.put(group.id, group);
+
+      final foodKey = foodKeys[(i + 1) % foodKeys.length];
+      final food = foods[foodKey]!;
+      const targetPerCat = 210.0;
+      final totalCats = members.isEmpty ? 1 : members.length;
+      final portionPerCat = DietCalculatorService.calculateDailyPortionGrams(
+        targetKcal: targetPerCat,
+        kcalPer100g: food.kcalPer100g,
+      );
+      final groupMealsPerDay = i % 2 == 0 ? 3 : 4;
+      final groupTotalPortion = portionPerCat * totalCats;
+      final groupPlan = GroupDietPlan(
+        groupId: group.id,
+        foodKey: foodKey,
+        foodName: food.name,
+        catCount: totalCats,
+        targetKcalPerCatPerDay: targetPerCat,
+        targetKcalPerGroupPerDay: targetPerCat * totalCats,
+        portionGramsPerCatPerDay: portionPerCat,
+        portionGramsPerGroupPerDay: groupTotalPortion,
+        mealsPerDay: groupMealsPerDay,
+        portionGramsPerGroupPerMeal:
+            DietCalculatorService.calculatePortionPerMealGrams(
+              portionPerDayGrams: groupTotalPortion,
+              mealsPerDay: groupMealsPerDay,
+            ),
+        createdAt: now.subtract(Duration(hours: i)),
+        mealTimes: DailyMealScheduleService.suggestedMealTimes(
+          groupMealsPerDay,
+        ),
+        mealLabels: DailyMealScheduleService.suggestedMealLabels(
+          groupMealsPerDay,
+        ),
+        mealPortionGrams: DailyMealScheduleService.normalizeMealPortions(
+          mealPortions: null,
+          totalPortionGrams: groupTotalPortion,
+          mealsPerDay: groupMealsPerDay,
+        ),
+        startDate: now.subtract(const Duration(days: 1)),
+      );
+      await HiveService.groupDietPlansBox.put(group.id, groupPlan);
+      DailyMealScheduleService.ensureTodayGroupSchedule(
+        group: group,
+        plan: groupPlan,
+      );
+    }
 
     return DemoDataSummary(
       cats: HiveService.catsBox.length,

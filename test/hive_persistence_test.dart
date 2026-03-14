@@ -55,7 +55,7 @@ void main() {
 
   test('app settings service persists reminder preferences in Hive', () async {
     final service = AppSettingsService();
-    const settings = AppSettings(
+    final settings = AppSettings.defaults().copyWith(
       mealReminders: false,
       languageCode: 'pt',
       reminderTimes: ['08:00', '18:00'],

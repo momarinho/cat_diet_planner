@@ -30,4 +30,63 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
     state = state.copyWith(reminderTimes: reminderTimes);
     await _service.save(state);
   }
+
+  Future<void> setQuietHours({
+    required bool enabled,
+    required String start,
+    required String end,
+  }) async {
+    state = state.copyWith(
+      quietHoursEnabled: enabled,
+      quietHoursStart: start,
+      quietHoursEnd: end,
+    );
+    await _service.save(state);
+  }
+
+  Future<void> setNotificationProfile({
+    required String type,
+    String? sound,
+    String? intensity,
+  }) async {
+    final current = Map<String, Map<String, String>>.from(
+      state.notificationProfiles,
+    );
+    final existing = Map<String, String>.from(current[type] ?? const {});
+    if (sound != null) existing['sound'] = sound;
+    if (intensity != null) existing['intensity'] = intensity;
+    current[type] = existing;
+    state = state.copyWith(notificationProfiles: current);
+    await _service.save(state);
+  }
+
+  Future<void> setReportRangeDays(int days) async {
+    state = state.copyWith(reportRangeDays: days);
+    await _service.save(state);
+  }
+
+  Future<void> setCustomReportRangeDays(int days) async {
+    state = state.copyWith(customReportRangeDays: days);
+    await _service.save(state);
+  }
+
+  Future<void> setPdfConfig({
+    String? layout,
+    bool? includeWeightTrend,
+    bool? includeCalorieTable,
+    bool? includeVetNotes,
+  }) async {
+    state = state.copyWith(
+      pdfLayout: layout,
+      pdfIncludeWeightTrend: includeWeightTrend,
+      pdfIncludeCalorieTable: includeCalorieTable,
+      pdfIncludeVetNotes: includeVetNotes,
+    );
+    await _service.save(state);
+  }
+
+  Future<void> setShareMessageTemplate(String template) async {
+    state = state.copyWith(shareMessageTemplate: template);
+    await _service.save(state);
+  }
 }

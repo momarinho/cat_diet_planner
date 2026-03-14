@@ -109,7 +109,7 @@ Este passa a ser o checklist final de produto e execução.
 - [x] suportar plano aplicado diretamente ao grupo
 - [x] adaptar `Daily` para fluxo de grupo sem peso/check-in individual
 - [x] exibir resumo operacional básico por grupo
-- [ ] validar UX para cenário real de muitos gatos
+- [-] validar UX para cenário real de muitos gatos
 - [x] definir limites iniciais recomendados:
 - [x] até `10` gatos
 - [x] até `5` grupos
@@ -315,37 +315,37 @@ Este passa a ser o checklist final de produto e execução.
 - [x] cor e identificação visual mais flexíveis
 
 ### 18.6 Food Database
-- [ ] categoria do alimento (`seca`, `úmida`, `natural`, `petisco`, `suplemento`)
-- [ ] fabricante / linha / sabor / textura
-- [ ] tamanho da embalagem
-- [ ] unidade doméstica para servir (`lata`, `sachê`, `xícara`, `colher`)
-- [ ] macros mais completos (`fibra`, `umidade`, `carboidrato`, `sódio`)
-- [ ] observações de aceitação e palatabilidade
-- [ ] tags customizadas do usuário
+- [x] categoria do alimento (`seca`, `úmida`, `natural`, `petisco`, `suplemento`)
+- [x] fabricante / linha / sabor / textura
+- [x] tamanho da embalagem
+- [x] unidade doméstica para servir (`lata`, `sachê`, `xícara`, `colher`)
+- [x] macros mais completos (`fibra`, `umidade`, `carboidrato`, `sódio`)
+- [x] observações de aceitação e palatabilidade
+- [x] tags customizadas do usuário
 
 ### 18.7 Weight Check-in e acompanhamento de saúde
-- [ ] escolher data e hora manual do check-in
-- [ ] registrar contexto do peso (`jejum`, `após refeição`, `balança diferente`)
-- [ ] registrar apetite, fezes, vômito e energia no check-in
-- [ ] anexar nota clínica estruturada ao registro de peso
-- [ ] metas e alertas personalizáveis de variação de peso
+- [x] escolher data e hora manual do check-in
+- [x] registrar contexto do peso (`jejum`, `após refeição`, `balança diferente`)
+- [x] registrar apetite, fezes, vômito e energia no check-in
+- [x] anexar nota clínica estruturada ao registro de peso
+- [x] metas e alertas personalizáveis de variação de peso
 
 ### 18.8 Settings, notificações e relatórios
-- [ ] horários de lembrete independentes do horário do plano
-- [ ] quiet hours / janela sem notificações
-- [ ] sons ou intensidade de notificação por tipo
-- [ ] personalizar idioma real do conteúdo do app além do seletor salvo
-- [ ] intervalo customizado no relatório além do semanal
-- [ ] layout/conteúdo do PDF selecionável
-- [ ] mensagem de compartilhamento personalizável
+- [x] horários de lembrete independentes do horário do plano
+- [x] quiet hours / janela sem notificações
+- [x] sons ou intensidade de notificação por tipo
+- [x] personalizar idioma real do conteúdo do app além do seletor salvo
+- [x] intervalo customizado no relatório além do semanal
+- [x] layout/conteúdo do PDF selecionável
+- [x] mensagem de compartilhamento personalizável
 
 ### 18.9 Priorização recomendada
-- [ ] prioridade 1: nomes e horários por refeição, quantidade por refeição, data de início do plano
-- [-] prioridade 1: registro diário de contexto da refeição e do check-in de peso
-- [ ] prioridade 1: peso ideal, restrições alimentares e condições clínicas estruturadas
-- [ ] prioridade 2: múltiplos planos por gato e planos por dia da semana
-- [ ] prioridade 2: grupos vinculados a gatos reais
-- [ ] prioridade 3: customização avançada de relatórios e notificações
+- [x] prioridade 1: nomes e horários por refeição, quantidade por refeição, data de início do plano
+- [x] prioridade 1: registro diário de contexto da refeição e do check-in de peso
+- [x] prioridade 1: peso ideal, restrições alimentares e condições clínicas estruturadas
+- [x] prioridade 2: múltiplos planos por gato e planos por dia da semana
+- [x] prioridade 2: grupos vinculados a gatos reais
+- [x] prioridade 3: customização avançada de relatórios e notificações
 
 ### Bloco D: preferências e rotina
 - [x] settings persistentes

@@ -7,6 +7,7 @@ import 'package:cat_diet_planner/data/models/weight_record.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
 import 'package:cat_diet_planner/features/history/services/weekly_report_export_service.dart';
 import 'package:cat_diet_planner/features/plans/repositories/plan_repository.dart';
+import 'package:cat_diet_planner/features/settings/providers/app_settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -32,11 +33,16 @@ class WeeklyDietReportScreen extends ConsumerWidget {
   List<WeightRecord> _resolveRecords(
     List<WeightRecord> globalRecords,
     List<WeightRecord> catRecords,
+    int rangeDays,
   ) {
     final source = catRecords.isNotEmpty ? catRecords : globalRecords;
     final sorted = [...source]..sort((a, b) => a.date.compareTo(b.date));
-    if (sorted.length <= 7) return sorted;
-    return sorted.sublist(sorted.length - 7);
+    if (sorted.isEmpty) return sorted;
+    final cutoff = DateTime.now().subtract(Duration(days: rangeDays - 1));
+    final filtered = sorted
+        .where((record) => !record.date.isBefore(cutoff))
+        .toList();
+    return filtered;
   }
 
   String _formatRange(DateTime start, DateTime end) {
@@ -46,11 +52,12 @@ class WeeklyDietReportScreen extends ConsumerWidget {
   List<_DailyIntakeRow> _buildIntakeRows({
     required String catId,
     required DietPlan? plan,
+    required int rangeDays,
   }) {
     final now = DateTime.now();
     final rows = <_DailyIntakeRow>[];
 
-    for (var offset = 6; offset >= 0; offset--) {
+    for (var offset = rangeDays - 1; offset >= 0; offset--) {
       final date = DateTime(
         now.year,
         now.month,
@@ -130,6 +137,10 @@ class WeeklyDietReportScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedCat = ref.watch(selectedCatProvider);
+    final settings = ref.watch(appSettingsProvider);
+    final rangeDays = settings.reportRangeDays == -1
+        ? settings.customReportRangeDays
+        : settings.reportRangeDays;
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final secondary =
@@ -148,7 +159,7 @@ class WeeklyDietReportScreen extends ConsumerWidget {
             ..sort((a, b) => a.date.compareTo(b.date));
           final catRecords =
               selectedCat?.weightHistory ?? const <WeightRecord>[];
-          final records = _resolveRecords(globalRecords, catRecords);
+          final records = _resolveRecords(globalRecords, catRecords, rangeDays);
           final latest = records.isNotEmpty ? records.last : null;
           final first = records.isNotEmpty ? records.first : null;
           final rangeLabel = records.isEmpty
@@ -159,7 +170,11 @@ class WeeklyDietReportScreen extends ConsumerWidget {
               : PlanRepository().getPlanForCat(selectedCat.id);
           final intakeRows = selectedCat == null
               ? const <_DailyIntakeRow>[]
-              : _buildIntakeRows(catId: selectedCat.id, plan: plan);
+              : _buildIntakeRows(
+                  catId: selectedCat.id,
+                  plan: plan,
+                  rangeDays: rangeDays,
+                );
           final note = _buildNote(
             catName: selectedCat?.name ?? 'Your cat',
             records: records,
@@ -221,6 +236,15 @@ class WeeklyDietReportScreen extends ConsumerWidget {
                                       style: theme.textTheme.titleMedium
                                           ?.copyWith(
                                             color: const Color(0xFF7B8DA8),
+                                            fontWeight: FontWeight.w700,
+                                          ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Range: last $rangeDays day(s)',
+                                      style: theme.textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: secondary,
                                             fontWeight: FontWeight.w700,
                                           ),
                                     ),
@@ -477,6 +501,7 @@ class WeeklyDietReportScreen extends ConsumerWidget {
                                   await WeeklyReportExportService.downloadPdf(
                                     cat: selectedCat,
                                     records: records,
+                                    settings: settings,
                                   );
                                 },
                                 icon: const Icon(Icons.download_rounded),
@@ -499,6 +524,7 @@ class WeeklyDietReportScreen extends ConsumerWidget {
                                 await WeeklyReportExportService.shareReport(
                                   cat: selectedCat,
                                   records: records,
+                                  settings: settings,
                                 );
                               },
                               icon: const Icon(Icons.share_rounded),
@@ -532,6 +558,7 @@ class WeeklyDietReportScreen extends ConsumerWidget {
                                 await WeeklyReportExportService.downloadPdf(
                                   cat: selectedCat,
                                   records: records,
+                                  settings: settings,
                                 );
                               },
                               icon: const Icon(Icons.download_rounded),
@@ -553,6 +580,7 @@ class WeeklyDietReportScreen extends ConsumerWidget {
                               await WeeklyReportExportService.shareReport(
                                 cat: selectedCat,
                                 records: records,
+                                settings: settings,
                               );
                             },
                             icon: const Icon(Icons.share_rounded),

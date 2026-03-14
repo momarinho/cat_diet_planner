@@ -33,10 +33,10 @@ class VerticalTimelineTile extends StatelessWidget {
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: primary.withOpacity(0.2),
+                    color: primary.withValues(alpha: 0.2),
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: primary.withOpacity(0.35),
+                      color: primary.withValues(alpha: 0.35),
                       width: 1,
                     ),
                   ),
@@ -48,7 +48,7 @@ class VerticalTimelineTile extends StatelessWidget {
                       width: 2,
                       margin: const EdgeInsets.symmetric(vertical: 4),
                       decoration: BoxDecoration(
-                        color: primary.withOpacity(0.2),
+                        color: primary.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(100),
                       ),
                     ),
@@ -73,7 +73,9 @@ class VerticalTimelineTile extends StatelessWidget {
                   Text(
                     subtitle,
                     style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurface.withOpacity(0.65),
+                      color: theme.colorScheme.onSurface.withValues(
+                        alpha: 0.65,
+                      ),
                     ),
                   ),
                 ],

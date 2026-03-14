@@ -54,6 +54,10 @@ class DataExportService {
       'photoPath': cat.photoPath,
       'photoBase64': cat.photoBase64,
       'weightHistory': cat.weightHistory.map(_weightToMap).toList(),
+      'weightGoalMinKg': cat.weightGoalMinKg,
+      'weightGoalMaxKg': cat.weightGoalMaxKg,
+      'weightAlertDeltaKg': cat.weightAlertDeltaKg,
+      'weightAlertDeltaPercent': cat.weightAlertDeltaPercent,
     };
   }
 
@@ -62,9 +66,22 @@ class DataExportService {
       'barcode': food.barcode,
       'name': food.name,
       'brand': food.brand,
+      'category': food.category,
+      'manufacturer': food.manufacturer,
+      'productLine': food.productLine,
+      'flavor': food.flavor,
+      'texture': food.texture,
+      'packageSize': food.packageSize,
+      'servingUnit': food.servingUnit,
       'kcalPer100g': food.kcalPer100g,
       'protein': food.protein,
       'fat': food.fat,
+      'fiber': food.fiber,
+      'moisture': food.moisture,
+      'carbohydrate': food.carbohydrate,
+      'sodium': food.sodium,
+      'palatabilityNotes': food.palatabilityNotes,
+      'userTags': food.userTags,
     };
   }
 
@@ -73,6 +90,15 @@ class DataExportService {
       'date': record.date.toIso8601String(),
       'weight': record.weight,
       'notes': record.notes,
+      'weightContext': record.weightContext,
+      'appetite': record.appetite,
+      'stool': record.stool,
+      'vomit': record.vomit,
+      'energy': record.energy,
+      'clinicalAssessment': record.clinicalAssessment,
+      'clinicalPlan': record.clinicalPlan,
+      'clinicalAlertLevel': record.clinicalAlertLevel,
+      'alertTriggered': record.alertTriggered,
     };
   }
 
