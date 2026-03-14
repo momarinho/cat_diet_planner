@@ -67,6 +67,40 @@ class CatProfile extends HiveObject {
   @HiveField(13)
   String? notes;
 
+  // Additional clinical and routine fields (appended to preserve Hive compatibility)
+  @HiveField(14)
+  double? idealWeight; // kg
+
+  @HiveField(15)
+  int? bcs; // Body Condition Score (1-9)
+
+  @HiveField(16)
+  String sex; // 'male' | 'female' | 'unknown'
+
+  @HiveField(17)
+  String? breed;
+
+  @HiveField(18)
+  DateTime? birthDate;
+
+  @HiveField(19)
+  String? customActivityLevel;
+
+  @HiveField(20)
+  List<String> clinicalConditions; // e.g. ['diabetes', 'ckd']
+
+  @HiveField(21)
+  List<String> allergies; // e.g. ['chicken', 'beef']
+
+  @HiveField(22)
+  List<String> dietaryPreferences; // e.g. ['grain_free', 'low_fat']
+
+  @HiveField(23)
+  String? vetNotes; // veterinary notes separate from free-form notes
+
+  @HiveField(24)
+  String? activePlanId; // currently selected active individual diet plan
+
   CatProfile({
     required this.id,
     required this.name,
@@ -82,5 +116,17 @@ class CatProfile extends HiveObject {
     this.preferredMealsPerDay = 4,
     this.manualTargetKcal,
     this.notes,
+    // new fields with reasonable defaults
+    this.idealWeight,
+    this.bcs,
+    this.sex = 'unknown',
+    this.breed,
+    this.birthDate,
+    this.customActivityLevel,
+    this.clinicalConditions = const [],
+    this.allergies = const [],
+    this.dietaryPreferences = const [],
+    this.vetNotes,
+    this.activePlanId,
   });
 }

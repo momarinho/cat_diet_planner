@@ -130,6 +130,17 @@ class DemoDataService {
       manualTargetKcal: 235,
       notes:
           'Prefers smaller meals and benefits from a gentle maintenance target.',
+      // clinical & routine demo fields
+      idealWeight: 4.7,
+      bcs: 5,
+      sex: 'female',
+      breed: 'Domestic Shorthair',
+      birthDate: DateTime(now.year - 3, now.month, now.day),
+      customActivityLevel: null,
+      clinicalConditions: const ['sensitive_stomach'],
+      allergies: const ['chicken'],
+      dietaryPreferences: const ['low_fat'],
+      vetNotes: 'Routine check: good condition.',
     );
     await HiveService.catsBox.put(luna.id, luna);
 
@@ -138,12 +149,14 @@ class DemoDataService {
     }
 
     final lunaFood = foods[hillsKey]!;
-    final lunaTargetKcal = DietCalculatorService.calculateMer(
+    final lunaTargetKcal = DietCalculatorService.suggestTargetKcal(
       weightKg: luna.weight,
+      idealWeightKg: luna.idealWeight,
       ageMonths: luna.age,
       neutered: luna.neutered,
       activityLevel: luna.activityLevel,
       goal: luna.goal,
+      bcs: luna.bcs,
     );
     final lunaPortionPerDay = DietCalculatorService.calculateDailyPortionGrams(
       targetKcal: lunaTargetKcal,
@@ -162,6 +175,14 @@ class DemoDataService {
       ),
       createdAt: now.subtract(const Duration(days: 2)),
       goal: luna.goal,
+      mealTimes: DailyMealScheduleService.suggestedMealTimes(4),
+      mealLabels: DailyMealScheduleService.suggestedMealLabels(4),
+      mealPortionGrams: DailyMealScheduleService.normalizeMealPortions(
+        mealPortions: null,
+        totalPortionGrams: lunaPortionPerDay,
+        mealsPerDay: 4,
+      ),
+      startDate: now.subtract(const Duration(days: 2)),
     );
     await HiveService.dietPlansBox.put(luna.id, lunaPlan);
 
@@ -187,6 +208,14 @@ class DemoDataService {
             mealsPerDay: 3,
           ),
       createdAt: now.subtract(const Duration(days: 1)),
+      mealTimes: DailyMealScheduleService.suggestedMealTimes(3),
+      mealLabels: DailyMealScheduleService.suggestedMealLabels(3),
+      mealPortionGrams: DailyMealScheduleService.normalizeMealPortions(
+        mealPortions: null,
+        totalPortionGrams: groupPortionPerCat * rescueGroup.catCount,
+        mealsPerDay: 3,
+      ),
+      startDate: now.subtract(const Duration(days: 1)),
     );
     await HiveService.groupDietPlansBox.put(rescueGroup.id, groupPlan);
 

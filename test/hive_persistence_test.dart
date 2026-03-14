@@ -27,6 +27,18 @@ void main() {
       activityLevel: 'active',
       goal: 'gain',
       createdAt: DateTime(2026, 3, 1),
+      // Explicitly provide some of the new clinical/routine fields to
+      // ensure constructor handling and defaults are exercised in tests.
+      idealWeight: 3.9,
+      bcs: 5,
+      sex: 'female',
+      breed: 'Mixed',
+      birthDate: DateTime(2023, 3, 1),
+      customActivityLevel: null,
+      clinicalConditions: const [],
+      allergies: const [],
+      dietaryPreferences: const [],
+      vetNotes: null,
     );
 
     await repository.save(cat);

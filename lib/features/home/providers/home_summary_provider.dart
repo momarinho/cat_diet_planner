@@ -1,7 +1,7 @@
-import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/data/models/diet_plan.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
 import 'package:cat_diet_planner/features/daily/services/daily_meal_schedule_service.dart';
+import 'package:cat_diet_planner/features/plans/repositories/plan_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class HomeSummaryData {
@@ -50,9 +50,12 @@ final homeSummaryProvider = Provider<HomeSummaryData?>((ref) {
   final selectedCat = ref.watch(selectedCatProvider);
   if (selectedCat == null) return null;
 
-  final DietPlan? plan = HiveService.dietPlansBox.get(selectedCat.id);
+  final DietPlan? plan = PlanRepository().getPlanForCat(selectedCat.id);
+  final planIsActive =
+      plan != null &&
+      DailyMealScheduleService.isPlanActiveOn(startDate: plan.startDate);
 
-  final schedule = plan == null
+  final schedule = plan == null || !planIsActive
       ? DailyMealScheduleService.loadTodayForCat(selectedCat.id)
       : DailyMealScheduleService.ensureTodaySchedule(
           cat: selectedCat,
@@ -70,9 +73,12 @@ final homeSummaryProvider = Provider<HomeSummaryData?>((ref) {
   final totalMeals = items.length;
   final remainingMeals = totalMeals - completedMeals;
 
-  final consumedCalories = plan == null
-      ? 0.0
-      : completedMeals * (plan.targetKcalPerDay / plan.mealsPerDay);
+  final consumedCalories = items
+      .where((item) => item['completed'] == true)
+      .fold<double>(
+        0,
+        (sum, item) => sum + ((item['kcal'] as num?)?.toDouble() ?? 0.0),
+      );
 
   Map<String, dynamic>? nextMeal;
   var nextMealIndex = -1;
@@ -97,16 +103,20 @@ final homeSummaryProvider = Provider<HomeSummaryData?>((ref) {
       ? '+${delta.toStringAsFixed(1)} kg'
       : '${delta.toStringAsFixed(1)} kg';
 
-  final goalCalories = plan?.targetKcalPerDay ?? 0.0;
+  final goalCalories = planIsActive ? plan.targetKcalPerDay : 0.0;
 
   final insightTitle = plan == null
       ? 'No active diet plan'
+      : !planIsActive
+      ? 'Plan starts soon'
       : remainingMeals == 0
       ? 'Daily routine complete'
       : 'Next feeding scheduled';
 
   final insightBody = plan == null
       ? 'Create a plan to unlock next feeding and daily progress.'
+      : !planIsActive
+      ? 'This plan starts on ${plan.startDate.day.toString().padLeft(2, '0')}/${plan.startDate.month.toString().padLeft(2, '0')}/${plan.startDate.year}.'
       : remainingMeals == 0
       ? 'All planned meals for today were completed.'
       : '$remainingMeals meal(s) still pending today.';
@@ -124,8 +134,12 @@ final homeSummaryProvider = Provider<HomeSummaryData?>((ref) {
         });
 
   return HomeSummaryData(
-    nextMealLabel: nextMeal?['title']?.toString() ?? 'All meals done',
-    nextMealTime: nextMeal?['time']?.toString() ?? 'Today complete',
+    nextMealLabel: plan != null && !planIsActive
+        ? 'Plan starts soon'
+        : nextMeal?['title']?.toString() ?? 'All meals done',
+    nextMealTime: plan != null && !planIsActive
+        ? '${plan.startDate.day.toString().padLeft(2, '0')}/${plan.startDate.month.toString().padLeft(2, '0')}/${plan.startDate.year}'
+        : nextMeal?['time']?.toString() ?? 'Today complete',
     remainingMeals: remainingMeals,
     completedMeals: completedMeals,
     totalMeals: totalMeals,

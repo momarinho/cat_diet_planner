@@ -22,13 +22,30 @@ class DietPlanAdapter extends TypeAdapter<DietPlan> {
       portionGramsPerMeal: fields[6] as double,
       createdAt: fields[7] as DateTime,
       goal: fields[8] as String,
+      mealTimes: (fields[9] as List?)?.cast<String>() ?? const [],
+      mealLabels: (fields[10] as List?)?.cast<String>() ?? const [],
+      mealPortionGrams:
+          (fields[11] as List?)
+              ?.map((value) => (value as num).toDouble())
+              .toList() ??
+          const [],
+      startDate: fields[12] as DateTime? ?? fields[7] as DateTime,
+      // appended fields (new in model)
+      planId: fields[13] as String?,
+      foodKeys: (fields[14] as List?)?.cast<dynamic>() ?? const [],
+      foodNames: (fields[15] as List?)?.cast<String>() ?? const [],
+      portionUnit: (fields[16] as String?) ?? 'g',
+      portionUnitGrams: (fields[17] as num?)?.toDouble() ?? 1.0,
+      dailyOverrides:
+          (fields[18] as Map?)?.cast<int, Map<dynamic, dynamic>>() ?? const {},
+      operationalNotes: fields[19] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, DietPlan obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(20)
       ..writeByte(0)
       ..write(obj.catId)
       ..writeByte(1)
@@ -46,7 +63,30 @@ class DietPlanAdapter extends TypeAdapter<DietPlan> {
       ..writeByte(7)
       ..write(obj.createdAt)
       ..writeByte(8)
-      ..write(obj.goal);
+      ..write(obj.goal)
+      ..writeByte(9)
+      ..write(obj.mealTimes)
+      ..writeByte(10)
+      ..write(obj.mealLabels)
+      ..writeByte(11)
+      ..write(obj.mealPortionGrams)
+      ..writeByte(12)
+      ..write(obj.startDate)
+      // appended fields
+      ..writeByte(13)
+      ..write(obj.planId)
+      ..writeByte(14)
+      ..write(obj.foodKeys)
+      ..writeByte(15)
+      ..write(obj.foodNames)
+      ..writeByte(16)
+      ..write(obj.portionUnit)
+      ..writeByte(17)
+      ..write(obj.portionUnitGrams)
+      ..writeByte(18)
+      ..write(obj.dailyOverrides)
+      ..writeByte(19)
+      ..write(obj.operationalNotes);
   }
 
   @override

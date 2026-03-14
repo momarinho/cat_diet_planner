@@ -1,7 +1,7 @@
-import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/data/models/diet_plan.dart';
 import 'package:cat_diet_planner/features/daily/services/daily_meal_schedule_service.dart';
+import 'package:cat_diet_planner/features/plans/repositories/plan_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -41,8 +41,11 @@ class DashboardSummaryData {
 
 final dashboardSummaryProvider =
     Provider.family<DashboardSummaryData?, CatProfile>((ref, cat) {
-      final DietPlan? plan = HiveService.dietPlansBox.get(cat.id);
+      final DietPlan? plan = PlanRepository().getPlanForCat(cat.id);
       if (plan == null) return null;
+      if (!DailyMealScheduleService.isPlanActiveOn(startDate: plan.startDate)) {
+        return null;
+      }
 
       final schedule = DailyMealScheduleService.ensureTodaySchedule(
         cat: cat,
@@ -62,24 +65,21 @@ final dashboardSummaryProvider =
         }
       }
 
-      final perMealCalories = plan.mealsPerDay == 0
-          ? 0
-          : (plan.targetKcalPerDay / plan.mealsPerDay).round();
-
       final meals = List<DashboardMealItem>.generate(items.length, (index) {
         final item = items[index];
         return DashboardMealItem(
           id: item['id']?.toString() ?? 'meal_$index',
           title: item['title']?.toString() ?? 'Meal ${index + 1}',
           time: item['time']?.toString() ?? '--:--',
-          calories: perMealCalories,
+          calories: ((item['kcal'] as num?)?.toDouble() ?? 0.0).round(),
           isCompleted: item['completed'] == true,
           isNext: index == nextMealIndex,
         );
       });
 
-      final completedMeals = meals.where((meal) => meal.isCompleted).length;
-      final consumedCalories = completedMeals * perMealCalories;
+      final consumedCalories = meals
+          .where((meal) => meal.isCompleted)
+          .fold<int>(0, (sum, meal) => sum + meal.calories);
       final goalCalories = plan.targetKcalPerDay.round();
       final remainingCalories = goalCalories - consumedCalories;
 

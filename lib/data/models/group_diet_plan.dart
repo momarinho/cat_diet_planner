@@ -37,6 +37,38 @@ class GroupDietPlan extends HiveObject {
   @HiveField(10)
   final DateTime createdAt;
 
+  @HiveField(11)
+  final List<String> mealTimes;
+
+  @HiveField(12)
+  final List<String> mealLabels;
+
+  @HiveField(13)
+  final List<double> mealPortionGrams;
+
+  @HiveField(14)
+  final DateTime startDate;
+
+  // --- Appended fields for extended group plan behavior ---
+  // These are appended to preserve Hive compatibility with existing records.
+  @HiveField(15)
+  final double? manualTargetKcal; // optional manual kcal target per cat
+
+  @HiveField(16)
+  final List<dynamic> foodKeys; // support multiple foods in a group plan
+
+  @HiveField(17)
+  final String portionUnit; // 'g', 'can', 'sachet', 'scoop', etc.
+
+  @HiveField(18)
+  final double portionUnitGrams; // grams represented by a single portionUnit
+
+  @HiveField(19)
+  final String? operationalNotes; // operational / staff notes for the plan
+
+  @HiveField(20)
+  final Map<String, double> perCatShareWeights; // uneven distribution by cat
+
   GroupDietPlan({
     required this.groupId,
     required this.foodKey,
@@ -49,5 +81,16 @@ class GroupDietPlan extends HiveObject {
     required this.mealsPerDay,
     required this.portionGramsPerGroupPerMeal,
     required this.createdAt,
+    required this.mealTimes,
+    required this.mealLabels,
+    required this.mealPortionGrams,
+    required this.startDate,
+    // new optional fields with safe defaults
+    this.manualTargetKcal,
+    this.foodKeys = const [],
+    this.portionUnit = 'g',
+    this.portionUnitGrams = 1.0,
+    this.operationalNotes,
+    this.perCatShareWeights = const {},
   });
 }

@@ -18,23 +18,35 @@ void main() {
     await HiveTestHelper.dispose();
   });
 
-  testWidgets('cat profile form validates required name field', (tester) async {
-    tester.view.devicePixelRatio = 1.0;
-    tester.view.physicalSize = const Size(1200, 2200);
-    addTearDown(tester.view.resetPhysicalSize);
-    addTearDown(tester.view.resetDevicePixelRatio);
+  testWidgets(
+    'cat profile form validates required name field and shows clinical fields',
+    (tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(1200, 2200);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(
-      const ProviderScope(child: MaterialApp(home: CatProfileScreen())),
-    );
+      await tester.pumpWidget(
+        const ProviderScope(child: MaterialApp(home: CatProfileScreen())),
+      );
 
-    final saveButton = find.text('Save Profile', skipOffstage: false).last;
-    await tester.tap(saveButton);
-    await tester.pump();
+      // Ensure the form renders key clinical fields
+      expect(find.text('Ideal weight (kg) (optional)'), findsOneWidget);
+      expect(find.text('Body Condition Score (1-9)'), findsOneWidget);
+      expect(find.text('Sex'), findsOneWidget);
+      expect(find.text('Breed (optional)'), findsOneWidget);
+      expect(find.text('Date of birth (optional)'), findsOneWidget);
+      expect(find.text('Veterinary notes (optional)'), findsOneWidget);
 
-    expect(find.text('Enter the cat name'), findsOneWidget);
+      final saveButton = find.text('Save Profile', skipOffstage: false).last;
+      await tester.tap(saveButton);
+      await tester.pump();
 
-    await tester.pumpWidget(const SizedBox.shrink());
-    await tester.pump();
-  });
+      // Validation still applies for required fields
+      expect(find.text('Enter the cat name'), findsOneWidget);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+    },
+  );
 }

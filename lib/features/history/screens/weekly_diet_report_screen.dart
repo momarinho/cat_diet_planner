@@ -6,6 +6,7 @@ import 'package:cat_diet_planner/data/models/diet_plan.dart';
 import 'package:cat_diet_planner/data/models/weight_record.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
 import 'package:cat_diet_planner/features/history/services/weekly_report_export_service.dart';
+import 'package:cat_diet_planner/features/plans/repositories/plan_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -155,7 +156,7 @@ class WeeklyDietReportScreen extends ConsumerWidget {
               : _formatRange(first!.date, latest!.date);
           final plan = selectedCat == null
               ? null
-              : HiveService.dietPlansBox.get(selectedCat.id);
+              : PlanRepository().getPlanForCat(selectedCat.id);
           final intakeRows = selectedCat == null
               ? const <_DailyIntakeRow>[]
               : _buildIntakeRows(catId: selectedCat.id, plan: plan);

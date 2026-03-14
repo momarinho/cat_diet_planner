@@ -32,6 +32,16 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
   final _manualTargetKcalController = TextEditingController();
   final _notesController = TextEditingController();
 
+  // New controllers / fields for clinical & routine data
+  final _idealWeightController = TextEditingController();
+  final _breedController = TextEditingController();
+  final _birthDateController = TextEditingController();
+  final _customActivityController = TextEditingController();
+  final _clinicalConditionsController = TextEditingController();
+  final _allergiesController = TextEditingController();
+  final _dietaryPreferencesController = TextEditingController();
+  final _vetNotesController = TextEditingController();
+
   bool _neutered = true;
   String _activityLevel = 'moderate';
   String _goal = 'maintenance';
@@ -39,6 +49,12 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
   String? _photoPath;
   String? _photoBase64;
   bool _isSaving = false;
+
+  // clinical/routine state
+  double? _idealWeight;
+  int? _bcs;
+  String _sex = 'unknown';
+  DateTime? _birthDate;
 
   bool get _isEditing => widget.initialCat != null;
 
@@ -51,8 +67,20 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
       _ageController.text = '3';
       _manualTargetKcalController.text = '';
       _notesController.text = '';
+      _idealWeightController.text = '';
+      _breedController.text = '';
+      _birthDateController.text = '';
+      _customActivityController.text = '';
+      _clinicalConditionsController.text = '';
+      _allergiesController.text = '';
+      _dietaryPreferencesController.text = '';
+      _vetNotesController.text = '';
       _photoPath = _presetPhotos.first;
       _photoBase64 = null;
+      _idealWeight = null;
+      _bcs = null;
+      _sex = 'unknown';
+      _birthDate = null;
       return;
     }
 
@@ -70,6 +98,24 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
     _photoBase64 = cat.photoBase64;
     _photoPath =
         cat.photoPath ?? (_photoBase64 == null ? _presetPhotos.first : null);
+
+    // clinical / routine
+    _idealWeight = cat.idealWeight;
+    _idealWeightController.text = cat.idealWeight != null
+        ? cat.idealWeight!.toStringAsFixed(1)
+        : '';
+    _bcs = cat.bcs;
+    _sex = cat.sex;
+    _breedController.text = cat.breed ?? '';
+    _birthDate = cat.birthDate;
+    _birthDateController.text = cat.birthDate != null
+        ? cat.birthDate!.toIso8601String().split('T').first
+        : '';
+    _customActivityController.text = cat.customActivityLevel ?? '';
+    _clinicalConditionsController.text = (cat.clinicalConditions).join(', ');
+    _allergiesController.text = (cat.allergies).join(', ');
+    _dietaryPreferencesController.text = (cat.dietaryPreferences).join(', ');
+    _vetNotesController.text = cat.vetNotes ?? '';
   }
 
   @override
@@ -79,6 +125,17 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
     _ageController.dispose();
     _manualTargetKcalController.dispose();
     _notesController.dispose();
+
+    // dispose new controllers
+    _idealWeightController.dispose();
+    _breedController.dispose();
+    _birthDateController.dispose();
+    _customActivityController.dispose();
+    _clinicalConditionsController.dispose();
+    _allergiesController.dispose();
+    _dietaryPreferencesController.dispose();
+    _vetNotesController.dispose();
+
     super.dispose();
   }
 
@@ -90,6 +147,19 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
     final initial = widget.initialCat;
     final manualTarget = double.tryParse(
       _manualTargetKcalController.text.trim(),
+    );
+
+    // parse comma-separated lists for structured fields
+    List<String> _parseTags(String text) {
+      return text
+          .split(',')
+          .map((s) => s.trim())
+          .where((s) => s.isNotEmpty)
+          .toList();
+    }
+
+    final idealWeightParsed = double.tryParse(
+      _idealWeightController.text.trim(),
     );
     final profile = CatProfile(
       id: initial?.id ?? DateTime.now().microsecondsSinceEpoch.toString(),
@@ -110,6 +180,25 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
       notes: _notesController.text.trim().isEmpty
           ? null
           : _notesController.text.trim(),
+      // new clinical & routine fields
+      idealWeight: idealWeightParsed == null || idealWeightParsed <= 0
+          ? null
+          : idealWeightParsed,
+      bcs: _bcs,
+      sex: _sex,
+      breed: _breedController.text.trim().isEmpty
+          ? null
+          : _breedController.text.trim(),
+      birthDate: _birthDate,
+      customActivityLevel: _customActivityController.text.trim().isEmpty
+          ? null
+          : _customActivityController.text.trim(),
+      clinicalConditions: _parseTags(_clinicalConditionsController.text),
+      allergies: _parseTags(_allergiesController.text),
+      dietaryPreferences: _parseTags(_dietaryPreferencesController.text),
+      vetNotes: _vetNotesController.text.trim().isEmpty
+          ? null
+          : _vetNotesController.text.trim(),
     );
 
     try {
@@ -462,6 +551,153 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     },
                   ),
                   const SizedBox(height: 14),
+                  // Ideal weight
+                  TextFormField(
+                    controller: _idealWeightController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Ideal weight (kg) (optional)',
+                      helperText: 'Optional: used to refine kcal suggestions',
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (value) {
+                      if (value == null || value.trim().isEmpty) return null;
+                      final parsed = double.tryParse(value.trim());
+                      if (parsed == null || parsed <= 0) {
+                        return 'Invalid ideal weight';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  // BCS slider (1-9)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Body Condition Score (1-9)',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      Slider(
+                        value: (_bcs ?? 5).toDouble(),
+                        min: 1,
+                        max: 9,
+                        divisions: 8,
+                        label: '${_bcs ?? 5}',
+                        onChanged: (v) => setState(() => _bcs = v.round()),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  // Sex dropdown
+                  DropdownButtonFormField<String>(
+                    value: _sex,
+                    decoration: const InputDecoration(
+                      labelText: 'Sex',
+                      border: OutlineInputBorder(),
+                    ),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'unknown',
+                        child: Text('Unknown'),
+                      ),
+                      DropdownMenuItem(value: 'male', child: Text('Male')),
+                      DropdownMenuItem(value: 'female', child: Text('Female')),
+                    ],
+                    onChanged: (v) {
+                      if (v != null) setState(() => _sex = v);
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  // Breed
+                  TextFormField(
+                    controller: _breedController,
+                    decoration: const InputDecoration(
+                      labelText: 'Breed (optional)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  // Birthdate picker (read-only field)
+                  TextFormField(
+                    controller: _birthDateController,
+                    readOnly: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Date of birth (optional)',
+                      border: OutlineInputBorder(),
+                    ),
+                    onTap: () async {
+                      final picked = await showDatePicker(
+                        context: context,
+                        initialDate: _birthDate ?? DateTime.now(),
+                        firstDate: DateTime(2000),
+                        lastDate: DateTime.now(),
+                      );
+                      if (picked != null) {
+                        setState(() {
+                          _birthDate = picked;
+                          _birthDateController.text = picked
+                              .toIso8601String()
+                              .split('T')
+                              .first;
+                        });
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 14),
+                  // Custom activity level (optional)
+                  TextFormField(
+                    controller: _customActivityController,
+                    decoration: const InputDecoration(
+                      labelText: 'Custom activity level (optional)',
+                      helperText:
+                          'Overrides preset activity labels when provided',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  // Structured lists (comma separated)
+                  TextFormField(
+                    controller: _clinicalConditionsController,
+                    decoration: const InputDecoration(
+                      labelText: 'Clinical conditions (comma separated)',
+                      helperText: 'Examples: diabetes, ckd, arthritis',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _allergiesController,
+                    decoration: const InputDecoration(
+                      labelText: 'Allergies / restrictions (comma separated)',
+                      helperText: 'Examples: chicken, beef, dairy',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  TextFormField(
+                    controller: _dietaryPreferencesController,
+                    decoration: const InputDecoration(
+                      labelText: 'Dietary preferences (comma separated)',
+                      helperText: 'Examples: grain_free, low_fat',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  // Vet notes (separate from free-form notes)
+                  TextFormField(
+                    controller: _vetNotesController,
+                    minLines: 2,
+                    maxLines: 4,
+                    decoration: const InputDecoration(
+                      labelText: 'Veterinary notes (optional)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  // Freeform clinical notes (existing)
                   TextFormField(
                     controller: _notesController,
                     minLines: 3,

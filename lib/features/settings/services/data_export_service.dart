@@ -87,6 +87,10 @@ class DataExportService {
       'portionGramsPerMeal': plan.portionGramsPerMeal,
       'createdAt': plan.createdAt.toIso8601String(),
       'goal': plan.goal,
+      'mealTimes': plan.mealTimes,
+      'mealLabels': plan.mealLabels,
+      'mealPortionGrams': plan.mealPortionGrams,
+      'startDate': plan.startDate.toIso8601String(),
     };
   }
 

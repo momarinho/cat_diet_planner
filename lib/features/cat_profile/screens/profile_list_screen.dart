@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/navigation/app_routes.dart';
 import '../../../core/theme/theme_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/cat_selector_avatar.dart';
@@ -34,7 +35,9 @@ class ProfileListScreen extends ConsumerWidget {
           ),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.of(context).pushNamed(AppRoutes.settings);
+            },
           ),
           const SizedBox(width: 8),
         ],
@@ -58,21 +61,27 @@ class ProfileListScreen extends ConsumerWidget {
                         'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=200&q=80',
                     name: 'Milo',
                     isActive: true,
-                    onTap: () => debugPrint('Milo Tocado'),
+                    onTap: () {
+                      _showDemoAvatarMessage(context, 'Milo');
+                    },
                   ),
                   CatSelectorAvatar(
                     imagePath:
                         'https://images.unsplash.com/photo-1543852786-1cf6624b9987?auto=format&fit=crop&w=200&q=80',
                     name: 'Luna',
                     isActive: false,
-                    onTap: () => debugPrint('Luna Tocada'),
+                    onTap: () {
+                      _showDemoAvatarMessage(context, 'Luna');
+                    },
                   ),
                   CatSelectorAvatar(
                     imagePath:
                         'https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=200&q=80',
                     name: 'Oliver',
                     isActive: false,
-                    onTap: () => debugPrint('Oliver Tocado'),
+                    onTap: () {
+                      _showDemoAvatarMessage(context, 'Oliver');
+                    },
                   ),
                   const SizedBox(width: 8),
                   _buildAddCatButton(context),
@@ -142,7 +151,9 @@ class ProfileListScreen extends ConsumerWidget {
             // BOTÃO PRINCIPAL
             NeonButton(
               text: '🍴 Feed Now',
-              onTap: () => debugPrint('Feed Now Apertado'),
+              onTap: () {
+                Navigator.of(context).pushNamed(AppRoutes.daily);
+              },
             ),
             const SizedBox(height: 16),
             // BOTÕES VAZADOS (LADO A LADO)
@@ -152,7 +163,9 @@ class ProfileListScreen extends ConsumerWidget {
                   child: GhostButton(
                     text: 'Scan Food',
                     icon: Icons.qr_code_scanner,
-                    onTap: () => debugPrint('Scan Food'),
+                    onTap: () {
+                      Navigator.of(context).pushNamed(AppRoutes.scanner);
+                    },
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -160,7 +173,9 @@ class ProfileListScreen extends ConsumerWidget {
                   child: GhostButton(
                     text: 'Log Weight',
                     icon: Icons.monitor_weight_outlined,
-                    onTap: () => debugPrint('Log Weight'),
+                    onTap: () {
+                      Navigator.of(context).pushNamed(AppRoutes.weightCheckIn);
+                    },
                   ),
                 ),
               ],
@@ -249,39 +264,63 @@ class ProfileListScreen extends ConsumerWidget {
     );
   }
 
+  void _showDemoAvatarMessage(BuildContext context, String name) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          '$name is a showcase avatar. Open Home to work with real profiles.',
+        ),
+      ),
+    );
+  }
+
   // --- WIDGET AUXILIAR DO ADD NEW ---
   Widget _buildAddCatButton(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.3),
-                width: 1.5,
-                style: BorderStyle.none,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(18),
+        onTap: () {
+          Navigator.of(context).pushNamed(AppRoutes.catProfile);
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.onSurface.withValues(alpha: 0.3),
+                  width: 1.5,
+                  style: BorderStyle.none,
+                ),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.05),
               ),
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.05),
+              child: Icon(
+                Icons.add,
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
             ),
-            child: Icon(
-              Icons.add,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+            const SizedBox(height: 8),
+            Text(
+              'Add New',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.5),
+                fontWeight: FontWeight.bold,
+              ),
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Add New',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

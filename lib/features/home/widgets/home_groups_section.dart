@@ -4,6 +4,7 @@ import 'package:cat_diet_planner/data/models/cat_group.dart';
 import 'package:cat_diet_planner/data/models/group_diet_plan.dart';
 import 'package:cat_diet_planner/features/cat_group/providers/selected_group_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/cat_groups_provider.dart';
+import 'package:cat_diet_planner/features/cat_profile/providers/cat_profiles_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
 import 'package:cat_diet_planner/features/daily/services/daily_meal_schedule_service.dart';
 import 'package:cat_diet_planner/features/settings/services/notification_service.dart';
@@ -64,6 +65,22 @@ class _GroupCard extends StatelessWidget {
   final CatGroup group;
   final Color primary;
 
+  IconData _groupIcon(String? iconName) {
+    switch (iconName) {
+      case 'pets':
+        return Icons.pets_rounded;
+      case 'home_work':
+        return Icons.home_work_outlined;
+      case 'grass':
+        return Icons.grass_rounded;
+      case 'shield_moon':
+        return Icons.shield_moon_outlined;
+      case 'groups':
+      default:
+        return Icons.groups_2_outlined;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -73,8 +90,17 @@ class _GroupCard extends StatelessWidget {
 
     return Consumer(
       builder: (context, ref, _) {
+        final catProfiles = ref.watch(catProfilesProvider);
         final selectedGroup = ref.watch(selectedGroupProvider);
         final isActive = selectedGroup?.id == group.id;
+        final linkedCats = catProfiles
+            .where((cat) => group.catIds.contains(cat.id))
+            .map((cat) => cat.name)
+            .toList(growable: false);
+        final icon = _groupIcon(group.iconName);
+        final accent = group.secondaryColorValue == null
+            ? Color(group.colorValue)
+            : Color(group.secondaryColorValue!);
 
         return LayoutBuilder(
           builder: (context, constraints) {
@@ -160,11 +186,23 @@ class _GroupCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${group.catCount} cat(s) in this group',
+                    linkedCats.isNotEmpty
+                        ? '${linkedCats.length} linked cat(s)'
+                        : '${group.catCount} cat(s) in this group',
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: secondary,
                     ),
                   ),
+                  if (linkedCats.isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      linkedCats.join(' • '),
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: secondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                   if ((group.description ?? '').isNotEmpty) ...[
                     const SizedBox(height: 4),
                     Text(
@@ -172,6 +210,38 @@ class _GroupCard extends StatelessWidget {
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: secondary,
                       ),
+                    ),
+                  ],
+                  if ((group.subgroup ?? '').isNotEmpty ||
+                      (group.category ?? '').isNotEmpty ||
+                      (group.enclosure ?? '').isNotEmpty ||
+                      (group.environment ?? '').isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        if ((group.subgroup ?? '').isNotEmpty)
+                          _StatusPill(
+                            text: 'Subgroup: ${group.subgroup}',
+                            color: accent,
+                          ),
+                        if ((group.category ?? '').isNotEmpty)
+                          _StatusPill(
+                            text: 'Category: ${group.category}',
+                            color: accent,
+                          ),
+                        if ((group.enclosure ?? '').isNotEmpty)
+                          _StatusPill(
+                            text: 'Enclosure: ${group.enclosure}',
+                            color: accent,
+                          ),
+                        if ((group.environment ?? '').isNotEmpty)
+                          _StatusPill(
+                            text: 'Environment: ${group.environment}',
+                            color: accent,
+                          ),
+                      ],
                     ),
                   ],
                   const SizedBox(height: 8),
@@ -263,10 +333,7 @@ class _GroupCard extends StatelessWidget {
                               backgroundColor: Color(
                                 group.colorValue,
                               ).withValues(alpha: 0.2),
-                              child: Icon(
-                                Icons.groups_2_outlined,
-                                color: Color(group.colorValue),
-                              ),
+                              child: Icon(icon, color: Color(group.colorValue)),
                             ),
                             const SizedBox(width: 12),
                             info,
@@ -283,10 +350,7 @@ class _GroupCard extends StatelessWidget {
                           backgroundColor: Color(
                             group.colorValue,
                           ).withValues(alpha: 0.2),
-                          child: Icon(
-                            Icons.groups_2_outlined,
-                            color: Color(group.colorValue),
-                          ),
+                          child: Icon(icon, color: Color(group.colorValue)),
                         ),
                         const SizedBox(width: 12),
                         info,

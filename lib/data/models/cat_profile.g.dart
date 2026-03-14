@@ -31,13 +31,25 @@ class CatProfileAdapter extends TypeAdapter<CatProfile> {
       preferredMealsPerDay: fields[11] as int? ?? 4,
       manualTargetKcal: fields[12] as double?,
       notes: fields[13] as String?,
+      // Appended clinical & routine fields (safe defaults when absent)
+      idealWeight: fields[14] as double?,
+      bcs: fields[15] as int?,
+      sex: (fields[16] as String?) ?? 'unknown',
+      breed: fields[17] as String?,
+      birthDate: fields[18] as DateTime?,
+      customActivityLevel: fields[19] as String?,
+      clinicalConditions: (fields[20] as List?)?.cast<String>() ?? const [],
+      allergies: (fields[21] as List?)?.cast<String>() ?? const [],
+      dietaryPreferences: (fields[22] as List?)?.cast<String>() ?? const [],
+      vetNotes: fields[23] as String?,
+      activePlanId: fields[24] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, CatProfile obj) {
     writer
-      ..writeByte(14)
+      ..writeByte(25)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -65,7 +77,30 @@ class CatProfileAdapter extends TypeAdapter<CatProfile> {
       ..writeByte(12)
       ..write(obj.manualTargetKcal)
       ..writeByte(13)
-      ..write(obj.notes);
+      ..write(obj.notes)
+      // appended fields
+      ..writeByte(14)
+      ..write(obj.idealWeight)
+      ..writeByte(15)
+      ..write(obj.bcs)
+      ..writeByte(16)
+      ..write(obj.sex)
+      ..writeByte(17)
+      ..write(obj.breed)
+      ..writeByte(18)
+      ..write(obj.birthDate)
+      ..writeByte(19)
+      ..write(obj.customActivityLevel)
+      ..writeByte(20)
+      ..write(obj.clinicalConditions)
+      ..writeByte(21)
+      ..write(obj.allergies)
+      ..writeByte(22)
+      ..write(obj.dietaryPreferences)
+      ..writeByte(23)
+      ..write(obj.vetNotes)
+      ..writeByte(24)
+      ..write(obj.activePlanId);
   }
 
   @override

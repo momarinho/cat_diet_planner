@@ -24,6 +24,17 @@ void main() {
       activityLevel: 'moderate',
       goal: 'maintenance',
       createdAt: DateTime(2026, 1, 1),
+      // new optional clinical/routine fields (use defaults where appropriate)
+      idealWeight: 4.0,
+      bcs: 5,
+      sex: 'female',
+      breed: 'Domestic Shorthair',
+      birthDate: DateTime(2024, 1, 1),
+      customActivityLevel: null,
+      clinicalConditions: const [],
+      allergies: const [],
+      dietaryPreferences: const [],
+      vetNotes: null,
     );
     await HiveService.catsBox.put(cat.id, cat);
 

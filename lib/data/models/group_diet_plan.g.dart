@@ -24,13 +24,32 @@ class GroupDietPlanAdapter extends TypeAdapter<GroupDietPlan> {
       mealsPerDay: fields[8] as int,
       portionGramsPerGroupPerMeal: fields[9] as double,
       createdAt: fields[10] as DateTime,
+      mealTimes: (fields[11] as List?)?.cast<String>() ?? const [],
+      mealLabels: (fields[12] as List?)?.cast<String>() ?? const [],
+      mealPortionGrams:
+          (fields[13] as List?)
+              ?.map((value) => (value as num).toDouble())
+              .toList() ??
+          const [],
+      startDate: fields[14] as DateTime? ?? fields[10] as DateTime,
+      // appended fields (new in model)
+      manualTargetKcal: fields[15] as double?,
+      foodKeys: (fields[16] as List?)?.cast<dynamic>() ?? const [],
+      portionUnit: (fields[17] as String?) ?? 'g',
+      portionUnitGrams: (fields[18] as num?)?.toDouble() ?? 1.0,
+      operationalNotes: fields[19] as String?,
+      perCatShareWeights:
+          (fields[20] as Map?)?.map(
+            (key, value) => MapEntry(key.toString(), (value as num).toDouble()),
+          ) ??
+          const {},
     );
   }
 
   @override
   void write(BinaryWriter writer, GroupDietPlan obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(21)
       ..writeByte(0)
       ..write(obj.groupId)
       ..writeByte(1)
@@ -52,7 +71,28 @@ class GroupDietPlanAdapter extends TypeAdapter<GroupDietPlan> {
       ..writeByte(9)
       ..write(obj.portionGramsPerGroupPerMeal)
       ..writeByte(10)
-      ..write(obj.createdAt);
+      ..write(obj.createdAt)
+      ..writeByte(11)
+      ..write(obj.mealTimes)
+      ..writeByte(12)
+      ..write(obj.mealLabels)
+      ..writeByte(13)
+      ..write(obj.mealPortionGrams)
+      ..writeByte(14)
+      ..write(obj.startDate)
+      // appended fields
+      ..writeByte(15)
+      ..write(obj.manualTargetKcal)
+      ..writeByte(16)
+      ..write(obj.foodKeys)
+      ..writeByte(17)
+      ..write(obj.portionUnit)
+      ..writeByte(18)
+      ..write(obj.portionUnitGrams)
+      ..writeByte(19)
+      ..write(obj.operationalNotes)
+      ..writeByte(20)
+      ..write(obj.perCatShareWeights);
   }
 
   @override

@@ -41,8 +41,8 @@ Este passa a ser o checklist final de produto e execução.
 - [x] repositório de perfil conectado ao `Hive`
 - [x] shell principal com `IndexedStack`
 - [-] rotas internas principais ligadas
-- [ ] persistência completa de preferências do app
-- [ ] padronização final de repositories/providers para todos os fluxos reais
+- [x] persistência completa de preferências do app
+- [-] padronização final de repositories/providers para todos os fluxos reais
 
 ## 3. Design system e componentes reutilizáveis
 - [x] `AppCardContainer`
@@ -52,9 +52,9 @@ Este passa a ser o checklist final de produto e execução.
 - [x] `StatusBadge`
 - [x] `DailySummaryRing`
 - [x] `VerticalTimelineTile`
-- [-] `MealHorizontalCard`
-- [ ] skeleton/loading states consistentes
-- [ ] empty/error states padronizados
+- [x] `MealHorizontalCard`
+- [x] skeleton/loading states consistentes
+- [x] empty/error states padronizados
 
 ## 4. Navegação principal final
 - [x] bottom navigation principal implementada
@@ -63,7 +63,7 @@ Este passa a ser o checklist final de produto e execução.
 - [x] aba `Plans` deixou de usar placeholder
 - [x] aba `History` deixou de usar placeholder
 - [x] FAB central abre fluxo de scanner
-- [ ] revisar todos os pontos de entrada secundários para eliminar ações mortas restantes
+- [x] revisar todos os pontos de entrada secundários para eliminar ações mortas restantes
 
 ## 5. Home
 - [x] header com título central e ações
@@ -145,7 +145,7 @@ Este passa a ser o checklist final de produto e execução.
 - [x] quick actions visuais
 - [x] card de resumo diário
 - [x] timeline horizontal de refeições
-- [-] tela abre a partir da Home com base no gato selecionado
+- [x] tela abre a partir da Home com base no gato selecionado
 - [x] conectar resumo diário a dados reais
 - [x] conectar timeline a refeições reais
 - [x] fechar ações rápidas ponta a ponta
@@ -163,6 +163,7 @@ Este passa a ser o checklist final de produto e execução.
 - [x] metas de manutenção/perda/ganho
 - [x] alertas de saúde por faixa
 - [x] persistir plano alimentar atual
+- [x] permitir personalizar horários por refeição no plano
 
 ## 11. Food Database
 - [x] `FoodDatabaseScreen`
@@ -174,10 +175,10 @@ Este passa a ser o checklist final de produto e execução.
 - [x] salvar `FoodItem` no `Hive`
 - [x] integração inicial com `Scanner`
 - [x] disponibilizar alimentos para `Plans`
-- [-] atualização da lista local validada parcialmente
+- [x] atualização da lista local validada parcialmente
 - [x] lista de recentes/populares
 - [x] persistir alimento escolhido no plano
-- [ ] consolidar decisão arquitetural no código, não só na documentação
+- [-] consolidar decisão arquitetural no código, não só na documentação
 
 ## 12. Weight Check-in
 - [x] tela dedicada de check-in
@@ -257,6 +258,94 @@ Este passa a ser o checklist final de produto e execução.
 - [x] gráficos finais
 - [x] PDF real
 - [x] compartilhamento
+
+## 18. Personalização de Produto
+
+### 18.1 Já personalizável no estado atual
+- [x] foto do gato
+- [x] peso, idade, castração, atividade e objetivo do gato
+- [x] refeições preferidas por dia no perfil individual
+- [x] meta calórica manual por gato
+- [x] notas clínicas / preferências do perfil
+- [x] nome, quantidade, descrição e cor do grupo
+- [x] alimento escolhido no plano
+- [x] quantidade de refeições por dia no plano
+- [x] horários por refeição no plano
+- [x] nomes customizados por refeição no plano
+- [x] lembretes globais, idioma e tema
+
+### 18.2 Cat Profile: dados clínicos e rotina
+- [x] peso ideal / meta de peso por gato
+- [x] condição corporal (`BCS`) e score visual
+- [x] sexo do gato
+- [x] raça
+- [x] data de nascimento opcional além da idade em meses
+- [x] nível de atividade customizado além de presets fixos
+- [x] condições clínicas estruturadas
+- [x] restrições alimentares / alergias
+- [x] preferências alimentares estruturadas
+- [x] observação veterinária com campos separados de nota livre
+
+### 18.3 Plans: regras alimentares
+- [x] nomes customizados para cada refeição
+- [x] quantidade customizada por refeição em vez de dividir igual
+- [x] plano diferente por dia da semana
+- [x] plano alternativo para fim de semana
+- [x] data de início do plano
+- [x] múltiplos planos salvos por gato com escolha de plano ativo
+- [x] observações operacionais por plano
+- [x] meta calórica manual também no plano de grupo com presets reutilizáveis
+- [x] ajuste de unidade de porção (`g`, lata, sachê, scoop)
+- [x] seleção de mais de um alimento no mesmo plano
+
+### 18.4 Daily e rotina operacional
+- [x] remarcar horário de uma refeição no dia atual
+- [x] pular refeição sem marcar como concluída
+- [x] registrar motivo de atraso / recusa / apetite reduzido
+- [x] registrar água, petiscos e suplementos
+- [x] registrar observações por refeição
+- [x] duplicar rotina de ontem para hoje
+- [x] rotina diferente para gato individual e grupo com regras específicas
+
+### 18.5 Groups: operação com múltiplos gatos
+- [x] vincular grupos a gatos reais em vez de só `catCount`
+- [x] permitir subgrupos ou categorias operacionais
+- [x] meta por grupo com distribuição desigual entre gatos
+- [x] observações operacionais por turno / recinto / ambiente
+- [x] cor e identificação visual mais flexíveis
+
+### 18.6 Food Database
+- [ ] categoria do alimento (`seca`, `úmida`, `natural`, `petisco`, `suplemento`)
+- [ ] fabricante / linha / sabor / textura
+- [ ] tamanho da embalagem
+- [ ] unidade doméstica para servir (`lata`, `sachê`, `xícara`, `colher`)
+- [ ] macros mais completos (`fibra`, `umidade`, `carboidrato`, `sódio`)
+- [ ] observações de aceitação e palatabilidade
+- [ ] tags customizadas do usuário
+
+### 18.7 Weight Check-in e acompanhamento de saúde
+- [ ] escolher data e hora manual do check-in
+- [ ] registrar contexto do peso (`jejum`, `após refeição`, `balança diferente`)
+- [ ] registrar apetite, fezes, vômito e energia no check-in
+- [ ] anexar nota clínica estruturada ao registro de peso
+- [ ] metas e alertas personalizáveis de variação de peso
+
+### 18.8 Settings, notificações e relatórios
+- [ ] horários de lembrete independentes do horário do plano
+- [ ] quiet hours / janela sem notificações
+- [ ] sons ou intensidade de notificação por tipo
+- [ ] personalizar idioma real do conteúdo do app além do seletor salvo
+- [ ] intervalo customizado no relatório além do semanal
+- [ ] layout/conteúdo do PDF selecionável
+- [ ] mensagem de compartilhamento personalizável
+
+### 18.9 Priorização recomendada
+- [ ] prioridade 1: nomes e horários por refeição, quantidade por refeição, data de início do plano
+- [-] prioridade 1: registro diário de contexto da refeição e do check-in de peso
+- [ ] prioridade 1: peso ideal, restrições alimentares e condições clínicas estruturadas
+- [ ] prioridade 2: múltiplos planos por gato e planos por dia da semana
+- [ ] prioridade 2: grupos vinculados a gatos reais
+- [ ] prioridade 3: customização avançada de relatórios e notificações
 
 ### Bloco D: preferências e rotina
 - [x] settings persistentes

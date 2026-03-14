@@ -94,20 +94,35 @@ class DailyScheduleSection extends StatelessWidget {
     for (var index = 0; index < mealEntries.length; index++) {
       final item = mealEntries[index];
       final completed = item['completed'] == true;
+      final type = item['type']?.toString() ?? 'meal';
+      final mealContext = item['mealContext'] as String?;
+      final notes = item['mealNotes'] as String?;
+      final quantity = (item['quantity'] as num?)?.toDouble();
+      final quantityUnit = item['quantityUnit']?.toString();
+      final badge = _entryBadgeLabel(type, mealContext, completed);
+      final contextualSubtitle = [
+        item['subtitle'] as String? ?? '',
+        if (type != 'meal' && quantity != null && quantity > 0)
+          'Logged: ${quantity.toStringAsFixed(quantity % 1 == 0 ? 0 : 1)} ${quantityUnit ?? ''}'
+              .trim(),
+        if (notes != null && notes.trim().isNotEmpty) 'Note: ${notes.trim()}',
+      ].where((line) => line.trim().isNotEmpty).join('\n');
       final isLastMeal = index == mealEntries.length - 1;
 
       entries.add(
         _ScheduleEntry(
           icon: completed ? Icons.check_rounded : Icons.restaurant_rounded,
           title: item['title'] as String? ?? 'Meal',
-          subtitle: item['subtitle'] as String? ?? '',
+          subtitle: contextualSubtitle,
           time: item['time'] as String? ?? '',
           state: completed ? _ScheduleState.completed : _ScheduleState.upcoming,
-          badgeText: completed ? 'COMPLETED' : null,
-          actionLabel: completed ? null : 'MARK AS DONE',
+          badgeText: badge,
+          actionLabel: completed
+              ? 'UPDATE LOG'
+              : (type == 'meal' ? 'LOG MEAL' : 'LOG EVENT'),
           connectorHeight: isLastMeal ? 74 : 92,
           isLast: false,
-          onActionTap: completed ? null : () => onMealToggle(item),
+          onActionTap: () => onMealToggle(item),
         ),
       );
 
@@ -148,6 +163,28 @@ class DailyScheduleSection extends StatelessWidget {
     }
 
     return entries;
+  }
+
+  String? _entryBadgeLabel(String type, String? context, bool completed) {
+    if (type != 'meal') {
+      return completed ? 'LOGGED' : type.toUpperCase();
+    }
+    switch (context) {
+      case 'completed':
+        return 'COMPLETED';
+      case 'partial':
+        return 'PARTIAL';
+      case 'delayed':
+        return 'DELAYED';
+      case 'refused':
+        return 'REFUSED';
+      case 'reduced':
+        return 'REDUCED';
+      case 'skipped':
+        return 'SKIPPED';
+      default:
+        return completed ? 'COMPLETED' : null;
+    }
   }
 }
 
