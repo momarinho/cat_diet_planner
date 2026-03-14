@@ -9,6 +9,7 @@ abstract final class AppRoutes {
   static const catProfile = '/cat-profile';
   static const catGroup = '/cat-group';
   static const settings = '/settings';
+  static const howItWorks = '/how-it-works';
   static const scanner = '/scanner';
   static const weightCheckIn = '/weight-check-in';
   static const foodDatabase = '/food-database';

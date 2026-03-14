@@ -9,6 +9,7 @@ import 'package:cat_diet_planner/features/history/screens/weekly_diet_report_scr
 import 'package:cat_diet_planner/features/shell/screens/app_shell_screen.dart';
 import 'package:cat_diet_planner/features/scanner/screens/scanner_screen.dart';
 import 'package:cat_diet_planner/features/settings/screens/settings_screen.dart';
+import 'package:cat_diet_planner/features/settings/screens/how_it_works_screen.dart';
 import 'package:cat_diet_planner/features/splash/screens/splash_screen.dart';
 import 'package:cat_diet_planner/features/weight/screens/weight_checkin_screen.dart';
 
@@ -75,6 +76,11 @@ class AppRouter {
       case AppRoutes.settings:
         return MaterialPageRoute(
           builder: (_) => const SettingsScreen(),
+          settings: settings,
+        );
+      case AppRoutes.howItWorks:
+        return MaterialPageRoute(
+          builder: (_) => const HowItWorksScreen(),
           settings: settings,
         );
       case AppRoutes.weightCheckIn:

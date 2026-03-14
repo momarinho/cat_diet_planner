@@ -1,4 +1,5 @@
 import 'package:cat_diet_planner/core/theme/theme_provider.dart';
+import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/features/cat_group/providers/selected_group_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
@@ -608,6 +609,24 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 subtitle: const Text(
                   'Notifications and report/share texts now follow selected language.',
                 ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _SectionCard(
+            title: 'Help',
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.menu_book_rounded, color: primary),
+                title: const Text('How the app works'),
+                subtitle: const Text(
+                  'Overview of features and the recommended daily flow',
+                ),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () {
+                  Navigator.of(context).pushNamed(AppRoutes.howItWorks);
+                },
               ),
             ],
           ),
