@@ -82,6 +82,7 @@ class PlanInspectorSheet extends StatelessWidget {
                 ),
               ),
               TabBar(
+                isScrollable: true,
                 tabs: [
                   Tab(text: l10n.previewTab),
                   Tab(text: l10n.savedTab),

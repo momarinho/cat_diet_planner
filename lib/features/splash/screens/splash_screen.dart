@@ -87,66 +87,71 @@ class _BrandMark extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 320,
-      height: 320,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
-            width: 252,
-            height: 252,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: const LinearGradient(
-                colors: [Color(0xFFF8B7C8), Color(0xFFA32D56)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFFA32D56).withValues(alpha: 0.12),
-                  blurRadius: 26,
-                  offset: const Offset(0, 14),
-                ),
-              ],
-            ),
-          ),
-          Container(
-            width: 220,
-            height: 220,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color(0xFFF7F1F3),
-            ),
-          ),
-          Container(
-            width: 204,
-            height: 204,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.82),
-                width: 3,
-              ),
-            ),
-          ),
-          ClipOval(
-            child: SizedBox(
-              width: 196,
-              height: 196,
-              child: Transform.scale(
-                scale: 0.9,
-                child: Image.asset(
-                  SplashScreen._logoPath,
-                  fit: BoxFit.contain,
-                  alignment: Alignment.center,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final size = constraints.maxWidth.clamp(220.0, 320.0);
+        return SizedBox(
+          width: size,
+          height: size,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              Container(
+                width: size * 0.79,
+                height: size * 0.79,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFF8B7C8), Color(0xFFA32D56)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFA32D56).withValues(alpha: 0.12),
+                      blurRadius: 26,
+                      offset: const Offset(0, 14),
+                    ),
+                  ],
                 ),
               ),
-            ),
+              Container(
+                width: size * 0.69,
+                height: size * 0.69,
+                decoration: const BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Color(0xFFF7F1F3),
+                ),
+              ),
+              Container(
+                width: size * 0.64,
+                height: size * 0.64,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.82),
+                    width: 3,
+                  ),
+                ),
+              ),
+              ClipOval(
+                child: SizedBox(
+                  width: size * 0.61,
+                  height: size * 0.61,
+                  child: Transform.scale(
+                    scale: 0.9,
+                    child: Image.asset(
+                      SplashScreen._logoPath,
+                      fit: BoxFit.contain,
+                      alignment: Alignment.center,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

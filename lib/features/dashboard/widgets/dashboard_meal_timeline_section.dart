@@ -1,5 +1,6 @@
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/core/widgets/app_empty_state.dart';
+import 'package:cat_diet_planner/core/widgets/horizontal_pointer_scroll.dart';
 import 'package:cat_diet_planner/core/widgets/meal_horizontal_card.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/features/daily/providers/daily_schedule_repository_provider.dart';
@@ -83,8 +84,7 @@ class DashboardMealTimelineSection extends ConsumerWidget {
             return _TimelineScaffold(
               onViewPlan: () =>
                   Navigator.of(context).pushNamed(AppRoutes.plans),
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+              child: HorizontalPointerScroll(
                 clipBehavior: Clip.none,
                 child: Row(
                   children: [

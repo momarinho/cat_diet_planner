@@ -25,10 +25,10 @@ class DailyHeaderAppBar extends StatelessWidget {
     final secondary =
         theme.textTheme.bodyMedium?.color ?? const Color(0xFF7A7678);
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Container(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final compact = constraints.maxWidth < 380;
+        final avatar = Container(
           width: 84,
           height: 84,
           padding: const EdgeInsets.all(3),
@@ -62,42 +62,69 @@ class DailyHeaderAppBar extends StatelessWidget {
                     photoBase64: photoBase64,
                   ),
                 ),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
+        );
+
+        final textBlock = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              l10n.dailyGreetingTitle,
+              maxLines: compact ? 3 : 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1.2,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              isGroup
+                  ? l10n.dailyGroupReadyDescription(titleName)
+                  : l10n.dailyCatReadyDescription(titleName),
+              maxLines: compact ? 3 : 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.titleMedium?.copyWith(
+                color: secondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        );
+
+        if (compact) {
+          return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                l10n.dailyGreetingTitle,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.headlineMedium?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -1.2,
-                ),
+              Row(
+                children: [
+                  avatar,
+                  const Spacer(),
+                  _SettingsButton(
+                    onTap: () =>
+                        Navigator.of(context).pushNamed(AppRoutes.settings),
+                  ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                isGroup
-                    ? l10n.dailyGroupReadyDescription(titleName)
-                    : l10n.dailyCatReadyDescription(titleName),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.textTheme.titleMedium?.copyWith(
-                  color: secondary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+              const SizedBox(height: 16),
+              textBlock,
             ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        _SettingsButton(
-          onTap: () => Navigator.of(context).pushNamed(AppRoutes.settings),
-        ),
-      ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            avatar,
+            const SizedBox(width: 16),
+            Expanded(child: textBlock),
+            const SizedBox(width: 12),
+            _SettingsButton(
+              onTap: () => Navigator.of(context).pushNamed(AppRoutes.settings),
+            ),
+          ],
+        );
+      },
     );
   }
 }
