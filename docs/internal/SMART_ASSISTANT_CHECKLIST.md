@@ -40,9 +40,9 @@ Checklist para evoluir o app com comportamento mais inteligente e sugestivo, man
 
 ## 7. Qualidade
 - [x] testes unitarios do `SuggestionEngine`
-- [ ] testes de widget para cards de sugestao
-- [ ] teste de fluxo completo: gerar -> aceitar -> aplicar -> reverter
-- [ ] teste de stress com muitos gatos/grupos
+- [x] testes de widget para cards de sugestao
+- [x] teste de fluxo completo: gerar -> aceitar -> aplicar -> reverter
+- [x] teste de stress com muitos gatos/grupos
 
 ## 8. Entrega incremental
 - [x] Fase 1: engine + 2 sugestoes (kcal e alerta de tendencia)
