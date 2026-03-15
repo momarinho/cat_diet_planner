@@ -8,6 +8,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'support/hive_test_helper.dart';
 import 'support/mock_http_images.dart';
+import 'support/test_app.dart';
 
 void main() {
   setUpAll(MockHttpImages.install);
@@ -17,16 +18,12 @@ void main() {
     await HiveTestHelper.init();
   });
 
-  tearDown(() async {
-    await HiveTestHelper.dispose();
-  });
-
   testWidgets('internal app routes open without route errors', (tester) async {
     final navigatorKey = GlobalKey<NavigatorState>();
 
     await tester.pumpWidget(
       ProviderScope(
-        child: MaterialApp(
+        child: buildTestApp(
           navigatorKey: navigatorKey,
           onGenerateRoute: AppRouter.onGenerateRoute,
           initialRoute: AppRoutes.shell,

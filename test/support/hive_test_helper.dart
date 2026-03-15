@@ -52,6 +52,23 @@ class HiveTestHelper {
   }
 
   static Future<void> dispose() async {
+    final boxes = <Box<dynamic>>[
+      HiveService.appSettingsBox,
+      HiveService.catGroupsBox,
+      HiveService.catsBox,
+      HiveService.dietPlansBox,
+      HiveService.foodsBox,
+      HiveService.groupDietPlansBox,
+      HiveService.weightsBox,
+      HiveService.mealsBox,
+    ];
+
+    for (final box in boxes) {
+      if (box.isOpen) {
+        await box.close();
+      }
+    }
+
     await Hive.close();
     if (_tempDir?.existsSync() ?? false) {
       _tempDir!.deleteSync(recursive: true);

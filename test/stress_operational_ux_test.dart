@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'support/hive_test_helper.dart';
 import 'support/mock_http_images.dart';
+import 'support/test_app.dart';
 
 void main() {
   setUpAll(MockHttpImages.install);
@@ -15,10 +16,6 @@ void main() {
   setUp(() async {
     await HiveTestHelper.init();
     await DemoDataService.seedOperationalStressScenario();
-  });
-
-  tearDown(() async {
-    await HiveTestHelper.dispose();
   });
 
   testWidgets('stress scenario keeps Home and Daily flows stable', (
@@ -30,8 +27,8 @@ void main() {
     addTearDown(tester.view.resetDevicePixelRatio);
 
     await tester.pumpWidget(
-      const ProviderScope(
-        child: MaterialApp(
+      ProviderScope(
+        child: buildTestApp(
           onGenerateRoute: AppRouter.onGenerateRoute,
           home: AppShellScreen(initialTab: AppShellTab.home),
         ),
@@ -57,5 +54,10 @@ void main() {
 
     expect(find.text("Today's Schedule"), findsOneWidget);
     expect(tester.takeException(), isNull);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pump(const Duration(milliseconds: 250));
   });
 }
