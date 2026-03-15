@@ -4,6 +4,10 @@ CatDiet Planner is a Flutter app for managing feeding plans, daily routines, wei
 
 The project is built as an `offline-first` application with local persistence, localized UI, and a growing quality/process layer for testing, localization, and future delivery automation.
 
+## Live Demo
+
+https://cat-diet-planner.web.app/
+
 ## Status
 
 Current project focus:
