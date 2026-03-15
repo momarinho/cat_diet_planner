@@ -86,7 +86,7 @@ void main() {
     final restored = service.read();
 
     expect(restored.mealReminders, isFalse);
-    expect(restored.languageCode, 'pt');
+    expect(restored.languageCode, 'pt_BR');
     expect(restored.reminderTimes, ['08:00', '18:00']);
     expect(restored.suggestionInterventionLevel, 'proactive');
     expect(restored.suggestionCategoryToggles['scheduleAdjustment'], isFalse);

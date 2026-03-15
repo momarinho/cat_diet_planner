@@ -1,5 +1,7 @@
 import 'dart:math' as math;
 
+import 'package:cat_diet_planner/core/errors/localized_exception.dart';
+
 class DietCalculatorService {
   static const double _minWeightKg = 0.5;
   static const double _maxWeightKg = 20;
@@ -13,26 +15,31 @@ class DietCalculatorService {
     required int mealsPerDay,
   }) {
     if (weightKg < _minWeightKg || weightKg > _maxWeightKg) {
-      throw ArgumentError(
-        'Weight must be between $_minWeightKg and $_maxWeightKg kg.',
+      throw LocalizedException(
+        'dietWeightRange',
+        args: {'min': '$_minWeightKg', 'max': '$_maxWeightKg'},
       );
     }
     if (ageMonths < _minAgeMonths || ageMonths > _maxAgeMonths) {
-      throw ArgumentError(
-        'Age must be between $_minAgeMonths and $_maxAgeMonths months.',
+      throw LocalizedException(
+        'dietAgeRange',
+        args: {'min': '$_minAgeMonths', 'max': '$_maxAgeMonths'},
       );
     }
     if (kcalPer100g <= 0) {
-      throw ArgumentError('Food calories must be greater than zero.');
+      throw const LocalizedException('dietFoodCaloriesPositive');
     }
     if (mealsPerDay < 3 || mealsPerDay > 6) {
-      throw ArgumentError('Meals per day must be between 3 and 6.');
+      throw const LocalizedException(
+        'dietMealsRange',
+        args: {'min': '3', 'max': '6'},
+      );
     }
   }
 
   static double calculateRer(double weightKg) {
     if (weightKg <= 0) {
-      throw ArgumentError('Weight must be greater than zero.');
+      throw const LocalizedException('dietWeightPositive');
     }
     return 70 * math.pow(weightKg, 0.75).toDouble();
   }
@@ -66,7 +73,7 @@ class DietCalculatorService {
     required int mealsPerDay,
   }) {
     if (mealsPerDay <= 0) {
-      throw ArgumentError('Meals per day must be greater than zero.');
+      throw const LocalizedException('dietMealsPositive');
     }
     return portionPerDayGrams / mealsPerDay;
   }

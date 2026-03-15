@@ -1,5 +1,7 @@
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
+import 'package:cat_diet_planner/core/localization/app_formatters.dart';
 import 'package:cat_diet_planner/core/theme/app_theme.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class DailyScheduleSection extends StatelessWidget {
@@ -8,36 +10,18 @@ class DailyScheduleSection extends StatelessWidget {
     required this.schedule,
     required this.onMealToggle,
     this.showWeightCheckIn = true,
-    this.title = "Today's Schedule",
+    this.title,
   });
 
   final List<Map<String, dynamic>> schedule;
   final ValueChanged<Map<String, dynamic>> onMealToggle;
   final bool showWeightCheckIn;
-  final String title;
-
-  String _todayLabel() {
-    final now = DateTime.now();
-    const months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${months[now.month - 1]} ${now.day}, ${now.year}';
-  }
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final primary = theme.colorScheme.primary;
     final dateBackground = theme.brightness == Brightness.dark
         ? primary.withValues(alpha: 0.14)
@@ -52,7 +36,7 @@ class DailyScheduleSection extends StatelessWidget {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             Text(
-              title,
+              title ?? l10n.todaysScheduleTitle,
               style: theme.textTheme.headlineMedium?.copyWith(
                 fontWeight: FontWeight.w900,
                 letterSpacing: -1.2,
@@ -72,7 +56,7 @@ class DailyScheduleSection extends StatelessWidget {
                 ],
               ),
               child: Text(
-                _todayLabel(),
+                AppFormatters.formatDate(context, DateTime.now()),
                 style: theme.textTheme.titleMedium?.copyWith(
                   color: primary,
                   fontWeight: FontWeight.w800,
@@ -88,6 +72,7 @@ class DailyScheduleSection extends StatelessWidget {
   }
 
   List<Widget> _buildEntries(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final entries = <Widget>[];
     final mealEntries = schedule;
 
@@ -99,27 +84,32 @@ class DailyScheduleSection extends StatelessWidget {
       final notes = item['mealNotes'] as String?;
       final quantity = (item['quantity'] as num?)?.toDouble();
       final quantityUnit = item['quantityUnit']?.toString();
-      final badge = _entryBadgeLabel(type, mealContext, completed);
+      final badge = _entryBadgeLabel(context, type, mealContext, completed);
       final contextualSubtitle = [
-        item['subtitle'] as String? ?? '',
+        _localizedSubtitle(context, item),
         if (type != 'meal' && quantity != null && quantity > 0)
-          'Logged: ${quantity.toStringAsFixed(quantity % 1 == 0 ? 0 : 1)} ${quantityUnit ?? ''}'
+          l10n
+              .loggedQuantityLabel(
+                quantity.toStringAsFixed(quantity % 1 == 0 ? 0 : 1),
+                quantityUnit ?? '',
+              )
               .trim(),
-        if (notes != null && notes.trim().isNotEmpty) 'Note: ${notes.trim()}',
+        if (notes != null && notes.trim().isNotEmpty)
+          l10n.noteWithValueLabel(notes.trim()),
       ].where((line) => line.trim().isNotEmpty).join('\n');
       final isLastMeal = index == mealEntries.length - 1;
 
       entries.add(
         _ScheduleEntry(
           icon: completed ? Icons.check_rounded : Icons.restaurant_rounded,
-          title: item['title'] as String? ?? 'Meal',
+          title: _localizedTitle(context, item),
           subtitle: contextualSubtitle,
-          time: item['time'] as String? ?? '',
+          time: _localizedTime(context, item['time'] as String? ?? ''),
           state: completed ? _ScheduleState.completed : _ScheduleState.upcoming,
           badgeText: badge,
           actionLabel: completed
-              ? 'UPDATE LOG'
-              : (type == 'meal' ? 'LOG MEAL' : 'LOG EVENT'),
+              ? l10n.updateLogAction
+              : (type == 'meal' ? l10n.logMealAction : l10n.logEventAction),
           connectorHeight: isLastMeal ? 74 : 92,
           isLast: false,
           onActionTap: () => onMealToggle(item),
@@ -130,11 +120,11 @@ class DailyScheduleSection extends StatelessWidget {
         entries.add(
           _ScheduleEntry(
             icon: Icons.monitor_weight_outlined,
-            title: 'Weight Check-in',
-            subtitle: 'Record today\'s weight progress',
-            time: 'Anytime',
+            title: l10n.weightCheckInTitle,
+            subtitle: l10n.recordTodaysWeightProgressDescription,
+            time: l10n.anytimeLabel,
             state: _ScheduleState.active,
-            actionLabel: 'RECORD WEIGHT',
+            actionLabel: l10n.recordWeightActionUppercase,
             connectorHeight: mealEntries.length == 1 ? 74 : 92,
             onActionTap: () {
               Navigator.of(context).pushNamed(AppRoutes.weightCheckIn);
@@ -146,10 +136,10 @@ class DailyScheduleSection extends StatelessWidget {
 
     if (entries.isEmpty) {
       entries.add(
-        const _ScheduleEntry(
+        _ScheduleEntry(
           icon: Icons.info_outline_rounded,
-          title: 'No meals scheduled',
-          subtitle: 'Save a plan in Plans to generate today\'s schedule.',
+          title: l10n.noMealsScheduledTitle,
+          subtitle: l10n.noMealsScheduledDescription,
           time: '--',
           state: _ScheduleState.upcoming,
           isLast: true,
@@ -165,25 +155,87 @@ class DailyScheduleSection extends StatelessWidget {
     return entries;
   }
 
-  String? _entryBadgeLabel(String type, String? context, bool completed) {
-    if (type != 'meal') {
-      return completed ? 'LOGGED' : type.toUpperCase();
+  String _localizedTitle(BuildContext context, Map<String, dynamic> item) {
+    final l10n = AppLocalizations.of(context);
+    final type = item['type']?.toString() ?? 'meal';
+    final rawTitle = item['title']?.toString().trim();
+    if (type == 'water') return l10n.dailyWaterEntryTitle;
+    if (type == 'snacks') return l10n.dailySnacksEntryTitle;
+    if (type == 'supplements') return l10n.dailySupplementsEntryTitle;
+    if (rawTitle == null || rawTitle.isEmpty) return l10n.genericMealTitle;
+    return rawTitle;
+  }
+
+  String _localizedSubtitle(BuildContext context, Map<String, dynamic> item) {
+    final l10n = AppLocalizations.of(context);
+    final type = item['type']?.toString() ?? 'meal';
+    final isGroup = (item['id']?.toString().startsWith('group_') ?? false);
+    if (type == 'water') {
+      return isGroup
+          ? l10n.dailyWaterGroupSubtitle
+          : l10n.dailyWaterCatSubtitle;
     }
-    switch (context) {
+    if (type == 'snacks') {
+      return isGroup
+          ? l10n.dailySnacksGroupSubtitle
+          : l10n.dailySnacksCatSubtitle;
+    }
+    if (type == 'supplements') {
+      return isGroup
+          ? l10n.dailySupplementsGroupSubtitle
+          : l10n.dailySupplementsCatSubtitle;
+    }
+    return item['subtitle'] as String? ?? '';
+  }
+
+  String _localizedTime(BuildContext context, String value) {
+    final l10n = AppLocalizations.of(context);
+    if (value.trim().isEmpty) return '';
+    if (value.trim().toLowerCase() == 'anytime') return l10n.anytimeLabel;
+    return AppFormatters.formatStoredMealTime(context, value);
+  }
+
+  String? _entryBadgeLabel(
+    BuildContext context,
+    String type,
+    String? mealContext,
+    bool completed,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    String upper(String value) => value.toUpperCase();
+    if (type != 'meal') {
+      switch (type) {
+        case 'water':
+          return completed
+              ? upper(l10n.loggedStatus)
+              : upper(l10n.dailyWaterEntryTitle);
+        case 'snacks':
+          return completed
+              ? upper(l10n.loggedStatus)
+              : upper(l10n.dailySnacksEntryTitle);
+        case 'supplements':
+          return completed
+              ? upper(l10n.loggedStatus)
+              : upper(l10n.dailySupplementsEntryTitle);
+        default:
+          return completed ? upper(l10n.loggedStatus) : upper(type);
+      }
+    }
+    switch (mealContext) {
       case 'completed':
-        return 'COMPLETED';
+        return upper(l10n.completedOption);
       case 'partial':
-        return 'PARTIAL';
+        return upper(l10n.partialOption);
       case 'delayed':
-        return 'DELAYED';
+        return upper(l10n.delayedOption);
       case 'refused':
-        return 'REFUSED';
+        return upper(l10n.refusedOption);
       case 'reduced':
-        return 'REDUCED';
+        return upper(l10n.reducedAppetiteOption);
       case 'skipped':
-        return 'SKIPPED';
+        return upper(l10n.skippedOption);
       default:
-        return completed ? 'COMPLETED' : null;
+        return completed ? upper(l10n.completedOption) : null;
     }
   }
 }

@@ -12,7 +12,7 @@ import 'package:cat_diet_planner/features/settings/screens/settings_screen.dart'
 import 'package:cat_diet_planner/features/settings/screens/how_it_works_screen.dart';
 import 'package:cat_diet_planner/features/splash/screens/splash_screen.dart';
 import 'package:cat_diet_planner/features/weight/screens/weight_checkin_screen.dart';
-
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class AppRouter {
@@ -113,7 +113,12 @@ class AppRouter {
     return MaterialPageRoute(
       settings: settings,
       builder: (_) => Scaffold(
-        appBar: AppBar(title: const Text('Route Error')),
+        appBar: AppBar(
+          title: Builder(
+            builder: (context) =>
+                Text(AppLocalizations.of(context).routeErrorTitle),
+          ),
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),

@@ -1,4 +1,5 @@
 import 'package:cat_diet_planner/features/dashboard/providers/dashboard_summary_provider.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/widgets/app_card_container.dart';
@@ -11,15 +12,19 @@ class DashboardDailySummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final consumed = summary?.consumedCalories ?? 0;
     final goal = summary?.goalCalories ?? 0;
     final progress = (consumed / goal).clamp(0.0, 1.0).toDouble();
     final primary = Theme.of(context).colorScheme.primary;
     final remainingLabel = summary == null
-        ? 'Create a plan to unlock your daily summary'
+        ? l10n.createPlanToUnlockDailySummary
         : summary!.remainingCalories == 0
-        ? 'Today is fully completed'
-        : '${summary!.remainingCalories} kcal remaining for ${summary!.nextMealLabel.toLowerCase()}';
+        ? l10n.todayFullyCompleted
+        : l10n.remainingCaloriesForMeal(
+            summary!.remainingCalories,
+            summary!.nextMealLabel.toLowerCase(),
+          );
 
     return AppCardContainer(
       child: Column(
@@ -28,14 +33,14 @@ class DashboardDailySummaryCard extends StatelessWidget {
           Row(
             children: [
               Text(
-                'Daily Summary',
+                l10n.dailySummaryTitle,
                 style: Theme.of(
                   context,
                 ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
               ),
               const Spacer(),
               Text(
-                'Today',
+                l10n.todayLabel,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: primary,
                   fontWeight: FontWeight.w700,
@@ -59,7 +64,7 @@ class DashboardDailySummaryCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'CALORIE INTAKE',
+                      l10n.calorieIntakeLabel,
                       style: Theme.of(context).textTheme.labelLarge?.copyWith(
                         letterSpacing: 2.0,
                         fontWeight: FontWeight.w700,
@@ -76,7 +81,7 @@ class DashboardDailySummaryCard extends StatelessWidget {
                             ),
                         children: [
                           TextSpan(
-                            text: ' / $goal kcal',
+                            text: ' / $goal ${l10n.kcalLabel}',
                             style: Theme.of(context).textTheme.titleLarge
                                 ?.copyWith(
                                   color: Theme.of(

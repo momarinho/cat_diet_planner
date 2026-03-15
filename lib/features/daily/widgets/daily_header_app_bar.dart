@@ -1,5 +1,6 @@
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/core/utils/cat_photo.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class DailyHeaderAppBar extends StatelessWidget {
@@ -19,6 +20,7 @@ class DailyHeaderAppBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final primary = theme.colorScheme.primary;
     final secondary =
         theme.textTheme.bodyMedium?.color ?? const Color(0xFF7A7678);
@@ -68,7 +70,7 @@ class DailyHeaderAppBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Good morning!',
+                l10n.dailyGreetingTitle,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.headlineMedium?.copyWith(
@@ -79,8 +81,8 @@ class DailyHeaderAppBar extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 isGroup
-                    ? '$titleName group is ready for today\'s routine'
-                    : '$titleName is ready for today\'s meals',
+                    ? l10n.dailyGroupReadyDescription(titleName)
+                    : l10n.dailyCatReadyDescription(titleName),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: theme.textTheme.titleMedium?.copyWith(

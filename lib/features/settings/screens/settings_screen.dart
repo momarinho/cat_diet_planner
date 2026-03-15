@@ -1,3 +1,6 @@
+import 'package:cat_diet_planner/core/localization/app_locale.dart';
+import 'package:cat_diet_planner/core/localization/app_feedback_localizer.dart';
+import 'package:cat_diet_planner/core/localization/app_formatters.dart';
 import 'package:cat_diet_planner/core/theme/theme_provider.dart';
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/features/cat_group/providers/selected_group_provider.dart';
@@ -11,6 +14,7 @@ import 'package:cat_diet_planner/features/settings/services/notification_service
 import 'package:cat_diet_planner/features/suggestions/providers/plan_change_audit_provider.dart';
 import 'package:cat_diet_planner/features/suggestions/providers/suggestion_impact_history_provider.dart';
 import 'package:cat_diet_planner/features/suggestions/services/plan_adjustment_service.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,11 +26,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 }
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
-  static const _languageLabels = {
-    'en': 'English',
-    'pt': 'Portuguese',
-    'tl': 'Tagalog',
-  };
   static const _suggestionInterventionLabels = {
     'conservative': 'conservative',
     'balanced': 'balanced',
@@ -45,14 +44,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _isRevertingSuggestionChange = false;
 
   String _formatAuditTimestamp(DateTime value) {
-    final day = value.day.toString().padLeft(2, '0');
-    final month = value.month.toString().padLeft(2, '0');
-    final hour = value.hour.toString().padLeft(2, '0');
-    final minute = value.minute.toString().padLeft(2, '0');
-    return '$day/$month/${value.year} $hour:$minute';
+    return AppFormatters.formatDateTime(context, value);
   }
 
   Future<void> _revertLastSuggestedChange() async {
+    final l10n = AppLocalizations.of(context);
     final controller = TextEditingController();
     var validationMessage = '';
     final revertedBy = await showDialog<String>(
@@ -61,21 +57,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         return StatefulBuilder(
           builder: (dialogContext, setDialogState) {
             return AlertDialog(
-              title: const Text('Revert last suggested change'),
+              title: Text(l10n.revertLastSuggestedChangeTitle),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'This restores the plan snapshot from before the latest suggested change.',
-                  ),
+                  Text(l10n.revertLastSuggestedChangeDescription),
                   const SizedBox(height: 12),
                   TextField(
                     controller: controller,
                     autofocus: true,
                     decoration: InputDecoration(
                       border: const OutlineInputBorder(),
-                      hintText: 'Type who is reverting this change',
+                      hintText: l10n.typeWhoIsRevertingHint,
                       errorText: validationMessage.isEmpty
                           ? null
                           : validationMessage,
@@ -86,20 +80,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               actions: [
                 TextButton(
                   onPressed: () => Navigator.of(dialogContext).pop(),
-                  child: const Text('Cancel'),
+                  child: Text(l10n.cancelAction),
                 ),
                 FilledButton(
                   onPressed: () {
                     final value = controller.text.trim();
                     if (value.isEmpty) {
                       setDialogState(() {
-                        validationMessage = 'Responsible person is required.';
+                        validationMessage = l10n.responsiblePersonRequired;
                       });
                       return;
                     }
                     Navigator.of(dialogContext).pop(value);
                   },
-                  child: const Text('Revert'),
+                  child: Text(l10n.revertAction),
                 ),
               ],
             );
@@ -119,7 +113,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ref.invalidate(suggestionImpactHistoryProvider);
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(result.message ?? 'Revert completed.')),
+        SnackBar(content: Text(localizePlanAdjustmentMessage(l10n, result))),
       );
     } finally {
       if (mounted) {
@@ -136,6 +130,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final defaults = AppSettings.defaults().notificationProfiles;
     final fallback = defaults[type]?[field] ?? '';
     return settings.notificationProfiles[type]?[field] ?? fallback;
+  }
+
+  String _formatLocalizedChangeSummary(List<String> lines) {
+    final l10n = AppLocalizations.of(context);
+    return lines
+        .map((line) => localizeChangeSummaryLine(l10n, line))
+        .join(' • ');
   }
 
   Future<void> _setNotificationProfile({
@@ -219,28 +220,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _editShareMessage(String current) async {
+    final l10n = AppLocalizations.of(context);
     final controller = TextEditingController(text: current);
     final shouldSave = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Share message'),
+        title: Text(l10n.shareMessageTitle),
         content: TextField(
           controller: controller,
           minLines: 2,
           maxLines: 4,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            hintText: 'Message used when sharing report files',
+          decoration: InputDecoration(
+            border: const OutlineInputBorder(),
+            hintText: l10n.shareMessageHint,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
+            child: Text(l10n.cancelAction),
           ),
           FilledButton(
             onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Save'),
+            child: Text(l10n.saveAction),
           ),
         ],
       ),
@@ -254,6 +256,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _editSchedule(List<String> currentTimes) async {
+    final l10n = AppLocalizations.of(context);
     final updatedTimes = [...currentTimes]..sort();
 
     final shouldSave = await showModalBottomSheet<bool>(
@@ -286,7 +289,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Meal Reminder Times',
+                      l10n.mealReminderTimesTitle,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -308,12 +311,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     OutlinedButton.icon(
                       onPressed: addTime,
                       icon: const Icon(Icons.add_alarm_rounded),
-                      label: const Text('Add Time'),
+                      label: Text(l10n.addTimeAction),
                     ),
                     const SizedBox(height: 12),
                     FilledButton(
                       onPressed: () => Navigator.of(context).pop(true),
-                      child: const Text('Save Schedule'),
+                      child: Text(l10n.saveScheduleAction),
                     ),
                   ],
                 ),
@@ -333,16 +336,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _pickLanguage(String currentLanguage) async {
+    final l10n = AppLocalizations.of(context);
+    final languageLabels = _languageLabels(l10n);
+    final normalizedCurrent = AppLocale.normalizeLanguageCode(currentLanguage);
     final selected = await showModalBottomSheet<String>(
       context: context,
       builder: (context) {
         return SafeArea(
           child: Column(
             mainAxisSize: MainAxisSize.min,
-            children: _languageLabels.entries.map((entry) {
+            children: languageLabels.entries.map((entry) {
               return ListTile(
                 title: Text(entry.value),
-                trailing: currentLanguage == entry.key
+                trailing: normalizedCurrent == entry.key
                     ? const Icon(Icons.check_rounded)
                     : null,
                 onTap: () => Navigator.of(context).pop(entry.key),
@@ -359,22 +365,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _generateDemoData() async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Generate demo data'),
-          content: const Text(
-            'This will replace the current local data with a ready-to-test scenario containing one group, one individual cat, foods, plans, meals and weight history.',
-          ),
+          title: Text(l10n.generateDemoDataTitle),
+          content: Text(l10n.generateDemoDataDescription),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancelAction),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Generate'),
+              child: Text(l10n.generateAction),
             ),
           ],
         );
@@ -408,7 +413,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Demo data ready: ${summary.groups} group, ${summary.cats} cat, ${summary.foods} foods, ${summary.mealSchedules} schedules.',
+            l10n.demoDataReadyMessage(
+              summary.groups,
+              summary.cats,
+              summary.foods,
+              summary.mealSchedules,
+            ),
           ),
         ),
       );
@@ -420,22 +430,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _clearDemoData() async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Clear demo data'),
-          content: const Text(
-            'This will remove the local demo data from the app, including cats, groups, foods, plans, meals and history.',
-          ),
+          title: Text(l10n.clearDemoDataTitle),
+          content: Text(l10n.clearDemoDataDescription),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancelAction),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Clear'),
+              child: Text(l10n.clearAction),
             ),
           ],
         );
@@ -456,7 +465,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Local demo data cleared.')));
+      ).showSnackBar(SnackBar(content: Text(l10n.localDemoDataClearedMessage)));
     } finally {
       if (mounted) {
         setState(() => _isClearingDemoData = false);
@@ -465,22 +474,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _generateStressData() async {
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Generate stress test data'),
-          content: const Text(
-            'This will load a heavy operational scenario (up to 10 cats and 5 groups) to validate navigation, lists and daily routines in high-volume usage.',
-          ),
+          title: Text(l10n.generateStressDataTitle),
+          content: Text(l10n.generateStressDataDescription),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancelAction),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Generate'),
+              child: Text(l10n.generateAction),
             ),
           ],
         );
@@ -514,7 +522,12 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            'Stress scenario ready: ${summary.groups} groups, ${summary.cats} cats, ${summary.foods} foods, ${summary.mealSchedules} schedules.',
+            l10n.stressScenarioReadyMessage(
+              summary.groups,
+              summary.cats,
+              summary.foods,
+              summary.mealSchedules,
+            ),
           ),
         ),
       );
@@ -527,6 +540,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final languageLabels = _languageLabels(l10n);
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final themeMode = ref.watch(themeProvider);
@@ -540,7 +555,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Settings'),
+        title: Text(l10n.settingsTitle),
         centerTitle: true,
         backgroundColor: theme.scaffoldBackgroundColor,
         surfaceTintColor: Colors.transparent,
@@ -781,9 +796,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(Icons.history_toggle_off_rounded, color: primary),
-                title: const Text('Revert last suggested change'),
-                subtitle: const Text(
-                  'Restore the latest plan snapshot saved before a suggested adjustment was applied.',
+                title: Text(
+                  AppLocalizations.of(context).revertLastSuggestedChangeTitle,
+                ),
+                subtitle: Text(
+                  AppLocalizations.of(
+                    context,
+                  ).revertLatestSuggestedAdjustmentDescription,
                 ),
                 trailing: _isRevertingSuggestionChange
                     ? const SizedBox(
@@ -797,15 +816,21 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     : _revertLastSuggestedChange,
               ),
               if (planAuditEntries.isEmpty)
-                const ListTile(
+                ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text('No accepted plan changes yet'),
+                  title: Text(
+                    AppLocalizations.of(context).noAcceptedPlanChangesYetTitle,
+                  ),
                   subtitle: Text(
-                    'Approved suggestion changes will record who accepted them, when, and what changed.',
+                    AppLocalizations.of(
+                      context,
+                    ).noAcceptedPlanChangesYetDescription,
                   ),
                 ),
               ...planAuditEntries.take(5).map((entry) {
-                final summary = entry.changeSummary.join(' • ');
+                final summary = _formatLocalizedChangeSummary(
+                  entry.changeSummary,
+                );
                 return ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Icon(Icons.fact_check_rounded, color: primary),
@@ -823,17 +848,26 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             title: 'Suggestion History',
             children: [
               if (impactEntries.isEmpty)
-                const ListTile(
+                ListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: Text('No suggestion impact history yet'),
+                  title: Text(
+                    AppLocalizations.of(
+                      context,
+                    ).noSuggestionImpactHistoryYetTitle,
+                  ),
                   subtitle: Text(
-                    'Generated suggestions, accepted changes and before/after snapshots will be stored here.',
+                    AppLocalizations.of(
+                      context,
+                    ).noSuggestionImpactHistoryYetDescription,
                   ),
                 ),
               ...impactEntries.take(5).map((entry) {
                 final status = entry.isReverted
-                    ? 'Reverted by ${entry.revertedBy ?? 'unknown'}'
-                    : 'Active change';
+                    ? AppLocalizations.of(context).impactRevertedBy(
+                        entry.revertedBy ??
+                            AppLocalizations.of(context).unknownPersonLabel,
+                      )
+                    : AppLocalizations.of(context).impactActiveChange;
                 final before = entry.beforePlan.targetKcalPerDay
                     .toStringAsFixed(0);
                 final after = entry.afterPlan.targetKcalPerDay.toStringAsFixed(
@@ -844,7 +878,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   leading: Icon(Icons.insights_rounded, color: primary),
                   title: Text('${entry.catName} • ${entry.suggestion.title}'),
                   subtitle: Text(
-                    '${_formatAuditTimestamp(entry.appliedAt)} • $status\nBefore/after kcal: $before -> $after',
+                    '${_formatAuditTimestamp(entry.appliedAt)} • $status\n${AppLocalizations.of(context).impactBeforeAfterKcal(before, after)}',
                   ),
                   isThreeLine: true,
                 );
@@ -871,14 +905,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           const SizedBox(height: 16),
           _SectionCard(
-            title: 'Language',
+            title: l10n.languageSectionTitle,
             children: [
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(Icons.language_rounded, color: primary),
-                title: const Text('App Language'),
+                title: Text(l10n.appLanguageTitle),
                 subtitle: Text(
-                  _languageLabels[appSettings.languageCode] ?? 'English',
+                  languageLabels[AppLocale.normalizeLanguageCode(
+                        appSettings.languageCode,
+                      )] ??
+                      l10n.languageEnglish,
                   style: TextStyle(color: secondaryText),
                 ),
                 trailing: const Icon(Icons.chevron_right_rounded),
@@ -887,10 +924,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: Icon(Icons.translate_rounded, color: primary),
-                title: const Text('Localized content scope'),
-                subtitle: const Text(
-                  'Notifications and report/share texts now follow selected language.',
-                ),
+                title: Text(l10n.localizedContentScopeTitle),
+                subtitle: Text(l10n.localizedContentScopeDescription),
               ),
             ],
           ),
@@ -945,8 +980,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   leading: Icon(Icons.tune_rounded, color: primary),
-                  title: const Text('Custom range days'),
-                  subtitle: Text('${appSettings.customReportRangeDays} days'),
+                  title: Text(
+                    AppLocalizations.of(context).customRangeDaysTitle,
+                  ),
+                  subtitle: Text(
+                    AppLocalizations.of(
+                      context,
+                    ).customRangeDaysValue(appSettings.customReportRangeDays),
+                  ),
                   trailing: const Icon(Icons.chevron_right_rounded),
                   onTap: () async {
                     final controller = TextEditingController(
@@ -955,23 +996,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     final save = await showDialog<bool>(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: const Text('Custom range'),
+                        title: Text(
+                          AppLocalizations.of(context).customRangeTitle,
+                        ),
                         content: TextField(
                           controller: controller,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Days',
-                            border: OutlineInputBorder(),
+                          decoration: InputDecoration(
+                            labelText: AppLocalizations.of(context).daysLabel,
+                            border: const OutlineInputBorder(),
                           ),
                         ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(false),
-                            child: const Text('Cancel'),
+                            child: Text(
+                              AppLocalizations.of(context).cancelAction,
+                            ),
                           ),
                           FilledButton(
                             onPressed: () => Navigator.of(context).pop(true),
-                            child: const Text('Save'),
+                            child: Text(
+                              AppLocalizations.of(context).saveAction,
+                            ),
                           ),
                         ],
                       ),
@@ -1132,6 +1179,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ],
       ),
     );
+  }
+
+  Map<String, String> _languageLabels(AppLocalizations l10n) {
+    return {
+      'en': l10n.languageEnglish,
+      'pt_BR': l10n.languagePortugueseBrazil,
+      'tl': l10n.languageTagalog,
+    };
   }
 }
 

@@ -14,13 +14,15 @@ class PlanAdjustmentResult {
   const PlanAdjustmentResult({
     required this.changed,
     required this.summary,
-    this.message,
+    this.messageKey,
+    this.messageArgs = const {},
     this.historyId,
   });
 
   final bool changed;
   final List<String> summary;
-  final String? message;
+  final String? messageKey;
+  final Map<String, Object> messageArgs;
   final String? historyId;
 }
 
@@ -47,7 +49,7 @@ class PlanAdjustmentService {
       return const PlanAdjustmentResult(
         changed: false,
         summary: [],
-        message: 'Suggestion recorded without changing the plan.',
+        messageKey: 'suggestionRecordedWithoutPlanChanges',
         historyId: null,
       );
     }
@@ -58,7 +60,7 @@ class PlanAdjustmentService {
       return const PlanAdjustmentResult(
         changed: false,
         summary: [],
-        message: 'No active plan available for this cat.',
+        messageKey: 'noActivePlanAvailableForCat',
         historyId: null,
       );
     }
@@ -131,7 +133,8 @@ class PlanAdjustmentService {
     return PlanAdjustmentResult(
       changed: result.changed,
       summary: result.summary,
-      message: result.message,
+      messageKey: result.messageKey,
+      messageArgs: result.messageArgs,
       historyId: historyId,
     );
   }
@@ -146,7 +149,7 @@ class PlanAdjustmentService {
       return const PlanAdjustmentResult(
         changed: false,
         summary: [],
-        message: 'No suggested plan changes available to revert.',
+        messageKey: 'noSuggestedPlanChangesAvailableToRevert',
         historyId: null,
       );
     }
@@ -166,10 +169,7 @@ class PlanAdjustmentService {
             catName: latest.catName,
             acceptedBy: revertedBy,
             acceptedAt: DateTime.now(),
-            changeSummary: [
-              'Reverted suggested change accepted by ${latest.acceptedBy}',
-              ...latest.changeSummary,
-            ],
+            changeSummary: latest.changeSummary,
           ),
         );
     _ref.invalidate(planChangeAuditProvider);
@@ -177,7 +177,7 @@ class PlanAdjustmentService {
     return PlanAdjustmentResult(
       changed: true,
       summary: latest.changeSummary,
-      message: 'Last suggested change reverted.',
+      messageKey: 'lastSuggestedChangeReverted',
       historyId: latest.id,
     );
   }
@@ -194,7 +194,7 @@ class PlanAdjustmentService {
       return const PlanAdjustmentResult(
         changed: false,
         summary: [],
-        message: 'Suggestion data is incomplete.',
+        messageKey: 'suggestionDataIncomplete',
         historyId: null,
       );
     }
@@ -203,7 +203,7 @@ class PlanAdjustmentService {
       return const PlanAdjustmentResult(
         changed: false,
         summary: [],
-        message: 'Suggested kcal change exceeds the safe adjustment band.',
+        messageKey: 'suggestedKcalChangeExceedsSafeBand',
         historyId: null,
       );
     }
@@ -212,7 +212,7 @@ class PlanAdjustmentService {
       return const PlanAdjustmentResult(
         changed: false,
         summary: [],
-        message: 'Suggested kcal target is outside the allowed safe range.',
+        messageKey: 'suggestedKcalTargetOutsideSafeRange',
         historyId: null,
       );
     }
@@ -225,7 +225,7 @@ class PlanAdjustmentService {
       return const PlanAdjustmentResult(
         changed: false,
         summary: [],
-        message: 'Unable to recalculate portion size safely.',
+        messageKey: 'unableToRecalculatePortionSafely',
         historyId: null,
       );
     }
@@ -234,8 +234,8 @@ class PlanAdjustmentService {
     return PlanAdjustmentResult(
       changed: true,
       summary: [
-        'Target kcal/day: ${plan.targetKcalPerDay.toStringAsFixed(0)} -> ${suggestedKcal.toStringAsFixed(0)} ($direction$changePercent%)',
-        'Daily portion: ${plan.portionGramsPerDay.toStringAsFixed(1)} g -> ${nextPortion.toStringAsFixed(1)} g',
+        'kcal_change|${plan.targetKcalPerDay.toStringAsFixed(0)}|${suggestedKcal.toStringAsFixed(0)}|$direction$changePercent%',
+        'daily_portion_change|${plan.portionGramsPerDay.toStringAsFixed(1)} g|${nextPortion.toStringAsFixed(1)} g',
       ],
       historyId: null,
     );
@@ -279,7 +279,7 @@ class PlanAdjustmentService {
       return const PlanAdjustmentResult(
         changed: false,
         summary: [],
-        message: 'Suggestion data is incomplete.',
+        messageKey: 'suggestionDataIncomplete',
         historyId: null,
       );
     }
@@ -287,7 +287,7 @@ class PlanAdjustmentService {
       return const PlanAdjustmentResult(
         changed: false,
         summary: [],
-        message: 'Schedule change exceeds the safe shift limit.',
+        messageKey: 'scheduleChangeExceedsSafeShiftLimit',
         historyId: null,
       );
     }
@@ -296,7 +296,7 @@ class PlanAdjustmentService {
     return PlanAdjustmentResult(
       changed: true,
       summary: [
-        '${plan.mealLabels[index]}: ${plan.mealTimes[index]} -> $nextTime',
+        'meal_time_change|${plan.mealLabels[index]}|${plan.mealTimes[index]}|$nextTime',
       ],
       historyId: null,
     );
@@ -330,7 +330,7 @@ class PlanAdjustmentService {
       return const PlanAdjustmentResult(
         changed: false,
         summary: [],
-        message: 'Suggestion data is incomplete.',
+        messageKey: 'suggestionDataIncomplete',
         historyId: null,
       );
     }
@@ -344,7 +344,7 @@ class PlanAdjustmentService {
       return const PlanAdjustmentResult(
         changed: false,
         summary: [],
-        message: 'Portion redistribution is invalid for the active plan.',
+        messageKey: 'portionRedistributionInvalidForActivePlan',
         historyId: null,
       );
     }
@@ -356,7 +356,7 @@ class PlanAdjustmentService {
       return const PlanAdjustmentResult(
         changed: false,
         summary: [],
-        message: 'Portion shift exceeds the safe redistribution limit.',
+        messageKey: 'portionShiftExceedsSafeRedistributionLimit',
         historyId: null,
       );
     }
@@ -372,7 +372,7 @@ class PlanAdjustmentService {
       return const PlanAdjustmentResult(
         changed: false,
         summary: [],
-        message: 'Portion redistribution failed safety validation.',
+        messageKey: 'portionRedistributionFailedSafetyValidation',
         historyId: null,
       );
     }
@@ -380,8 +380,8 @@ class PlanAdjustmentService {
     return PlanAdjustmentResult(
       changed: true,
       summary: [
-        '${plan.mealLabels[fromIndex]}: ${plan.mealPortionGrams[fromIndex].toStringAsFixed(1)} g -> ${updated[fromIndex].toStringAsFixed(1)} g',
-        '${plan.mealLabels[toIndex]}: ${plan.mealPortionGrams[toIndex].toStringAsFixed(1)} g -> ${updated[toIndex].toStringAsFixed(1)} g',
+        'meal_portion_change|${plan.mealLabels[fromIndex]}|${plan.mealPortionGrams[fromIndex].toStringAsFixed(1)} g|${updated[fromIndex].toStringAsFixed(1)} g',
+        'meal_portion_change|${plan.mealLabels[toIndex]}|${plan.mealPortionGrams[toIndex].toStringAsFixed(1)} g|${updated[toIndex].toStringAsFixed(1)} g',
       ],
       historyId: null,
     );

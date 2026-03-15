@@ -5,6 +5,7 @@ import 'dart:ui' show lerpDouble;
 import 'package:cat_diet_planner/core/widgets/app_error_state.dart';
 import 'package:cat_diet_planner/features/food_database/screens/add_food_screen.dart';
 import 'package:cat_diet_planner/features/scanner/services/scanner_product_service.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -82,6 +83,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
   }
 
   Future<void> _confirmProduct(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
     final result =
         _lookupResult ??
         await ScannerProductService.lookupByBarcode(_barcodeController.text);
@@ -92,7 +94,9 @@ class _ScannerScreenState extends State<ScannerScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            '${result.food?.name ?? 'Food'} confirmed from database',
+            l10n.productConfirmedFromDatabaseMessage(
+              result.food?.name ?? l10n.foodGenericLabel,
+            ),
           ),
         ),
       );
@@ -110,6 +114,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final primary = theme.colorScheme.primary;
     final result = _lookupResult;
     final foundFood = result?.food;
@@ -126,7 +131,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
           appBar: AppBar(
             backgroundColor: Colors.black.withValues(alpha: 0.75),
             elevation: 0,
-            title: const Text('Scanner'),
+            title: Text(l10n.scannerTitle),
             centerTitle: true,
           ),
           body: Stack(
@@ -144,11 +149,11 @@ class _ScannerScreenState extends State<ScannerScreen> {
                         constraints: const BoxConstraints(maxWidth: 420),
                         child: AppErrorState(
                           icon: Icons.videocam_off_rounded,
-                          title: 'Camera unavailable',
+                          title: l10n.cameraUnavailableTitle,
                           description:
                               error.errorDetails?.message ??
-                              'Unable to start camera. On web, use localhost or https, allow camera access, and keep only one tab using the webcam.',
-                          actionLabel: 'Try Again',
+                              l10n.cameraUnavailableDescription,
+                          actionLabel: l10n.tryAgainAction,
                           onAction: () {
                             _scannerController.start();
                           },
@@ -211,7 +216,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                       ),
                     ),
                     child: Text(
-                      'Web camera not running yet. Test one browser tab at a time, allow camera access, and try the switch-camera button.',
+                      l10n.webCameraNotRunningHint,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.bodyMedium?.copyWith(
                         color: Colors.white.withValues(alpha: 0.88),
@@ -227,7 +232,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                 child: Column(
                   children: [
                     Text(
-                      'Align barcode within frame',
+                      l10n.alignBarcodeWithinFrameTitle,
                       textAlign: TextAlign.center,
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: Colors.white.withValues(alpha: 0.9),
@@ -240,7 +245,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                       keyboardType: TextInputType.number,
                       style: const TextStyle(color: Colors.white),
                       decoration: InputDecoration(
-                        hintText: 'Type barcode to simulate scan',
+                        hintText: l10n.typeBarcodeToSimulateScanHint,
                         hintStyle: TextStyle(
                           color: Colors.white.withValues(alpha: 0.55),
                         ),
@@ -307,8 +312,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
                                 child: Text(
                                   foundFood?.name ??
                                       (result == null
-                                          ? 'No barcode scanned yet'
-                                          : 'No product found for ${result.barcode}'),
+                                          ? l10n.noBarcodeScannedYetTitle
+                                          : l10n.noProductFoundForBarcodeTitle(
+                                              result.barcode,
+                                            )),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w800,
                                   ),
@@ -330,10 +337,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
                             alignment: Alignment.centerLeft,
                             child: Text(
                               foundFood != null
-                                  ? '${foundFood.brand ?? 'Unknown brand'} • ${foundFood.kcalPer100g.toStringAsFixed(0)} kcal/100g'
+                                  ? '${foundFood.brand ?? l10n.unknownBrandLabel} • ${foundFood.kcalPer100g.toStringAsFixed(0)} ${l10n.kcalPer100gLabel}'
                                   : result == null
-                                  ? 'Use the live camera or the barcode field above.'
-                                  : 'You can create a new food entry with this barcode.',
+                                  ? l10n.useLiveCameraOrBarcodeDescription
+                                  : l10n.createFoodEntryFromBarcodeDescription,
                               style: theme.textTheme.bodyMedium,
                             ),
                           ),
@@ -362,8 +369,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
                                     icon: const Icon(Icons.edit_note_rounded),
                                     label: Text(
                                       result?.exists == true
-                                          ? 'Edit Manually'
-                                          : 'Manual Entry',
+                                          ? l10n.editManuallyAction
+                                          : l10n.manualEntryAction,
                                     ),
                                   ),
                                 ),
@@ -378,8 +385,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
                                     icon: const Icon(Icons.check_rounded),
                                     label: Text(
                                       result?.exists == true
-                                          ? 'Use Product'
-                                          : 'Confirm Product',
+                                          ? l10n.useProductAction
+                                          : l10n.confirmProductAction,
                                     ),
                                   ),
                                 ),
@@ -408,8 +415,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
                                     icon: const Icon(Icons.edit_note_rounded),
                                     label: Text(
                                       result?.exists == true
-                                          ? 'Edit Manually'
-                                          : 'Manual Entry',
+                                          ? l10n.editManuallyAction
+                                          : l10n.manualEntryAction,
                                     ),
                                   ),
                                 ),
@@ -423,8 +430,8 @@ class _ScannerScreenState extends State<ScannerScreen> {
                                     icon: const Icon(Icons.check_rounded),
                                     label: Text(
                                       result?.exists == true
-                                          ? 'Use Product'
-                                          : 'Confirm Product',
+                                          ? l10n.useProductAction
+                                          : l10n.confirmProductAction,
                                     ),
                                   ),
                                 ),

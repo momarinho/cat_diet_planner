@@ -1,5 +1,6 @@
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/core/theme/app_theme.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class SplashScreen extends StatelessWidget {
@@ -9,6 +10,7 @@ class SplashScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       backgroundColor: AppTheme.lightBackground,
       body: SafeArea(
@@ -40,7 +42,7 @@ class SplashScreen extends StatelessWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                'VETERINARY-GRADE NUTRITION',
+                l10n.veterinaryGradeNutritionTagline,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: const Color(0xFF94A0B5),
                   fontWeight: FontWeight.w700,
@@ -70,7 +72,7 @@ class SplashScreen extends StatelessWidget {
                     borderRadius: BorderRadius.circular(22),
                   ),
                 ),
-                child: const Text('Login'),
+                child: Text(l10n.continueAction),
               ),
             ],
           ),

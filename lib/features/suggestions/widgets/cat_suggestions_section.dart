@@ -9,6 +9,8 @@ import 'package:cat_diet_planner/features/suggestions/services/plan_adjustment_s
 import 'package:cat_diet_planner/features/suggestions/providers/suggestion_decision_provider.dart';
 import 'package:cat_diet_planner/features/suggestions/providers/suggestion_engine_provider.dart';
 import 'package:cat_diet_planner/features/suggestions/widgets/suggestion_card.dart';
+import 'package:cat_diet_planner/core/localization/app_feedback_localizer.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -26,6 +28,7 @@ class CatSuggestionsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final secondary =
@@ -123,7 +126,7 @@ class CatSuggestionsSection extends ConsumerWidget {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'No active suggestions right now. Keep logging meals and weight to improve guidance.',
+                          l10n.noActiveSuggestionsDescription,
                           style: theme.textTheme.bodyMedium?.copyWith(
                             color: secondary,
                           ),
@@ -191,10 +194,7 @@ class CatSuggestionsSection extends ConsumerWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    result.message ??
-                                        (result.changed
-                                            ? 'Plan updated after confirmation.'
-                                            : 'Suggestion recorded without plan changes.'),
+                                    localizePlanAdjustmentMessage(l10n, result),
                                   ),
                                 ),
                               );
@@ -225,6 +225,7 @@ Future<String?> _showPlanChangeConfirmationDialog({
   required String catName,
   required SmartSuggestion suggestion,
 }) async {
+  final l10n = AppLocalizations.of(context);
   final controller = TextEditingController();
   var validationMessage = '';
 
@@ -234,12 +235,12 @@ Future<String?> _showPlanChangeConfirmationDialog({
       return StatefulBuilder(
         builder: (dialogContext, setDialogState) {
           return AlertDialog(
-            title: const Text('Confirm plan change'),
+            title: Text(l10n.confirmPlanChangeTitle),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Apply this suggestion to $catName only after review.'),
+                Text(l10n.applySuggestionAfterReview(catName)),
                 const SizedBox(height: 8),
                 Text(
                   suggestion.recommendedAction,
@@ -248,8 +249,8 @@ Future<String?> _showPlanChangeConfirmationDialog({
                   ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 12),
-                const Text(
-                  'Responsible person',
+                Text(
+                  l10n.responsiblePersonLabel,
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 const SizedBox(height: 6),
@@ -258,7 +259,7 @@ Future<String?> _showPlanChangeConfirmationDialog({
                   autofocus: true,
                   decoration: InputDecoration(
                     border: const OutlineInputBorder(),
-                    hintText: 'Type who approved this change',
+                    hintText: l10n.typeWhoApprovedHint,
                     errorText: validationMessage.isEmpty
                         ? null
                         : validationMessage,
@@ -269,20 +270,20 @@ Future<String?> _showPlanChangeConfirmationDialog({
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),
-                child: const Text('Cancel'),
+                child: Text(l10n.cancelAction),
               ),
               FilledButton(
                 onPressed: () {
                   final value = controller.text.trim();
                   if (value.isEmpty) {
                     setDialogState(() {
-                      validationMessage = 'Approval identity is required.';
+                      validationMessage = l10n.approvalIdentityRequired;
                     });
                     return;
                   }
                   Navigator.of(dialogContext).pop(value);
                 },
-                child: const Text('Confirm'),
+                child: Text(l10n.confirmAction),
               ),
             ],
           );

@@ -6,6 +6,7 @@ import 'package:cat_diet_planner/features/daily/providers/daily_schedule_reposit
 import 'package:cat_diet_planner/features/daily/services/daily_meal_schedule_service.dart';
 import 'package:cat_diet_planner/features/dashboard/providers/dashboard_summary_provider.dart';
 import 'package:cat_diet_planner/features/plans/providers/plan_repository_provider.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -16,6 +17,7 @@ class DashboardMealTimelineSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final planRepository = ref.read(planRepositoryProvider);
     final scheduleRepository = ref.read(dailyScheduleRepositoryProvider);
     final todayKey = scheduleRepository.catDayKey(cat.id);
@@ -30,10 +32,10 @@ class DashboardMealTimelineSection extends ConsumerWidget {
             )) {
           return _TimelineScaffold(
             onViewPlan: () => Navigator.of(context).pushNamed(AppRoutes.plans),
-            child: const AppEmptyState(
+            child: AppEmptyState(
               icon: Icons.timeline_outlined,
-              title: 'No timeline yet',
-              description: 'Save a meal plan to unlock the meal timeline.',
+              title: l10n.noTimelineYetTitle,
+              description: l10n.noTimelineYetDescription,
             ),
           );
         }
@@ -68,7 +70,9 @@ class DashboardMealTimelineSection extends ConsumerWidget {
               final item = items[index];
               return DashboardMealItem(
                 id: item['id']?.toString() ?? 'meal_$index',
-                title: item['title']?.toString() ?? 'Meal ${index + 1}',
+                title:
+                    item['title']?.toString() ??
+                    l10n.mealFallbackTitle(index + 1),
                 time: item['time']?.toString() ?? '--:--',
                 calories: ((item['kcal'] as num?)?.toDouble() ?? 0).round(),
                 isCompleted: item['completed'] == true,
@@ -103,8 +107,10 @@ class DashboardMealTimelineSection extends ConsumerWidget {
                             SnackBar(
                               content: Text(
                                 meals[index].isCompleted
-                                    ? '${meals[index].title} marked as pending.'
-                                    : '${meals[index].title} marked as completed.',
+                                    ? l10n.mealMarkedPending(meals[index].title)
+                                    : l10n.mealMarkedCompleted(
+                                        meals[index].title,
+                                      ),
                               ),
                             ),
                           );
@@ -137,13 +143,16 @@ class _TimelineScaffold extends StatelessWidget {
         Row(
           children: [
             Text(
-              'Meal Timeline',
+              AppLocalizations.of(context).mealTimelineTitle,
               style: Theme.of(
                 context,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
             const Spacer(),
-            TextButton(onPressed: onViewPlan, child: const Text('View Plan')),
+            TextButton(
+              onPressed: onViewPlan,
+              child: Text(AppLocalizations.of(context).viewPlanAction),
+            ),
           ],
         ),
         const SizedBox(height: 12),

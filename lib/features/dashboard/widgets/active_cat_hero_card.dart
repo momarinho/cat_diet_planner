@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/core/utils/cat_photo.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import '../../../core/widgets/app_card_container.dart';
 
 class ActiveCatHeroCard extends StatelessWidget {
@@ -13,6 +14,7 @@ class ActiveCatHeroCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return AppCardContainer(
       child: Column(
@@ -21,7 +23,7 @@ class ActiveCatHeroCard extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Active Cat',
+                  l10n.activeCatTitle,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -31,7 +33,7 @@ class ActiveCatHeroCard extends StatelessWidget {
                 FilledButton.tonalIcon(
                   onPressed: onEditTap,
                   icon: const Icon(Icons.edit_outlined, size: 18),
-                  label: const Text('Edit'),
+                  label: Text(l10n.editAction),
                 ),
             ],
           ),
@@ -52,7 +54,7 @@ class ActiveCatHeroCard extends StatelessWidget {
           ),
           const SizedBox(height: 6),
           Text(
-            '${cat.weight.toStringAsFixed(1)} kg • ${cat.age ~/ 12} Years Old',
+            '${cat.weight.toStringAsFixed(1)} kg • ${l10n.catAgeYearsOld(cat.age ~/ 12)}',
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.7),
             ),

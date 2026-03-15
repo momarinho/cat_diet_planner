@@ -1,4 +1,5 @@
 import 'package:cat_diet_planner/core/widgets/app_empty_state.dart';
+import 'package:cat_diet_planner/core/localization/app_formatters.dart';
 import 'package:cat_diet_planner/data/models/cat_group.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/data/models/diet_plan.dart';
@@ -7,6 +8,7 @@ import 'package:cat_diet_planner/features/plans/models/plan_preview_data.dart';
 import 'package:cat_diet_planner/features/plans/repositories/plan_repository.dart';
 import 'package:cat_diet_planner/features/plans/widgets/plan_preview_card.dart';
 import 'package:cat_diet_planner/features/plans/widgets/saved_plan_card.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -40,6 +42,7 @@ class PlanInspectorSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final preview = planningForGroup ? groupPreview : individualPreview;
+    final l10n = AppLocalizations.of(context);
 
     return DefaultTabController(
       length: 2,
@@ -64,8 +67,8 @@ class PlanInspectorSheet extends StatelessWidget {
                     Expanded(
                       child: Text(
                         planningForGroup
-                            ? 'Group Plan Inspector'
-                            : 'Plan Inspector',
+                            ? l10n.groupPlanInspectorTitle
+                            : l10n.planInspectorTitle,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                           fontWeight: FontWeight.w900,
                         ),
@@ -78,10 +81,10 @@ class PlanInspectorSheet extends StatelessWidget {
                   ],
                 ),
               ),
-              const TabBar(
+              TabBar(
                 tabs: [
-                  Tab(text: 'Preview'),
-                  Tab(text: 'Saved'),
+                  Tab(text: l10n.previewTab),
+                  Tab(text: l10n.savedTab),
                 ],
               ),
               Expanded(
@@ -126,10 +129,10 @@ class _PreviewTab extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       children: [
         if (preview == null)
-          const AppEmptyState(
+          AppEmptyState(
             icon: Icons.visibility_outlined,
-            title: 'No preview yet',
-            description: 'Adjust foods or plan inputs to generate a preview.',
+            title: AppLocalizations.of(context).noPreviewYetTitle,
+            description: AppLocalizations.of(context).noPreviewYetDescription,
           )
         else
           PlanPreviewCard(preview: preview!, primary: primary),
@@ -156,8 +159,8 @@ class _SavedIndividualTab extends StatelessWidget {
   onSetActivePlanForCat;
   final Future<void> Function(CatProfile cat, String planId) onDeletePlanForCat;
 
-  String _formatGoalLabel(String? goal) {
-    if (goal == null || goal.trim().isEmpty) return 'Custom plan';
+  String _formatGoalLabel(AppLocalizations l10n, String? goal) {
+    if (goal == null || goal.trim().isEmpty) return l10n.customPlanLabel;
     return goal
         .split('_')
         .map(
@@ -168,18 +171,21 @@ class _SavedIndividualTab extends StatelessWidget {
         .join(' ');
   }
 
-  String _formatPortion(double value) => '${value.toStringAsFixed(1)} g';
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    String formatPortion(double value) {
+      return '${AppFormatters.formatDecimal(context, value, decimalDigits: 1)} g';
+    }
+
     if (selectedCat == null) {
       return ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const AppEmptyState(
+          AppEmptyState(
             icon: Icons.pets_rounded,
-            title: 'No cat selected',
-            description: 'Select a cat to inspect its saved plans.',
+            title: AppLocalizations.of(context).noCatSelectedTitle,
+            description: AppLocalizations.of(context).noCatSelectedDescription,
           ),
         ],
       );
@@ -200,10 +206,12 @@ class _SavedIndividualTab extends StatelessWidget {
               return ListView(
                 padding: const EdgeInsets.all(16),
                 children: [
-                  const AppEmptyState(
+                  AppEmptyState(
                     icon: Icons.folder_open_rounded,
-                    title: 'No saved plans yet',
-                    description: 'Save a plan to inspect it here.',
+                    title: AppLocalizations.of(context).noSavedPlansYetTitle,
+                    description: AppLocalizations.of(
+                      context,
+                    ).noSavedPlansYetDescription,
                   ),
                 ],
               );
@@ -220,53 +228,53 @@ class _SavedIndividualTab extends StatelessWidget {
               padding: const EdgeInsets.all(16),
               children: [
                 SavedPlanCard(
-                  title: 'Saved Individual Plan',
+                  title: AppLocalizations.of(context).savedIndividualPlanTitle,
                   headline: activePlanFoods,
                   primary: primary,
                   tags: [
                     SavedPlanTag(
                       icon: Icons.flag_outlined,
-                      label: _formatGoalLabel(activePlan.goal),
+                      label: _formatGoalLabel(l10n, activePlan.goal),
                     ),
                     SavedPlanTag(
                       icon: Icons.today_outlined,
-                      label: 'Starts ${formatDate(activePlan.startDate)}',
+                      label: l10n.startsTag(formatDate(activePlan.startDate)),
                     ),
                     SavedPlanTag(
                       icon: Icons.restaurant_menu_outlined,
-                      label: '${activePlan.mealsPerDay} meals/day',
+                      label: l10n.mealsPerDayTag(activePlan.mealsPerDay),
                     ),
                     if (activePlan.planId == activePlanId)
-                      const SavedPlanTag(
+                      SavedPlanTag(
                         icon: Icons.check_circle_outline,
-                        label: 'Active plan',
+                        label: l10n.activePlanTag,
                       ),
                   ],
                   primaryMetrics: [
                     SavedPlanMetric(
-                      label: 'Daily goal',
+                      label: l10n.metricDailyGoal,
                       value:
-                          '${activePlan.targetKcalPerDay.toStringAsFixed(0)} kcal',
-                      helper: 'Energy target',
+                          '${AppFormatters.formatDecimal(context, activePlan.targetKcalPerDay, decimalDigits: 0)} kcal',
+                      helper: l10n.helperEnergyTarget,
                       icon: Icons.local_fire_department_outlined,
                     ),
                     SavedPlanMetric(
-                      label: 'Food per day',
-                      value: _formatPortion(activePlan.portionGramsPerDay),
-                      helper: 'Total portion',
+                      label: l10n.metricFoodPerDay,
+                      value: formatPortion(activePlan.portionGramsPerDay),
+                      helper: l10n.helperTotalPortion,
                       icon: Icons.scale_outlined,
                     ),
                     SavedPlanMetric(
-                      label: 'Average per meal',
-                      value: _formatPortion(activePlan.portionGramsPerMeal),
-                      helper: 'Baseline split',
+                      label: l10n.metricAveragePerMeal,
+                      value: formatPortion(activePlan.portionGramsPerMeal),
+                      helper: l10n.helperBaselineSplit,
                       icon: Icons.pie_chart_outline,
                     ),
                     SavedPlanMetric(
-                      label: 'Serving unit',
+                      label: l10n.metricServingUnit,
                       value:
-                          '${activePlan.portionUnit} (${activePlan.portionUnitGrams.toStringAsFixed(2)} g)',
-                      helper: 'Display unit',
+                          '${activePlan.portionUnit} (${AppFormatters.formatDecimal(context, activePlan.portionUnitGrams, decimalDigits: 2)} g)',
+                      helper: l10n.helperDisplayUnit,
                       icon: Icons.straighten_outlined,
                     ),
                   ],
@@ -274,7 +282,10 @@ class _SavedIndividualTab extends StatelessWidget {
                     index,
                   ) {
                     final time = index < activePlan.mealTimes.length
-                        ? activePlan.mealTimes[index]
+                        ? AppFormatters.formatStoredMealTime(
+                            context,
+                            activePlan.mealTimes[index],
+                          )
                         : '--:--';
                     final portion = index < activePlan.mealPortionGrams.length
                         ? activePlan.mealPortionGrams[index]
@@ -283,28 +294,35 @@ class _SavedIndividualTab extends StatelessWidget {
                       index: index + 1,
                       label: activePlan.mealLabels[index],
                       time: time,
-                      value: _formatPortion(portion),
+                      value: formatPortion(portion),
                     );
                   }),
                   detailMetrics: [
                     SavedPlanMetric(
-                      label: 'Saved at',
-                      value:
-                          '${formatDate(activePlan.createdAt)} • ${activePlan.createdAt.hour.toString().padLeft(2, '0')}:${activePlan.createdAt.minute.toString().padLeft(2, '0')}',
+                      label: l10n.metricSavedAt,
+                      value: AppFormatters.formatDateTime(
+                        context,
+                        activePlan.createdAt,
+                      ),
                     ),
                     SavedPlanMetric(
-                      label: 'Overrides',
+                      label: l10n.metricOverrides,
                       value: activePlan.dailyOverrides.isEmpty
-                          ? 'No active overrides'
-                          : '${activePlan.dailyOverrides.length} active overrides',
+                          ? l10n.noActiveOverrides
+                          : l10n.activeOverridesCount(
+                              activePlan.dailyOverrides.length,
+                            ),
                     ),
-                    SavedPlanMetric(label: 'Foods', value: activePlanFoods),
                     SavedPlanMetric(
-                      label: 'Notes',
+                      label: l10n.metricFoods,
+                      value: activePlanFoods,
+                    ),
+                    SavedPlanMetric(
+                      label: l10n.metricNotes,
                       value:
                           activePlan.operationalNotes?.trim().isNotEmpty == true
                           ? activePlan.operationalNotes!.trim()
-                          : 'No notes yet',
+                          : l10n.noNotesYet,
                     ),
                   ],
                   footer: Column(
@@ -312,8 +330,8 @@ class _SavedIndividualTab extends StatelessWidget {
                     children: [
                       DropdownButtonFormField<String>(
                         initialValue: activePlan.planId,
-                        decoration: const InputDecoration(
-                          labelText: 'Active plan',
+                        decoration: InputDecoration(
+                          labelText: l10n.activePlanLabelText,
                           border: OutlineInputBorder(),
                         ),
                         items: plans.where((plan) => plan.planId != null).map((
@@ -322,7 +340,10 @@ class _SavedIndividualTab extends StatelessWidget {
                           return DropdownMenuItem<String>(
                             value: plan.planId!,
                             child: Text(
-                              '${formatDate(plan.startDate)} • ${plan.createdAt.hour.toString().padLeft(2, '0')}:${plan.createdAt.minute.toString().padLeft(2, '0')}',
+                              AppFormatters.formatDateTime(
+                                context,
+                                plan.createdAt,
+                              ),
                             ),
                           );
                         }).toList(),
@@ -350,7 +371,9 @@ class _SavedIndividualTab extends StatelessWidget {
                                       },
                                 icon: const Icon(Icons.check_circle_outline),
                                 label: Text(
-                                  'Use ${formatDate(plan.startDate)}',
+                                  l10n.usePlanAction(
+                                    formatDate(plan.startDate),
+                                  ),
                                 ),
                               );
                             })
@@ -369,7 +392,7 @@ class _SavedIndividualTab extends StatelessWidget {
                                   );
                                 },
                           icon: const Icon(Icons.delete_outline),
-                          label: const Text('Delete active plan'),
+                          label: Text(l10n.deleteActivePlanAction),
                         ),
                       ),
                     ],
@@ -397,18 +420,23 @@ class _SavedGroupTab extends StatelessWidget {
   final Color primary;
   final String Function(DateTime date) formatDate;
 
-  String _formatPortion(double value) => '${value.toStringAsFixed(1)} g';
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    String formatPortion(double value) {
+      return '${AppFormatters.formatDecimal(context, value, decimalDigits: 1)} g';
+    }
+
     if (selectedGroup == null) {
       return ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const AppEmptyState(
+          AppEmptyState(
             icon: Icons.groups_outlined,
-            title: 'No group selected',
-            description: 'Select a group to inspect its saved plan.',
+            title: AppLocalizations.of(context).noGroupSelectedTitle,
+            description: AppLocalizations.of(
+              context,
+            ).noGroupSelectedDescription,
           ),
         ],
       );
@@ -422,71 +450,76 @@ class _SavedGroupTab extends StatelessWidget {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
-              const AppEmptyState(
+              AppEmptyState(
                 icon: Icons.folder_open_rounded,
-                title: 'No saved group plan',
-                description: 'Save a group plan to inspect it here.',
+                title: AppLocalizations.of(context).noSavedGroupPlanTitle,
+                description: AppLocalizations.of(
+                  context,
+                ).noSavedGroupPlanDescription,
               ),
             ],
           );
         }
 
         final headline = plan.foodKeys.length > 1
-            ? '${plan.foodName} + ${plan.foodKeys.length - 1} more'
+            ? '${plan.foodName} ${l10n.plusMoreFoods(plan.foodKeys.length - 1)}'
             : plan.foodName;
 
         return ListView(
           padding: const EdgeInsets.all(16),
           children: [
             SavedPlanCard(
-              title: 'Saved Group Plan',
+              title: AppLocalizations.of(context).savedGroupPlanTitle,
               headline: headline,
               primary: primary,
               tags: [
                 SavedPlanTag(
                   icon: Icons.groups_2_outlined,
-                  label: '${plan.catCount} cats',
+                  label: l10n.catsCountTag(plan.catCount),
                 ),
                 SavedPlanTag(
                   icon: Icons.today_outlined,
-                  label: 'Starts ${formatDate(plan.startDate)}',
+                  label: l10n.startsTag(formatDate(plan.startDate)),
                 ),
                 SavedPlanTag(
                   icon: Icons.restaurant_menu_outlined,
-                  label: '${plan.mealsPerDay} meals/day',
+                  label: l10n.mealsPerDayTag(plan.mealsPerDay),
                 ),
               ],
               primaryMetrics: [
                 SavedPlanMetric(
-                  label: 'Per cat',
+                  label: l10n.metricPerCat,
                   value:
-                      '${plan.targetKcalPerCatPerDay.toStringAsFixed(0)} kcal',
-                  helper: 'Energy target per cat',
+                      '${AppFormatters.formatDecimal(context, plan.targetKcalPerCatPerDay, decimalDigits: 0)} kcal',
+                  helper: l10n.helperEnergyTargetPerCat,
                   icon: Icons.local_fire_department_outlined,
                 ),
                 SavedPlanMetric(
-                  label: 'Group total',
+                  label: l10n.metricGroupTotal,
                   value:
-                      '${plan.targetKcalPerGroupPerDay.toStringAsFixed(0)} kcal',
-                  helper: 'Combined energy target',
+                      '${AppFormatters.formatDecimal(context, plan.targetKcalPerGroupPerDay, decimalDigits: 0)} kcal',
+                  helper: l10n.helperCombinedEnergyTarget,
                   icon: Icons.bolt_outlined,
                 ),
                 SavedPlanMetric(
-                  label: 'Group per day',
-                  value: _formatPortion(plan.portionGramsPerGroupPerDay),
-                  helper: 'Total daily portion',
+                  label: l10n.metricGroupPerDay,
+                  value: formatPortion(plan.portionGramsPerGroupPerDay),
+                  helper: l10n.helperTotalPortion,
                   icon: Icons.scale_outlined,
                 ),
                 SavedPlanMetric(
-                  label: 'Group per meal',
-                  value: _formatPortion(plan.portionGramsPerGroupPerMeal),
-                  helper: 'Average feeding slot',
+                  label: l10n.metricGroupPerMeal,
+                  value: formatPortion(plan.portionGramsPerGroupPerMeal),
+                  helper: l10n.helperAverageFeedingSlot,
                   icon: Icons.pie_chart_outline,
                 ),
               ],
               timeline: List.generate(plan.mealLabels.length, (index) {
                 final time = index < plan.mealTimes.length
-                    ? plan.mealTimes[index]
+                    ? AppFormatters.formatStoredMealTime(
+                        context,
+                        plan.mealTimes[index],
+                      )
                     : '--:--';
                 final portion = index < plan.mealPortionGrams.length
                     ? plan.mealPortionGrams[index]
@@ -495,31 +528,30 @@ class _SavedGroupTab extends StatelessWidget {
                   index: index + 1,
                   label: plan.mealLabels[index],
                   time: time,
-                  value: _formatPortion(portion),
+                  value: formatPortion(portion),
                 );
               }),
               detailMetrics: [
                 SavedPlanMetric(
-                  label: 'Serving unit',
+                  label: l10n.metricServingUnit,
                   value:
-                      '${plan.portionUnit} (${plan.portionUnitGrams.toStringAsFixed(2)} g)',
+                      '${plan.portionUnit} (${AppFormatters.formatDecimal(context, plan.portionUnitGrams, decimalDigits: 2)} g)',
                 ),
                 SavedPlanMetric(
-                  label: 'Distribution',
+                  label: l10n.metricDistribution,
                   value: plan.perCatShareWeights.isEmpty
-                      ? 'Equal split'
-                      : 'Unequal (${plan.perCatShareWeights.length} cats)',
+                      ? l10n.equalSplitLabel
+                      : l10n.unequalSplitLabel(plan.perCatShareWeights.length),
                 ),
                 SavedPlanMetric(
-                  label: 'Saved at',
-                  value:
-                      '${formatDate(plan.createdAt)} • ${plan.createdAt.hour.toString().padLeft(2, '0')}:${plan.createdAt.minute.toString().padLeft(2, '0')}',
+                  label: l10n.metricSavedAt,
+                  value: AppFormatters.formatDateTime(context, plan.createdAt),
                 ),
                 SavedPlanMetric(
-                  label: 'Notes',
+                  label: l10n.metricNotes,
                   value: plan.operationalNotes?.trim().isNotEmpty == true
                       ? plan.operationalNotes!.trim()
-                      : 'No notes yet',
+                      : l10n.noNotesYet,
                 ),
               ],
             ),

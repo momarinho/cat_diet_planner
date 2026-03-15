@@ -215,8 +215,10 @@ class NotificationSupport {
   }
 
   static String mealTitle(int index, {String languageCode = 'en'}) {
-    final isPt = languageCode == 'pt';
-    final isTl = languageCode == 'tl';
+    final normalized = languageCode.trim().toLowerCase();
+    final isPt =
+        normalized == 'pt' || normalized == 'pt_br' || normalized == 'pt-br';
+    final isTl = normalized == 'tl' || normalized == 'fil';
     switch (index) {
       case 0:
         return isPt
@@ -258,20 +260,22 @@ class NotificationSupport {
   }
 
   static String localizedTitle(String fallback, String languageCode) {
-    if (languageCode == 'pt') {
+    final normalized = languageCode.trim().toLowerCase();
+    if (normalized == 'pt' || normalized == 'pt_br' || normalized == 'pt-br') {
       return fallback.replaceAll('Reminder', 'Lembrete');
     }
-    if (languageCode == 'tl') {
+    if (normalized == 'tl' || normalized == 'fil') {
       return fallback.replaceAll('Reminder', 'Paalala');
     }
     return fallback;
   }
 
   static String localizedBodyForGeneric(String reminderTime, String lang) {
-    if (lang == 'pt') {
+    final normalized = lang.trim().toLowerCase();
+    if (normalized == 'pt' || normalized == 'pt_br' || normalized == 'pt-br') {
       return 'Hora de alimentar seu gato as $reminderTime.';
     }
-    if (lang == 'tl') {
+    if (normalized == 'tl' || normalized == 'fil') {
       return 'Oras na para pakainin ang pusa mo sa $reminderTime.';
     }
     return 'Time to feed your cat at $reminderTime.';
@@ -282,8 +286,13 @@ class NotificationSupport {
     String reminderTime,
     String lang,
   ) {
-    if (lang == 'pt') return 'Alimente $name as $reminderTime.';
-    if (lang == 'tl') return 'Pakainin si $name sa $reminderTime.';
+    final normalized = lang.trim().toLowerCase();
+    if (normalized == 'pt' || normalized == 'pt_br' || normalized == 'pt-br') {
+      return 'Alimente $name as $reminderTime.';
+    }
+    if (normalized == 'tl' || normalized == 'fil') {
+      return 'Pakainin si $name sa $reminderTime.';
+    }
     return 'Feed $name at $reminderTime.';
   }
 
@@ -293,8 +302,13 @@ class NotificationSupport {
     String reminderTime,
     String lang,
   ) {
-    if (lang == 'pt') return 'Alimente $name$groupSuffix as $reminderTime.';
-    if (lang == 'tl') return 'Pakainin ang $name$groupSuffix sa $reminderTime.';
+    final normalized = lang.trim().toLowerCase();
+    if (normalized == 'pt' || normalized == 'pt_br' || normalized == 'pt-br') {
+      return 'Alimente $name$groupSuffix as $reminderTime.';
+    }
+    if (normalized == 'tl' || normalized == 'fil') {
+      return 'Pakainin ang $name$groupSuffix sa $reminderTime.';
+    }
     return 'Feed $name$groupSuffix at $reminderTime.';
   }
 

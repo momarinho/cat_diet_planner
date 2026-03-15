@@ -1,4 +1,6 @@
+import 'package:cat_diet_planner/core/localization/app_formatters.dart';
 import 'package:cat_diet_planner/features/plans/models/plan_preview_data.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class PlanPreviewCard extends StatelessWidget {
@@ -11,14 +13,8 @@ class PlanPreviewCard extends StatelessWidget {
   final PlanPreviewData preview;
   final Color primary;
 
-  String _formatDate(DateTime date) {
-    final day = date.day.toString().padLeft(2, '0');
-    final month = date.month.toString().padLeft(2, '0');
-    return '$day/$month/${date.year}';
-  }
-
-  String _formatGoalLabel(String? goal) {
-    if (goal == null || goal.trim().isEmpty) return 'Custom plan';
+  String _formatGoalLabel(AppLocalizations l10n, String? goal) {
+    if (goal == null || goal.trim().isEmpty) return l10n.customPlanLabel;
     return goal
         .split('_')
         .map(
@@ -29,16 +25,19 @@ class PlanPreviewCard extends StatelessWidget {
         .join(' ');
   }
 
-  String _formatPortion(double value) => '${value.toStringAsFixed(1)} g';
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final surface = theme.colorScheme.surface;
     final lineColor = primary.withValues(alpha: 0.12);
     final softText =
         theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.68) ??
         const Color(0xFF7A7678);
+
+    String formatPortion(double value) {
+      return '${AppFormatters.formatDecimal(context, value, decimalDigits: 1)} g';
+    }
 
     return Container(
       width: double.infinity,
@@ -59,18 +58,20 @@ class PlanPreviewCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _PreviewHero(
-            title: preview.title,
+            title: preview.catCount == null
+                ? l10n.planPreviewTitle
+                : l10n.groupPlanPreviewTitle,
             foodNames: preview.foodNames,
-            goalLabel: _formatGoalLabel(preview.goalLabel),
-            startDate: _formatDate(preview.startDate),
+            goalLabel: _formatGoalLabel(l10n, preview.goalLabel),
+            startDate: AppFormatters.formatDate(context, preview.startDate),
             mealsPerDay: preview.mealsPerDay,
             catCount: preview.catCount,
             primary: primary,
           ),
           const SizedBox(height: 18),
           _SectionTitle(
-            title: 'Core targets',
-            subtitle: 'The numbers that will be used when this draft is saved.',
+            title: l10n.previewCoreTargetsTitle,
+            subtitle: l10n.previewCoreTargetsSubtitle,
           ),
           const SizedBox(height: 12),
           LayoutBuilder(
@@ -86,10 +87,10 @@ class PlanPreviewCard extends StatelessWidget {
                   SizedBox(
                     width: itemWidth,
                     child: _PrimaryMetricCard(
-                      label: 'Daily goal',
+                      label: l10n.metricDailyGoal,
                       value:
-                          '${preview.targetKcalPerDay.toStringAsFixed(0)} kcal',
-                      helper: 'Energy target',
+                          '${AppFormatters.formatDecimal(context, preview.targetKcalPerDay, decimalDigits: 0)} kcal',
+                      helper: l10n.helperEnergyTarget,
                       icon: Icons.local_fire_department_outlined,
                       primary: primary,
                     ),
@@ -97,9 +98,9 @@ class PlanPreviewCard extends StatelessWidget {
                   SizedBox(
                     width: itemWidth,
                     child: _PrimaryMetricCard(
-                      label: 'Food per day',
-                      value: _formatPortion(preview.portionGramsPerDay),
-                      helper: 'Total portion',
+                      label: l10n.metricFoodPerDay,
+                      value: formatPortion(preview.portionGramsPerDay),
+                      helper: l10n.helperTotalPortion,
                       icon: Icons.scale_outlined,
                       primary: primary,
                     ),
@@ -107,9 +108,9 @@ class PlanPreviewCard extends StatelessWidget {
                   SizedBox(
                     width: itemWidth,
                     child: _PrimaryMetricCard(
-                      label: 'Average per meal',
-                      value: _formatPortion(preview.portionGramsPerMeal),
-                      helper: 'Baseline split',
+                      label: l10n.metricAveragePerMeal,
+                      value: formatPortion(preview.portionGramsPerMeal),
+                      helper: l10n.helperBaselineSplit,
                       icon: Icons.pie_chart_outline,
                       primary: primary,
                     ),
@@ -117,10 +118,10 @@ class PlanPreviewCard extends StatelessWidget {
                   SizedBox(
                     width: itemWidth,
                     child: _PrimaryMetricCard(
-                      label: 'Serving unit',
+                      label: l10n.metricServingUnit,
                       value:
-                          '${preview.portionUnit} (${preview.portionUnitGrams.toStringAsFixed(2)} g)',
-                      helper: 'Display unit',
+                          '${preview.portionUnit} (${AppFormatters.formatDecimal(context, preview.portionUnitGrams, decimalDigits: 2)} g)',
+                      helper: l10n.helperDisplayUnit,
                       icon: Icons.straighten_outlined,
                       primary: primary,
                     ),
@@ -131,14 +132,17 @@ class PlanPreviewCard extends StatelessWidget {
           ),
           const SizedBox(height: 22),
           _SectionTitle(
-            title: 'Meal timeline',
-            subtitle: 'Each feeding slot with time and exact portion.',
+            title: l10n.previewMealTimelineTitle,
+            subtitle: l10n.previewMealTimelineSubtitle,
           ),
           const SizedBox(height: 12),
           ...List.generate(preview.mealLabels.length, (index) {
             final label = preview.mealLabels[index];
             final time = index < preview.mealTimes.length
-                ? preview.mealTimes[index]
+                ? AppFormatters.formatStoredMealTime(
+                    context,
+                    preview.mealTimes[index],
+                  )
                 : '--:--';
             final portion = index < preview.mealPortionGrams.length
                 ? preview.mealPortionGrams[index]
@@ -151,15 +155,15 @@ class PlanPreviewCard extends StatelessWidget {
                 index: index + 1,
                 label: label,
                 time: time,
-                portion: _formatPortion(portion),
+                portion: formatPortion(portion),
                 primary: primary,
               ),
             );
           }),
           const SizedBox(height: 22),
           _SectionTitle(
-            title: 'Plan details',
-            subtitle: 'Context that affects execution but is easy to miss.',
+            title: l10n.previewPlanDetailsTitle,
+            subtitle: l10n.previewPlanDetailsSubtitle,
           ),
           const SizedBox(height: 12),
           Container(
@@ -184,25 +188,30 @@ class PlanPreviewCard extends StatelessWidget {
                     SizedBox(
                       width: itemWidth,
                       child: _SecondaryMetric(
-                        label: 'Starts',
-                        value: _formatDate(preview.startDate),
+                        label: l10n.metricStarts,
+                        value: AppFormatters.formatDate(
+                          context,
+                          preview.startDate,
+                        ),
                         secondary: softText,
                       ),
                     ),
                     SizedBox(
                       width: itemWidth,
                       child: _SecondaryMetric(
-                        label: 'Overrides',
+                        label: l10n.metricOverrides,
                         value: preview.dailyOverrides.isEmpty
-                            ? 'No active overrides'
-                            : '${preview.dailyOverrides.length} active overrides',
+                            ? l10n.noActiveOverrides
+                            : l10n.activeOverridesCount(
+                                preview.dailyOverrides.length,
+                              ),
                         secondary: softText,
                       ),
                     ),
                     SizedBox(
                       width: itemWidth,
                       child: _SecondaryMetric(
-                        label: 'Foods',
+                        label: l10n.metricFoods,
                         value: preview.foodNames.join(' + '),
                         secondary: softText,
                       ),
@@ -210,11 +219,11 @@ class PlanPreviewCard extends StatelessWidget {
                     SizedBox(
                       width: itemWidth,
                       child: _SecondaryMetric(
-                        label: 'Notes',
+                        label: l10n.metricNotes,
                         value:
                             preview.operationalNotes?.trim().isNotEmpty == true
                             ? preview.operationalNotes!.trim()
-                            : 'No notes yet',
+                            : l10n.noNotesYet,
                         secondary: softText,
                       ),
                     ),
@@ -251,6 +260,7 @@ class _PreviewHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
 
     return Container(
       width: double.infinity,
@@ -295,18 +305,18 @@ class _PreviewHero extends StatelessWidget {
               ),
               _InfoPill(
                 icon: Icons.today_outlined,
-                label: 'Starts $startDate',
+                label: l10n.startsTag(startDate),
                 primary: primary,
               ),
               _InfoPill(
                 icon: Icons.restaurant_menu_outlined,
-                label: '$mealsPerDay meals/day',
+                label: l10n.mealsPerDayTag(mealsPerDay),
                 primary: primary,
               ),
               if (catCount != null)
                 _InfoPill(
                   icon: Icons.groups_2_outlined,
-                  label: '$catCount cats',
+                  label: l10n.catsCountTag(catCount!),
                   primary: primary,
                 ),
             ],
@@ -468,6 +478,7 @@ class _MealTimelineCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final muted =
         theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.66) ??
         const Color(0xFF7A7678);
@@ -509,7 +520,7 @@ class _MealTimelineCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  'Scheduled feeding slot',
+                  l10n.scheduledFeedingSlotCaption,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: muted,
                     fontWeight: FontWeight.w600,

@@ -1,3 +1,5 @@
+import 'package:cat_diet_planner/core/errors/localized_exception.dart';
+
 /*
  * PortionUnitService
  *
@@ -65,9 +67,7 @@ class PortionUnitService {
     final map = getUnitMap(overrides: overrides);
     final value = map[key];
     if (value == null) {
-      throw ArgumentError(
-        'Unknown portion unit `$unit`. Provide an override if needed.',
-      );
+      throw LocalizedException('portionUnknownUnit', args: {'unit': unit});
     }
     return value;
   }
@@ -94,7 +94,7 @@ class PortionUnitService {
   }) {
     final perUnit = gramsPerUnit(unit, overrides: overrides);
     if (perUnit == 0) {
-      throw ArgumentError('Unit `$unit` has a zero gram equivalent.');
+      throw LocalizedException('portionZeroEquivalent', args: {'unit': unit});
     }
     return grams / perUnit;
   }

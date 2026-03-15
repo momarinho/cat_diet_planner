@@ -1,3 +1,4 @@
+import 'package:cat_diet_planner/core/localization/app_locale.dart';
 import 'package:cat_diet_planner/features/settings/models/app_settings.dart';
 import 'package:cat_diet_planner/features/settings/services/app_settings_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,7 +23,9 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
   }
 
   Future<void> setLanguageCode(String languageCode) async {
-    state = state.copyWith(languageCode: languageCode);
+    state = state.copyWith(
+      languageCode: AppLocale.normalizeLanguageCode(languageCode),
+    );
     await _service.save(state);
   }
 

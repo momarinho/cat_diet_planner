@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:cat_diet_planner/core/errors/localized_exception.dart';
 import 'package:image/image.dart' as img;
 
 class CatPhotoService {
   static String compressAndEncode(Uint8List bytes) {
     final decoded = img.decodeImage(bytes);
     if (decoded == null) {
-      throw ArgumentError('Invalid image file.');
+      throw const LocalizedException('invalidImageFile');
     }
 
     final resized = decoded.width > 512 || decoded.height > 512

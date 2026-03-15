@@ -1,0 +1,754 @@
+{
+  "@@locale": "tl",
+  "appTitle": "CatDiet Planner",
+  "settingsTitle": "Settings",
+  "languageSectionTitle": "Wika",
+  "appLanguageTitle": "Wika ng app",
+  "localizedContentScopeTitle": "Lawak ng naka-localize na content",
+  "localizedContentScopeDescription": "Susunod na ngayon sa napiling wika ang mga notification at mga text para sa report/share.",
+  "navDaily": "Araw",
+  "navHome": "Home",
+  "navPlans": "Plano",
+  "navHistory": "Kasaysayan",
+  "routeErrorTitle": "Error sa ruta",
+  "dashboardTitle": "Dashboard",
+  "activeCatTitle": "Aktibong pusa",
+  "editAction": "I-edit",
+  "catAgeYearsOld": "{years} taong gulang",
+  "@catAgeYearsOld": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "scanFoodAction": "I-scan ang pagkain",
+  "logWeightAction": "I-log ang timbang",
+  "dailySummaryTitle": "Arawang buod",
+  "todayLabel": "Ngayon",
+  "kcalLabel": "kcal",
+  "calorieIntakeLabel": "CALORIE INTAKE",
+  "createPlanToUnlockDailySummary": "Gumawa ng plano para makita ang arawang buod",
+  "todayFullyCompleted": "Kumpleto na ang araw na ito",
+  "remainingCaloriesForMeal": "{kcal} kcal pa para sa {meal}",
+  "@remainingCaloriesForMeal": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      },
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "mealTimelineTitle": "Timeline ng pagkain",
+  "viewPlanAction": "Tingnan ang plano",
+  "noTimelineYetTitle": "Wala pang timeline",
+  "noTimelineYetDescription": "Mag-save ng meal plan para makita ang timeline ng pagkain.",
+  "mealFallbackTitle": "Kainan {number}",
+  "@mealFallbackTitle": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "mealMarkedPending": "{meal} minarkahang pending.",
+  "@mealMarkedPending": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "mealMarkedCompleted": "{meal} minarkahang completed.",
+  "@mealMarkedCompleted": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "planInspectorTitle": "Inspector ng plano",
+  "groupPlanInspectorTitle": "Inspector ng group plan",
+  "previewTab": "Preview",
+  "savedTab": "Saved",
+  "noPreviewYetTitle": "Wala pang preview",
+  "noPreviewYetDescription": "Ayusin ang foods o plan inputs para makagawa ng preview.",
+  "noCatSelectedTitle": "Walang napiling pusa",
+  "noCatSelectedDescription": "Pumili ng pusa para makita ang saved plans nito.",
+  "noSavedPlansYetTitle": "Wala pang saved plans",
+  "noSavedPlansYetDescription": "Mag-save ng plano para makita ito rito.",
+  "noGroupSelectedTitle": "Walang napiling grupo",
+  "noGroupSelectedDescription": "Pumili ng grupo para makita ang saved plan nito.",
+  "noSavedGroupPlanTitle": "Walang saved group plan",
+  "noSavedGroupPlanDescription": "Mag-save ng group plan para makita ito rito.",
+  "savedIndividualPlanTitle": "Saved individual plan",
+  "savedGroupPlanTitle": "Saved group plan",
+  "planPreviewTitle": "Plan preview",
+  "groupPlanPreviewTitle": "Group plan preview",
+  "savedCoreTargetsTitle": "Core targets",
+  "savedCoreTargetsSubtitle": "Mga saved value na kasalukuyang gamit ng planong ito.",
+  "savedMealTimelineTitle": "Meal timeline",
+  "savedMealTimelineSubtitle": "Saved schedule at hatian ng portion sa bawat meal.",
+  "savedPlanDetailsTitle": "Plan details",
+  "savedPlanDetailsSubtitle": "Operational context, notes at saved configuration.",
+  "previewCoreTargetsTitle": "Core targets",
+  "previewCoreTargetsSubtitle": "Mga numerong gagamitin kapag sinave ang draft na ito.",
+  "previewMealTimelineTitle": "Meal timeline",
+  "previewMealTimelineSubtitle": "Bawat feeding slot na may oras at eksaktong portion.",
+  "previewPlanDetailsTitle": "Plan details",
+  "previewPlanDetailsSubtitle": "Kontekstong may epekto sa execution pero madaling ma-miss.",
+  "customPlanLabel": "Custom plan",
+  "startsTag": "Starts {date}",
+  "@startsTag": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "mealsPerDayTag": "{count} kainan/araw",
+  "@mealsPerDayTag": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "catsCountTag": "{count} pusa",
+  "@catsCountTag": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activePlanTag": "Aktibong plano",
+  "metricDailyGoal": "Daily goal",
+  "metricFoodPerDay": "Food per day",
+  "metricAveragePerMeal": "Average per meal",
+  "metricServingUnit": "Serving unit",
+  "metricPerCat": "Per cat",
+  "metricGroupTotal": "Group total",
+  "metricGroupPerDay": "Group per day",
+  "metricGroupPerMeal": "Group per meal",
+  "metricSavedAt": "Saved at",
+  "metricOverrides": "Overrides",
+  "metricFoods": "Foods",
+  "metricNotes": "Notes",
+  "metricStarts": "Starts",
+  "metricDistribution": "Distribution",
+  "helperEnergyTarget": "Energy target",
+  "helperTotalPortion": "Total portion",
+  "helperBaselineSplit": "Baseline split",
+  "helperDisplayUnit": "Display unit",
+  "helperEnergyTargetPerCat": "Energy target per cat",
+  "helperCombinedEnergyTarget": "Combined energy target",
+  "helperAverageFeedingSlot": "Average feeding slot",
+  "noActiveOverrides": "No active overrides",
+  "activeOverridesCount": "{count} active overrides",
+  "@activeOverridesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noNotesYet": "No notes yet",
+  "equalSplitLabel": "Equal split",
+  "unequalSplitLabel": "Unequal ({count} cats)",
+  "@unequalSplitLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activePlanLabelText": "Active plan",
+  "usePlanAction": "Use {date}",
+  "@usePlanAction": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteActivePlanAction": "Delete active plan",
+  "scheduledFeedingSlotCaption": "Scheduled feeding slot",
+  "plusMoreFoods": "+ {count} pa",
+  "@plusMoreFoods": {
+    "description": "Suffix for the group plan headline when there are additional foods beyond the first one.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "plansTitle": "Mga plano",
+  "planInspectorTooltip": "Preview at saved plan",
+  "buildPlanTitle": "Bumuo ng plano",
+  "individualPlanMode": "Individual",
+  "groupPlanMode": "Grupo",
+  "catProfileLabel": "Profile ng pusa",
+  "groupLabel": "Grupo",
+  "groupWithCats": "{group} ({count} pusa)",
+  "@groupWithCats": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "targetKcalPerCatPerDayLabel": "Target kcal bawat pusa / araw",
+  "createGroupAction": "Gumawa ng grupo",
+  "mealsPerDayChip": "{count} kainan/araw",
+  "@mealsPerDayChip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "planStartDateTitle": "Petsa ng simula ng plano",
+  "startsOnLabel": "Nagsisimula sa {date}",
+  "@startsOnLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "portionUnitTitle": "Unit ng portion",
+  "unitLabel": "Unit",
+  "gramsPerUnitLabel": "Gramo bawat unit",
+  "weekendAlternativeTitle": "Weekend alternative",
+  "weekendAlternativeDescription": "Mag-apply ng ibang kcal/portion factor tuwing Sabado at Linggo.",
+  "weekendKcalFactorLabel": "Weekend kcal factor (%)",
+  "byWeekdayTitle": "Ayon sa weekday",
+  "byWeekdayDescription": "I-enable ang mga partikular na araw at magtakda ng kcal/portion factor para sa bawat isa.",
+  "factorPercentLabel": "Factor %",
+  "operationalNotesLabel": "Operational notes",
+  "mealLabelsTitle": "Mga label ng meal",
+  "mealNameLabel": "Pangalan ng meal {count}",
+  "@mealNameLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealPortionsTitle": "Mga portion ng meal",
+  "mealPortionsDescription": "Itakda ang porsyento ng daily portion na ihahain sa bawat meal. Nino-normalize ng app ang total sa 100%.",
+  "mealShareLabel": "Bahagi ng {meal} (%)",
+  "@mealShareLabel": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "mealScheduleTitle": "Iskedyul ng meal",
+  "mealScheduleDescription": "Piliin ang oras ng bawat meal. Gagamitin ito ng Daily at Home.",
+  "suggestionsTitle": "Mga suhestiyon",
+  "noCatProfilesAvailableTitle": "Walang available na cat profiles",
+  "noCatProfilesAvailableMessage": "Gumawa muna ng cat profile bago bumuo ng individual meal plan.",
+  "noGroupsAvailableTitle": "Walang available na grupo",
+  "noGroupsAvailableMessage": "Gumawa muna ng grupo bago bumuo ng shared meal plan.",
+  "availableFoodsTitle": "Mga available na pagkain",
+  "noFoodsAvailableTitle": "Walang available na pagkain",
+  "noFoodsAvailableDescription": "Magdagdag ng pagkain sa Food Database bago gumawa ng plano.",
+  "multipleFoodsTitle": "Maramihang pagkain",
+  "multipleFoodsDescription": "Payagang pumili ng maraming pagkain para sa plano",
+  "unknownBrand": "Hindi kilalang brand",
+  "savePlanAction": "I-save ang plano",
+  "saveGroupPlanAction": "I-save ang group plan",
+  "savingLabel": "Sine-save...",
+  "planDeletedMessage": "Nabura ang plano.",
+  "planSavedForCatMessage": "Na-save ang plano para kay {name}",
+  "@planSavedForCatMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "planSavedForGroupMessage": "Na-save ang plano para sa {name}",
+  "@planSavedForGroupMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValidKcalPerCatMessage": "Maglagay ng valid na kcal target bawat pusa.",
+  "mondayLabel": "Lunes",
+  "tuesdayLabel": "Martes",
+  "wednesdayLabel": "Miyerkules",
+  "thursdayLabel": "Huwebes",
+  "fridayLabel": "Biyernes",
+  "saturdayLabel": "Sabado",
+  "sundayLabel": "Linggo",
+  "dayFallbackLabel": "Araw {weekday}",
+  "@dayFallbackLabel": {
+    "placeholders": {
+      "weekday": {
+        "type": "int"
+      }
+    }
+  },
+  "noActiveSuggestionsDescription": "Walang active suggestions ngayon. Ipagpatuloy ang pag-log ng meals at timbang para gumanda ang guidance.",
+  "confirmPlanChangeTitle": "Kumpirmahin ang pagbabago ng plano",
+  "applySuggestionAfterReview": "I-apply ang suhestyong ito kay {catName} pagkatapos lamang ng review.",
+  "@applySuggestionAfterReview": {
+    "placeholders": {
+      "catName": {
+        "type": "String"
+      }
+    }
+  },
+  "responsiblePersonLabel": "Responsableng tao",
+  "typeWhoApprovedHint": "I-type kung sino ang nag-apruba ng pagbabagong ito",
+  "approvalIdentityRequired": "Kailangan ang pagkakakilanlan ng nag-apruba.",
+  "cancelAction": "Kanselahin",
+  "confirmAction": "Kumpirmahin",
+  "planUpdatedAfterConfirmation": "Na-update ang plano pagkatapos ng kumpirmasyon.",
+  "suggestionRecordedWithoutPlanChanges": "Na-record ang suggestion nang walang pagbabago sa plano.",
+  "suggestionConfidenceLabel": "Kumpiyansa {value}",
+  "@suggestionConfidenceLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "suggestionAcceptedStatus": "Tinanggap",
+  "suggestionDeferredStatus": "Ipinagpaliban",
+  "suggestionIgnoredStatus": "Binalewala",
+  "whyThisSuggestionTitle": "Bakit ang suhestyong ito:",
+  "acceptAction": "Tanggapin",
+  "deferAction": "Ipagpaliban",
+  "ignoreAction": "Balewalain",
+  "restoreAction": "Ibalik",
+  "autoApplyDisabledMessage": "Naka-disable ang auto-apply. Ang mga pagbabago sa plano ay laging nangangailangan ng kumpirmasyon.",
+  "suggestionTypeKcal": "Kcal",
+  "suggestionTypeSchedule": "Iskedyul",
+  "suggestionTypePortions": "Mga portion",
+  "suggestionTypePreventiveAlert": "Preventive Alert",
+  "suggestionTypeClinicalWatch": "Clinical Watch",
+  "reasonWeightTrendUp": "Tumataas ang kamakailang trend ng timbang",
+  "reasonWeightTrendDown": "Bumababa ang kamakailang trend ng timbang",
+  "reasonOutOfGoalMax": "Mas mataas ang timbang kaysa sa naka-configure na goal range",
+  "reasonOutOfGoalMin": "Mas mababa ang timbang kaysa sa naka-configure na goal range",
+  "reasonApproachingGoalMax": "Papalapit ang trend sa itaas na hangganan ng goal",
+  "reasonApproachingGoalMin": "Papalapit ang trend sa ibabang hangganan ng goal",
+  "reasonAdherenceLow": "Mas mababa sa target ang meal adherence",
+  "reasonRefusalFrequent": "Madalas ang refusal events",
+  "reasonDelayedFrequent": "Madalas ang delayed meals",
+  "reasonAppetiteReduced": "May naitalang reduced appetite kamakailan",
+  "reasonAppetitePoor": "May naitalang poor appetite kamakailan",
+  "reasonVomitFrequent": "May naitalang madalas na pagsusuka",
+  "reasonStoolDiarrhea": "May naitalang diarrhea events",
+  "reasonClinicalConditionPresent": "May naka-configure na clinical conditions sa profile",
+  "reasonWeightAlertTriggered": "May mga weight alert na na-trigger kamakailan",
+  "reasonLowEvidence": "Limitado ang available na data (mababang ebidensya)",
+  "dietWeightRangeError": "Ang timbang ay dapat nasa pagitan ng {min} at {max} kg.",
+  "@dietWeightRangeError": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "dietAgeRangeError": "Ang edad ay dapat nasa pagitan ng {min} at {max} buwan.",
+  "@dietAgeRangeError": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "dietFoodCaloriesPositiveError": "Dapat mas mataas sa zero ang calories ng pagkain.",
+  "dietMealsRangeError": "Ang meals bawat araw ay dapat nasa pagitan ng {min} at {max}.",
+  "@dietMealsRangeError": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "dietWeightPositiveError": "Dapat mas mataas sa zero ang timbang.",
+  "dietMealsPositiveError": "Dapat mas mataas sa zero ang meals bawat araw.",
+  "portionUnknownUnitError": "Hindi kilalang portion unit na \"{unit}\".",
+  "@portionUnknownUnitError": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "portionZeroEquivalentError": "Ang unit na \"{unit}\" ay may zero gram equivalent.",
+  "@portionZeroEquivalentError": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "noActivePlanAvailableForCat": "Walang active plan para sa pusang ito.",
+  "noSuggestedPlanChangesAvailableToRevert": "Walang suggested plan change na puwedeng i-revert.",
+  "lastSuggestedChangeReverted": "Na-revert ang huling suggested change.",
+  "suggestionDataIncomplete": "Hindi kumpleto ang data ng suggestion.",
+  "suggestedKcalChangeExceedsSafeBand": "Lumalagpas ang suggested kcal change sa ligtas na adjustment band.",
+  "suggestedKcalTargetOutsideSafeRange": "Nasa labas ng pinapayagang ligtas na range ang suggested kcal target.",
+  "unableToRecalculatePortionSafely": "Hindi ligtas na ma-recalculate ang laki ng portion.",
+  "scheduleChangeExceedsSafeShiftLimit": "Lumalagpas ang pagbabago ng schedule sa ligtas na shift limit.",
+  "portionRedistributionInvalidForActivePlan": "Hindi valid ang redistribution ng portion para sa active plan.",
+  "portionShiftExceedsSafeRedistributionLimit": "Lumalagpas ang paglipat ng portion sa ligtas na redistribution limit.",
+  "portionRedistributionFailedSafetyValidation": "Bumagsak sa safety validation ang redistribution ng portion.",
+  "summaryTargetKcalPerDayChange": "Target kcal/araw: {fromValue} -> {toValue} ({delta})",
+  "@summaryTargetKcalPerDayChange": {
+    "placeholders": {
+      "fromValue": {
+        "type": "String"
+      },
+      "toValue": {
+        "type": "String"
+      },
+      "delta": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryDailyPortionChange": "Daily portion: {fromValue} -> {toValue}",
+  "@summaryDailyPortionChange": {
+    "placeholders": {
+      "fromValue": {
+        "type": "String"
+      },
+      "toValue": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryMealTimeChange": "{meal}: {fromValue} -> {toValue}",
+  "@summaryMealTimeChange": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      },
+      "fromValue": {
+        "type": "String"
+      },
+      "toValue": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryMealPortionChange": "{meal}: {fromValue} -> {toValue}",
+  "@summaryMealPortionChange": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      },
+      "fromValue": {
+        "type": "String"
+      },
+      "toValue": {
+        "type": "String"
+      }
+    }
+  },
+  "revertLastSuggestedChangeTitle": "I-revert ang huling suggested change",
+  "revertLastSuggestedChangeDescription": "Ibinabalik nito ang snapshot ng plano bago ang pinakahuling suggested change.",
+  "typeWhoIsRevertingHint": "Ilagay kung sino ang nagre-revert ng pagbabagong ito",
+  "responsiblePersonRequired": "Kinakailangan ang responsableng tao.",
+  "revertAction": "I-revert",
+  "impactRevertedBy": "Ni-revert ni {name}",
+  "@impactRevertedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impactActiveChange": "Aktibong pagbabago",
+  "impactBeforeAfterKcal": "Bago/pagkatapos na kcal: {beforeValue} -> {afterValue}",
+  "@impactBeforeAfterKcal": {
+    "placeholders": {
+      "beforeValue": {
+        "type": "String"
+      },
+      "afterValue": {
+        "type": "String"
+      }
+    }
+  },
+  "unknownPersonLabel": "hindi kilala",
+  "shareMessageTitle": "Share message",
+  "shareMessageHint": "Mensaheng ginagamit kapag nagshi-share ng report files",
+  "saveAction": "I-save",
+  "mealReminderTimesTitle": "Mga oras ng meal reminder",
+  "addTimeAction": "Magdagdag ng oras",
+  "saveScheduleAction": "I-save ang schedule",
+  "generateDemoDataTitle": "Gumawa ng demo data",
+  "generateDemoDataDescription": "Papapalitan nito ang kasalukuyang local data ng ready-to-test na scenario na may isang group, isang individual na pusa, foods, plans, meals at weight history.",
+  "generateAction": "Gumawa",
+  "demoDataReadyMessage": "Handa na ang demo data: {groups} group, {cats} pusa, {foods} foods, {schedules} schedules.",
+  "@demoDataReadyMessage": {
+    "placeholders": {
+      "groups": {"type": "int"},
+      "cats": {"type": "int"},
+      "foods": {"type": "int"},
+      "schedules": {"type": "int"}
+    }
+  },
+  "clearDemoDataTitle": "Burahin ang demo data",
+  "clearDemoDataDescription": "Aalisin nito ang local demo data sa app, kasama ang cats, groups, foods, plans, meals at history.",
+  "clearAction": "Burahin",
+  "localDemoDataClearedMessage": "Na-clear ang local demo data.",
+  "generateStressDataTitle": "Gumawa ng stress test data",
+  "generateStressDataDescription": "Maglo-load ito ng mabigat na operational scenario (hanggang 10 pusa at 5 group) para ma-validate ang navigation, lists at daily routines sa high-volume usage.",
+  "stressScenarioReadyMessage": "Handa na ang stress scenario: {groups} groups, {cats} cats, {foods} foods, {schedules} schedules.",
+  "@stressScenarioReadyMessage": {
+    "placeholders": {
+      "groups": {"type": "int"},
+      "cats": {"type": "int"},
+      "foods": {"type": "int"},
+      "schedules": {"type": "int"}
+    }
+  },
+  "customRangeDaysTitle": "Custom range days",
+  "customRangeDaysValue": "{days} days",
+  "@customRangeDaysValue": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "customRangeTitle": "Custom range",
+  "daysLabel": "Days",
+  "noAcceptedPlanChangesYetTitle": "Wala pang tinanggap na plan changes",
+  "noAcceptedPlanChangesYetDescription": "Itatala rito ang mga approved suggestion change, kung sino ang tumanggap, kailan, at ano ang nabago.",
+  "noSuggestionImpactHistoryYetTitle": "Wala pang suggestion impact history",
+  "noSuggestionImpactHistoryYetDescription": "Dito ise-save ang generated suggestions, accepted changes at before/after snapshots.",
+  "revertLatestSuggestedAdjustmentDescription": "Ibalik ang pinakabagong plan snapshot na na-save bago na-apply ang suggested adjustment.",
+  "continueAction": "Magpatuloy",
+  "tryAgainAction": "Subukan muli",
+  "deleteAction": "Burahin",
+  "kgUnit": "kg",
+  "catsUnit": "pusa",
+  "noneOption": "Wala",
+  "normalOption": "Normal",
+  "highOption": "Mataas",
+  "lowOption": "Mababa",
+  "poorOption": "Mahina",
+  "reducedOption": "Nabawasan",
+  "softOption": "Malambot",
+  "hardOption": "Matigas",
+  "diarrheaOption": "Pagtatae",
+  "occasionalOption": "Paminsan-minsan",
+  "frequentOption": "Madalas",
+  "otherOption": "Iba pa",
+  "sedentaryOption": "Laging nakaupo",
+  "moderateOption": "Katamtaman",
+  "activeOption": "Aktibo",
+  "maleOption": "Lalaki",
+  "femaleOption": "Babae",
+  "unknownOption": "Hindi alam",
+  "maintenanceGoalOption": "Panatilihin",
+  "weightLossGoalOption": "Magbawas ng timbang",
+  "weightGainGoalOption": "Magdagdag ng timbang",
+  "kittenGrowthGoalOption": "Paglaki ng kuting",
+  "seniorSupportGoalOption": "Suporta sa senior",
+  "recoveryGoalOption": "Pagbawi",
+  "postSurgeryGoalOption": "Pagkatapos ng operasyon",
+  "completedOption": "Tapos",
+  "partialOption": "Bahagya",
+  "delayedOption": "Naantala",
+  "refusedOption": "Tinanggihan",
+  "reducedAppetiteOption": "Nabawasang gana",
+  "skippedOption": "Nilaktawan",
+  "loggedStatus": "Naitala",
+  "weightCheckInTitle": "Weight check-in",
+  "noActiveCatTitle": "Walang aktibong pusa",
+  "noActiveCatDescription": "Pumili muna ng pusa sa Home bago mag-record ng timbang.",
+  "weightRecordedWithAlertMessage": "Na-record ang timbang na may alert. Suriin ang goals at clinical notes.",
+  "weightRecordedMessage": "Na-record ang timbang.",
+  "weightNoteSuggestionHighAppetite": "Malakas kumain",
+  "weightNoteSuggestionEnergetic": "Masigla",
+  "weightNoteSuggestionLazyDay": "Tamad na araw",
+  "weightContextFastingOption": "Walang laman ang tiyan",
+  "weightContextAfterMealOption": "Pagkatapos kumain",
+  "weightContextDifferentScaleOption": "Ibang timbangan",
+  "noPreviousCheckInLabel": "Wala pang nakaraang check-in",
+  "lastCheckInLabel": "Huling check-in: {date}",
+  "@lastCheckInLabel": {"placeholders": {"date": {"type": "String"}}},
+  "recordingNowLabel": "Nagre-record ngayon: {date} sa {time}",
+  "@recordingNowLabel": {"placeholders": {"date": {"type": "String"}, "time": {"type": "String"}}},
+  "lastWeightLabel": "HULING\nTIMBANG",
+  "checkInDateTimeTitle": "Petsa at oras ng check-in",
+  "currentWeightLabel": "KASALUKUYANG TIMBANG",
+  "checkInContextTitle": "Konteksto ng check-in",
+  "checkInContextDescription": "Gamitin ang kontekstong ito para mas maayos ang pag-interpret ng trend sa reports.",
+  "weightContextLabel": "Konteksto ng timbang",
+  "appetiteLabel": "Gana",
+  "stoolLabel": "Dumi",
+  "vomitLabel": "Pagsusuka",
+  "energyLabel": "Enerhiya",
+  "checkInNotesTitle": "Mga tala sa check-in",
+  "checkInNotesDescription": "I-record ang behavior at clinical follow-up para sa timbang na ito.",
+  "weightNotesHint": "Kumusta ang gana ngayon? May pagbabago ba sa mood o energy?",
+  "clinicalAssessmentStructuredLabel": "Clinical assessment (structured)",
+  "clinicalPlanFollowUpLabel": "Clinical plan / follow-up",
+  "recordWeightAction": "I-record ang timbang",
+  "recordWeightActionUppercase": "I-RECORD ANG TIMBANG",
+  "catProfileTitle": "Cat profile",
+  "deleteProfileTitle": "Burahin ang profile",
+  "removeProfileMessage": "Tanggalin si {name} sa app?",
+  "@removeProfileMessage": {"placeholders": {"name": {"type": "String"}}},
+  "editProfileTitle": "I-edit ang profile",
+  "createNewCatProfileTitle": "Gumawa ng bagong cat profile",
+  "catProfileIntroDescription": "Personal data, clinical context at feeding targets sa iisang lugar.",
+  "uploadPhotoAction": "Mag-upload ng litrato",
+  "coreProfileSectionTitle": "Core profile",
+  "coreProfileSectionDescription": "Identity at baseline metabolic data na ginagamit sa buong app.",
+  "nameLabel": "Pangalan",
+  "enterCatNameError": "Ilagay ang pangalan ng pusa",
+  "weightKgLabel": "Timbang (kg)",
+  "invalidWeightError": "Hindi wastong timbang",
+  "ageYearsLabel": "Edad (taon)",
+  "invalidAgeError": "Hindi wastong edad",
+  "neuteredSpayedTitle": "Neutered / spayed",
+  "neuteredSpayedDescription": "Nakakaapekto sa calorie requirements",
+  "activityLevelLabel": "Antas ng aktibidad",
+  "goalLabel": "Layunin",
+  "preferredMealsPerDayLabel": "Gustong bilang ng meals bawat araw",
+  "manualTargetKcalPerDayOptionalLabel": "Manual target kcal/day (opsyonal)",
+  "manualTargetKcalHelperText": "Iwanang walang laman para sa automatic calculation",
+  "invalidKcalTargetError": "Hindi wastong kcal target",
+  "clinicalContextSectionTitle": "Clinical context",
+  "clinicalContextSectionDescription": "Opsyonal na fields para mas pino ang recommendations at clinical tracking.",
+  "idealWeightOptionalLabel": "Ideal weight (kg) (opsyonal)",
+  "idealWeightHelperText": "Opsyonal: ginagamit para mas pino ang kcal suggestions",
+  "invalidIdealWeightError": "Hindi wastong ideal weight",
+  "bodyConditionScoreLabel": "Body Condition Score (1-9)",
+  "sexLabel": "Kasarian",
+  "breedOptionalLabel": "Breed (opsyonal)",
+  "dateOfBirthOptionalLabel": "Araw ng kapanganakan (opsyonal)",
+  "customActivityLevelOptionalLabel": "Custom activity level (opsyonal)",
+  "customActivityLevelHelperText": "Pinapalitan ang preset activity labels kapag may value",
+  "clinicalConditionsLabel": "Clinical conditions (comma separated)",
+  "clinicalConditionsHelperText": "Halimbawa: diabetes, ckd, arthritis",
+  "allergiesRestrictionsLabel": "Allergies / restrictions (comma separated)",
+  "allergiesRestrictionsHelperText": "Halimbawa: chicken, beef, dairy",
+  "dietaryPreferencesLabel": "Dietary preferences (comma separated)",
+  "dietaryPreferencesHelperText": "Halimbawa: grain_free, low_fat",
+  "veterinaryNotesOptionalLabel": "Veterinary notes (opsyonal)",
+  "targetsAlertsSectionTitle": "Targets at alerts",
+  "targetsAlertsSectionDescription": "Magtakda ng ligtas na weight range at threshold alerts sa bawat check-in.",
+  "weightGoalsAlertsTitle": "Weight goals at alerts",
+  "goalMinWeightKgLabel": "Minimum goal weight (kg)",
+  "goalMaxWeightKgLabel": "Maximum goal weight (kg)",
+  "alertDeltaKgPerCheckInLabel": "Alert delta (kg) bawat check-in",
+  "alertDeltaPercentPerCheckInLabel": "Alert delta (%) bawat check-in",
+  "clinicalNotesPreferencesLabel": "Clinical notes / preferences",
+  "clinicalNotesPreferencesHelperText": "Halimbawa: sensitive stomach, picky eater, post-surgery, senior support",
+  "catLimitHint": "Limit: {max} individual na pusa. Hiwalay na ginagawa ang groups bilang lightweight operational units.",
+  "@catLimitHint": {"placeholders": {"max": {"type": "int"}}},
+  "saveChangesAction": "I-save ang changes",
+  "saveProfileAction": "I-save ang profile",
+  "deleteProfileAction": "Burahin ang profile",
+  "profileFeedsAppDescription": "Ang mga profile dito ang gagamitin ng Home, Plans, Weight Check-in, at Dashboard.",
+  "nothingSelectedYetTitle": "Wala pang napili",
+  "dailySelectionRequiredDescription": "Pumili ng individual na pusa o group sa Home at mag-save ng plan para magamit ang Daily.",
+  "noGroupPlanYetTitle": "Wala pang group plan",
+  "saveGroupPlanBeforeDailyDescription": "Mag-save muna ng meal plan para sa {name} sa Plans bago gamitin ang Daily.",
+  "@saveGroupPlanBeforeDailyDescription": {"placeholders": {"name": {"type": "String"}}},
+  "groupPlanNotActiveYetTitle": "Hindi pa active ang group plan",
+  "groupPlanStartsOnDescription": "Magsisimula ang plan para sa {name} sa {date}.",
+  "@groupPlanStartsOnDescription": {"placeholders": {"name": {"type": "String"}, "date": {"type": "String"}}},
+  "groupSizeMetricTitle": "LAKI NG GROUP",
+  "dailyGoalMetricTitleUppercase": "ARAWANG GOAL",
+  "yesterdayRoutineDuplicatedMessage": "Kinopya ang routine kahapon para sa ngayon.",
+  "duplicateYesterdayRoutineAction": "Kopyahin ang routine kahapon",
+  "todaysGroupScheduleTitle": "Schedule ng group ngayong araw",
+  "noMealPlanYetTitle": "Wala pang meal plan",
+  "savePlanBeforeDailyDescription": "Mag-save muna ng meal plan para kay {name} sa Plans bago gamitin ang Daily.",
+  "@savePlanBeforeDailyDescription": {"placeholders": {"name": {"type": "String"}}},
+  "planNotActiveYetTitle": "Hindi pa active ang plan",
+  "planStartsOnDescription": "Magsisimula ang plan ni {name} sa {date}.",
+  "@planStartsOnDescription": {"placeholders": {"name": {"type": "String"}, "date": {"type": "String"}}},
+  "currentWeightMetricTitle": "KASALUKUYANG TIMBANG",
+  "genericMealTitle": "Meal",
+  "mealTimeTitle": "Oras ng meal",
+  "unsetLabel": "Hindi nakatakda",
+  "quantityLabel": "Dami",
+  "observationsLabel": "Observations",
+  "dailyObservationsHint": "Dahilan ng delay, refusal, appetite, practical notes, atbp.",
+  "saveLogAction": "I-save ang log",
+  "dailyGreetingTitle": "Magandang umaga!",
+  "dailyGroupReadyDescription": "Handa na ang group na {name} para sa routine ngayong araw",
+  "@dailyGroupReadyDescription": {"placeholders": {"name": {"type": "String"}}},
+  "dailyCatReadyDescription": "Handa na si {name} para sa meals ngayong araw",
+  "@dailyCatReadyDescription": {"placeholders": {"name": {"type": "String"}}},
+  "todaysScheduleTitle": "Schedule ngayong araw",
+  "loggedQuantityLabel": "Naitala: {quantity} {unit}",
+  "@loggedQuantityLabel": {"placeholders": {"quantity": {"type": "String"}, "unit": {"type": "String"}}},
+  "noteWithValueLabel": "Tala: {note}",
+  "@noteWithValueLabel": {"placeholders": {"note": {"type": "String"}}},
+  "updateLogAction": "I-UPDATE ANG LOG",
+  "logMealAction": "I-LOG ANG MEAL",
+  "logEventAction": "I-LOG ANG EVENT",
+  "recordTodaysWeightProgressDescription": "I-record ang progreso ng timbang ngayong araw",
+  "anytimeLabel": "Kahit anong oras",
+  "noMealsScheduledTitle": "Walang nakaiskedyul na meal",
+  "noMealsScheduledDescription": "Mag-save ng plan sa Plans para mabuo ang schedule ngayong araw.",
+  "dailyWaterEntryTitle": "Tubig",
+  "dailySnacksEntryTitle": "Meryenda",
+  "dailySupplementsEntryTitle": "Supplements",
+  "dailyWaterGroupSubtitle": "I-record ang water intake ng group",
+  "dailyWaterCatSubtitle": "I-record ang water intake ng pusa",
+  "dailySnacksGroupSubtitle": "I-record ang snacks na ibinigay sa group",
+  "dailySnacksCatSubtitle": "I-record ang snacks na ibinigay ngayon",
+  "dailySupplementsGroupSubtitle": "I-record ang supplements para sa group",
+  "dailySupplementsCatSubtitle": "I-record ang supplements para sa pusa",
+  "productConfirmedFromDatabaseMessage": "Nakumpirma mula sa database ang {name}",
+  "@productConfirmedFromDatabaseMessage": {"placeholders": {"name": {"type": "String"}}},
+  "foodGenericLabel": "Pagkain",
+  "scannerTitle": "Scanner",
+  "cameraUnavailableTitle": "Hindi available ang camera",
+  "cameraUnavailableDescription": "Hindi masimulan ang camera. Sa web, gumamit ng localhost o https, payagan ang camera access, at isang tab lang ang gumamit ng webcam.",
+  "webCameraNotRunningHint": "Hindi pa tumatakbo ang web camera. Isang browser tab lang muna, payagan ang camera access, at subukan ang switch-camera button.",
+  "alignBarcodeWithinFrameTitle": "Ihanay ang barcode sa loob ng frame",
+  "typeBarcodeToSimulateScanHint": "Mag-type ng barcode para gayahin ang scan",
+  "noBarcodeScannedYetTitle": "Wala pang na-scan na barcode",
+  "noProductFoundForBarcodeTitle": "Walang produktong nakita para sa {barcode}",
+  "@noProductFoundForBarcodeTitle": {"placeholders": {"barcode": {"type": "String"}}},
+  "unknownBrandLabel": "Hindi kilalang brand",
+  "kcalPer100gLabel": "kcal/100g",
+  "useLiveCameraOrBarcodeDescription": "Gamitin ang live camera o ang barcode field sa itaas.",
+  "createFoodEntryFromBarcodeDescription": "Maaari kang gumawa ng bagong food entry gamit ang barcode na ito.",
+  "editManuallyAction": "I-edit nang mano-mano",
+  "manualEntryAction": "Manual na entry",
+  "useProductAction": "Gamitin ang produkto",
+  "confirmProductAction": "Kumpirmahin ang produkto",
+  "veterinaryGradeNutritionTagline": "VETERINARY-GRADE NUTRITION",
+  "catLimitReached": "Naabot na ang limit ng pusa. Maaari kang gumawa ng hanggang {max} pusa.",
+  "@catLimitReached": {"placeholders": {"max": {"type": "int"}}},
+  "invalidImageFile": "Hindi wastong image file.",
+  "languageEnglish": "Ingles",
+  "languagePortugueseBrazil": "Portuges (Brazil)",
+  "languageTagalog": "Tagalog"
+}

@@ -1,7 +1,10 @@
 import 'package:cat_diet_planner/core/navigation/app_router.dart';
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
+import 'package:cat_diet_planner/core/localization/app_locale.dart';
 import 'package:cat_diet_planner/features/shell/screens/app_shell_screen.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -22,6 +25,13 @@ void main() {
     await tester.pumpWidget(
       const ProviderScope(
         child: MaterialApp(
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocale.supportedLocales,
           onGenerateRoute: AppRouter.onGenerateRoute,
           home: AppShellScreen(),
         ),

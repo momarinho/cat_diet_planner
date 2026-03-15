@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/core/theme/theme_provider.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,7 +24,7 @@ class DashboardBlurAppBar extends ConsumerWidget
       elevation: 0,
       surfaceTintColor: Colors.transparent,
       centerTitle: true,
-      title: const Text('Dashboard'),
+      title: Text(AppLocalizations.of(context).dashboardTitle),
       flexibleSpace: ClipRect(
         child: BackdropFilter(
           filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),

@@ -1,4 +1,5 @@
 import 'package:cat_diet_planner/core/widgets/app_empty_state.dart';
+import 'package:cat_diet_planner/core/localization/app_formatters.dart';
 import 'package:cat_diet_planner/features/cat_group/providers/selected_group_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
 import 'package:cat_diet_planner/features/daily/providers/daily_schedule_repository_provider.dart';
@@ -7,45 +8,46 @@ import 'package:cat_diet_planner/features/daily/widgets/daily_header_app_bar.dar
 import 'package:cat_diet_planner/features/daily/widgets/daily_metrics_row.dart';
 import 'package:cat_diet_planner/features/daily/widgets/daily_schedule_section.dart';
 import 'package:cat_diet_planner/features/plans/providers/plan_repository_provider.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class DailyOverviewScreen extends ConsumerWidget {
   const DailyOverviewScreen({super.key});
 
-  static const _mealContextOptionsIndividual = <String, String>{
-    'completed': 'Completed',
-    'partial': 'Partial',
-    'delayed': 'Delayed',
-    'refused': 'Refused',
-    'reduced': 'Reduced appetite',
-    'skipped': 'Skipped',
+  Map<String, String> _mealContextOptionsIndividual(AppLocalizations l10n) => {
+    'completed': l10n.completedOption,
+    'partial': l10n.partialOption,
+    'delayed': l10n.delayedOption,
+    'refused': l10n.refusedOption,
+    'reduced': l10n.reducedAppetiteOption,
+    'skipped': l10n.skippedOption,
   };
 
-  static const _mealContextOptionsGroup = <String, String>{
-    'completed': 'Completed',
-    'partial': 'Partial',
-    'delayed': 'Delayed',
-    'skipped': 'Skipped',
+  Map<String, String> _mealContextOptionsGroup(AppLocalizations l10n) => {
+    'completed': l10n.completedOption,
+    'partial': l10n.partialOption,
+    'delayed': l10n.delayedOption,
+    'skipped': l10n.skippedOption,
   };
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
     final selectedGroup = ref.watch(selectedGroupProvider);
     final selectedCat = ref.watch(selectedCatProvider);
     final planRepository = ref.read(planRepositoryProvider);
     final scheduleRepository = ref.read(dailyScheduleRepositoryProvider);
 
     if (selectedGroup == null && selectedCat == null) {
-      return const SafeArea(
+      return SafeArea(
         child: Center(
           child: Padding(
-            padding: EdgeInsets.all(24),
+            padding: const EdgeInsets.all(24),
             child: AppEmptyState(
               icon: Icons.today_outlined,
-              title: 'Nothing selected yet',
-              description:
-                  'Select an individual cat or a group from Home and save a plan to unlock the daily dashboard.',
+              title: l10n.nothingSelectedYetTitle,
+              description: l10n.dailySelectionRequiredDescription,
             ),
           ),
         ),
@@ -65,9 +67,10 @@ class DailyOverviewScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(24),
                   child: AppEmptyState(
                     icon: Icons.calendar_view_day_outlined,
-                    title: 'No group plan yet',
-                    description:
-                        'Save a meal plan for ${selectedGroup.name} in Plans before using Daily.',
+                    title: l10n.noGroupPlanYetTitle,
+                    description: l10n.saveGroupPlanBeforeDailyDescription(
+                      selectedGroup.name,
+                    ),
                   ),
                 ),
               ),
@@ -83,9 +86,11 @@ class DailyOverviewScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(24),
                   child: AppEmptyState(
                     icon: Icons.event_available_rounded,
-                    title: 'Group plan not active yet',
-                    description:
-                        'This plan for ${selectedGroup.name} starts on ${_formatDate(plan.startDate)}.',
+                    title: l10n.groupPlanNotActiveYetTitle,
+                    description: l10n.groupPlanStartsOnDescription(
+                      selectedGroup.name,
+                      AppFormatters.formatDate(context, plan.startDate),
+                    ),
                   ),
                 ),
               ),
@@ -129,13 +134,14 @@ class DailyOverviewScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 24),
                       DailyMetricsRow(
-                        primaryMetricTitle: 'GROUP SIZE',
+                        primaryMetricTitle: l10n.groupSizeMetricTitle,
                         primaryMetricValue: '${selectedGroup.catCount}',
-                        primaryMetricUnit: 'cats',
-                        secondaryMetricTitle: 'DAILY GOAL',
+                        primaryMetricUnit: l10n.catsUnit,
+                        secondaryMetricTitle:
+                            l10n.dailyGoalMetricTitleUppercase,
                         secondaryMetricValue: plan.targetKcalPerGroupPerDay
                             .toStringAsFixed(0),
-                        secondaryMetricUnit: 'kcal',
+                        secondaryMetricUnit: l10n.kcalLabel,
                       ),
                       const SizedBox(height: 34),
                       SizedBox(
@@ -147,28 +153,28 @@ class DailyOverviewScreen extends ConsumerWidget {
                             );
                             if (context.mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
+                                SnackBar(
                                   content: Text(
-                                    'Yesterday routine duplicated for today.',
+                                    l10n.yesterdayRoutineDuplicatedMessage,
                                   ),
                                 ),
                               );
                             }
                           },
                           icon: const Icon(Icons.copy_all_rounded),
-                          label: const Text('Duplicate Yesterday Routine'),
+                          label: Text(l10n.duplicateYesterdayRoutineAction),
                         ),
                       ),
                       const SizedBox(height: 12),
                       DailyScheduleSection(
-                        title: 'Today\'s Group Schedule',
+                        title: l10n.todaysGroupScheduleTitle,
                         showWeightCheckIn: false,
                         schedule: items,
                         onMealToggle: (item) async {
                           await _openEntryLogSheet(
                             context,
                             initialItem: item,
-                            mealContextOptions: _mealContextOptionsGroup,
+                            mealContextOptions: _mealContextOptionsGroup(l10n),
                             onSave:
                                 ({
                                   required bool completed,
@@ -218,9 +224,10 @@ class DailyOverviewScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(24),
                 child: AppEmptyState(
                   icon: Icons.calendar_view_day_outlined,
-                  title: 'No meal plan yet',
-                  description:
-                      'Save a meal plan for ${selectedCat.name} in Plans before using Daily.',
+                  title: l10n.noMealPlanYetTitle,
+                  description: l10n.savePlanBeforeDailyDescription(
+                    selectedCat.name,
+                  ),
                 ),
               ),
             ),
@@ -236,9 +243,11 @@ class DailyOverviewScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(24),
                 child: AppEmptyState(
                   icon: Icons.event_available_rounded,
-                  title: 'Plan not active yet',
-                  description:
-                      'The plan for ${selectedCat.name} starts on ${_formatDate(plan.startDate)}.',
+                  title: l10n.planNotActiveYetTitle,
+                  description: l10n.planStartsOnDescription(
+                    selectedCat.name,
+                    AppFormatters.formatDate(context, plan.startDate),
+                  ),
                 ),
               ),
             ),
@@ -281,13 +290,13 @@ class DailyOverviewScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 24),
                     DailyMetricsRow(
-                      primaryMetricTitle: 'CURRENT WEIGHT',
+                      primaryMetricTitle: l10n.currentWeightMetricTitle,
                       primaryMetricValue: selectedCat.weight.toStringAsFixed(1),
-                      primaryMetricUnit: 'kg',
-                      secondaryMetricTitle: 'DAILY GOAL',
+                      primaryMetricUnit: l10n.kgUnit,
+                      secondaryMetricTitle: l10n.dailyGoalMetricTitleUppercase,
                       secondaryMetricValue: plan.targetKcalPerDay
                           .toStringAsFixed(0),
-                      secondaryMetricUnit: 'kcal',
+                      secondaryMetricUnit: l10n.kcalLabel,
                     ),
                     const SizedBox(height: 34),
                     SizedBox(
@@ -299,16 +308,16 @@ class DailyOverviewScreen extends ConsumerWidget {
                           );
                           if (context.mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(
+                              SnackBar(
                                 content: Text(
-                                  'Yesterday routine duplicated for today.',
+                                  l10n.yesterdayRoutineDuplicatedMessage,
                                 ),
                               ),
                             );
                           }
                         },
                         icon: const Icon(Icons.copy_all_rounded),
-                        label: const Text('Duplicate Yesterday Routine'),
+                        label: Text(l10n.duplicateYesterdayRoutineAction),
                       ),
                     ),
                     const SizedBox(height: 12),
@@ -318,7 +327,9 @@ class DailyOverviewScreen extends ConsumerWidget {
                         await _openEntryLogSheet(
                           context,
                           initialItem: item,
-                          mealContextOptions: _mealContextOptionsIndividual,
+                          mealContextOptions: _mealContextOptionsIndividual(
+                            l10n,
+                          ),
                           onSave:
                               ({
                                 required bool completed,
@@ -352,13 +363,6 @@ class DailyOverviewScreen extends ConsumerWidget {
     );
   }
 
-  String _formatDate(DateTime date) {
-    final normalized = DailyMealScheduleService.normalizeDay(date);
-    final day = normalized.day.toString().padLeft(2, '0');
-    final month = normalized.month.toString().padLeft(2, '0');
-    return '$day/$month/${normalized.year}';
-  }
-
   Future<void> _openEntryLogSheet(
     BuildContext context, {
     required Map<String, dynamic> initialItem,
@@ -373,6 +377,7 @@ class DailyOverviewScreen extends ConsumerWidget {
     })
     onSave,
   }) async {
+    final l10n = AppLocalizations.of(context);
     final entryType = initialItem['type']?.toString() ?? 'meal';
     final isMeal = entryType == 'meal';
     final initialContext = isMeal
@@ -418,7 +423,7 @@ class DailyOverviewScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      initialItem['title']?.toString() ?? 'Meal',
+                      initialItem['title']?.toString() ?? l10n.genericMealTitle,
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -441,9 +446,14 @@ class DailyOverviewScreen extends ConsumerWidget {
                       const SizedBox(height: 14),
                       ListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('Meal time'),
+                        title: Text(l10n.mealTimeTitle),
                         subtitle: Text(
-                          selectedTime.trim().isEmpty ? 'Unset' : selectedTime,
+                          selectedTime.trim().isEmpty
+                              ? l10n.unsetLabel
+                              : AppFormatters.formatStoredMealTime(
+                                  context,
+                                  selectedTime,
+                                ),
                         ),
                         trailing: const Icon(Icons.schedule_rounded),
                         onTap: () async {
@@ -464,16 +474,16 @@ class DailyOverviewScreen extends ConsumerWidget {
                         keyboardType: const TextInputType.numberWithOptions(
                           decimal: true,
                         ),
-                        decoration: const InputDecoration(
-                          labelText: 'Quantity',
+                        decoration: InputDecoration(
+                          labelText: l10n.quantityLabel,
                           border: OutlineInputBorder(),
                         ),
                       ),
                       const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
                         initialValue: selectedQuantityUnit,
-                        decoration: const InputDecoration(
-                          labelText: 'Unit',
+                        decoration: InputDecoration(
+                          labelText: l10n.unitLabel,
                           border: OutlineInputBorder(),
                         ),
                         items: const ['ml', 'g', 'dose']
@@ -494,10 +504,9 @@ class DailyOverviewScreen extends ConsumerWidget {
                     TextField(
                       controller: notesController,
                       maxLines: 3,
-                      decoration: const InputDecoration(
-                        labelText: 'Observations',
-                        hintText:
-                            'Delay reason, refusal, appetite, practical notes, etc.',
+                      decoration: InputDecoration(
+                        labelText: l10n.observationsLabel,
+                        hintText: l10n.dailyObservationsHint,
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -506,7 +515,7 @@ class DailyOverviewScreen extends ConsumerWidget {
                       width: double.infinity,
                       child: FilledButton(
                         onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text('Save Log'),
+                        child: Text(l10n.saveLogAction),
                       ),
                     ),
                   ],

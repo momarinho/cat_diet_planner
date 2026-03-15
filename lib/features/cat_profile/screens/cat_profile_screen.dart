@@ -1,9 +1,12 @@
 import 'package:cat_diet_planner/core/constants/app_limits.dart';
+import 'package:cat_diet_planner/core/localization/app_feedback_localizer.dart';
+import 'package:cat_diet_planner/core/localization/app_formatters.dart';
 import 'package:cat_diet_planner/core/utils/cat_photo.dart';
 import 'package:cat_diet_planner/core/widgets/app_loading_state.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/features/cat_profile/services/cat_photo_service.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/cat_profiles_provider.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -60,6 +63,47 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
   DateTime? _birthDate;
 
   bool get _isEditing => widget.initialCat != null;
+
+  String _activityLabel(AppLocalizations l10n, String value) {
+    switch (value) {
+      case 'sedentary':
+        return l10n.sedentaryOption;
+      case 'active':
+        return l10n.activeOption;
+      default:
+        return l10n.moderateOption;
+    }
+  }
+
+  String _goalLabel(AppLocalizations l10n, String value) {
+    switch (value) {
+      case 'loss':
+        return l10n.weightLossGoalOption;
+      case 'gain':
+        return l10n.weightGainGoalOption;
+      case 'kitten_growth':
+        return l10n.kittenGrowthGoalOption;
+      case 'senior_support':
+        return l10n.seniorSupportGoalOption;
+      case 'recovery':
+        return l10n.recoveryGoalOption;
+      case 'post_surgery':
+        return l10n.postSurgeryGoalOption;
+      default:
+        return l10n.maintenanceGoalOption;
+    }
+  }
+
+  String _sexLabel(AppLocalizations l10n, String value) {
+    switch (value) {
+      case 'male':
+        return l10n.maleOption;
+      case 'female':
+        return l10n.femaleOption;
+      default:
+        return l10n.unknownOption;
+    }
+  }
 
   @override
   void initState() {
@@ -129,6 +173,17 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
         cat.weightAlertDeltaKg?.toStringAsFixed(1) ?? '';
     _weightAlertDeltaPercentController.text =
         cat.weightAlertDeltaPercent?.toStringAsFixed(1) ?? '';
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (_birthDate != null) {
+      final localizedDate = AppFormatters.formatDate(context, _birthDate!);
+      if (_birthDateController.text != localizedDate) {
+        _birthDateController.text = localizedDate;
+      }
+    }
   }
 
   @override
@@ -237,14 +292,18 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
 
     try {
       await ref.read(catProfilesProvider.notifier).saveProfile(profile);
-    } on StateError catch (error) {
+    } catch (error) {
       if (mounted) {
         setState(() => _isSaving = false);
       }
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.message)));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            localizeErrorMessage(AppLocalizations.of(context), error),
+          ),
+        ),
+      );
       return;
     }
 
@@ -260,16 +319,18 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Delete profile'),
-          content: Text('Remove ${cat.name} from the app?'),
+          title: Text(AppLocalizations.of(context).deleteProfileTitle),
+          content: Text(
+            AppLocalizations.of(context).removeProfileMessage(cat.name),
+          ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
-              child: const Text('Cancel'),
+              child: Text(AppLocalizations.of(context).cancelAction),
             ),
             FilledButton(
               onPressed: () => Navigator.of(context).pop(true),
-              child: const Text('Delete'),
+              child: Text(AppLocalizations.of(context).deleteAction),
             ),
           ],
         );
@@ -298,24 +359,29 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
         _photoBase64 = encoded;
         _photoPath = null;
       });
-    } on ArgumentError catch (error) {
+    } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.message.toString())));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            localizeErrorMessage(AppLocalizations.of(context), error),
+          ),
+        ),
+      );
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final primary = theme.colorScheme.primary;
     final secondary =
         theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.70) ??
         const Color(0xFF7A7678);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cat Profile'), centerTitle: true),
+      appBar: AppBar(title: Text(l10n.catProfileTitle), centerTitle: true),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -370,14 +436,16 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    _isEditing ? 'Edit profile' : 'Create a new cat profile',
+                    _isEditing
+                        ? l10n.editProfileTitle
+                        : l10n.createNewCatProfileTitle,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    'Personal data, clinical context and feeding targets in one place.',
+                    l10n.catProfileIntroDescription,
                     textAlign: TextAlign.center,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: secondary,
@@ -387,7 +455,7 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                   OutlinedButton.icon(
                     onPressed: _pickPhoto,
                     icon: const Icon(Icons.upload_rounded),
-                    label: const Text('Upload Photo'),
+                    label: Text(l10n.uploadPhotoAction),
                   ),
                   const SizedBox(height: 14),
                   Wrap(
@@ -428,22 +496,21 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const _ProfileSectionHeader(
+                  _ProfileSectionHeader(
                     icon: Icons.badge_outlined,
-                    title: 'Core Profile',
-                    subtitle:
-                        'Identity and baseline metabolic data used across the app.',
+                    title: l10n.coreProfileSectionTitle,
+                    subtitle: l10n.coreProfileSectionDescription,
                   ),
                   const SizedBox(height: 12),
                   TextFormField(
                     controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: 'Name',
+                    decoration: InputDecoration(
+                      labelText: l10n.nameLabel,
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) {
-                        return 'Enter the cat name';
+                        return l10n.enterCatNameError;
                       }
                       return null;
                     },
@@ -457,14 +524,14 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                           keyboardType: const TextInputType.numberWithOptions(
                             decimal: true,
                           ),
-                          decoration: const InputDecoration(
-                            labelText: 'Weight (kg)',
+                          decoration: InputDecoration(
+                            labelText: l10n.weightKgLabel,
                             border: OutlineInputBorder(),
                           ),
                           validator: (value) {
                             final parsed = double.tryParse(value?.trim() ?? '');
                             if (parsed == null || parsed <= 0) {
-                              return 'Invalid weight';
+                              return l10n.invalidWeightError;
                             }
                             return null;
                           },
@@ -475,14 +542,14 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                         child: TextFormField(
                           controller: _ageController,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            labelText: 'Age (years)',
+                          decoration: InputDecoration(
+                            labelText: l10n.ageYearsLabel,
                             border: OutlineInputBorder(),
                           ),
                           validator: (value) {
                             final parsed = int.tryParse(value?.trim() ?? '');
                             if (parsed == null || parsed <= 0) {
-                              return 'Invalid age';
+                              return l10n.invalidAgeError;
                             }
                             return null;
                           },
@@ -495,26 +562,29 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     value: _neutered,
                     contentPadding: EdgeInsets.zero,
                     onChanged: (value) => setState(() => _neutered = value),
-                    title: const Text('Neutered / Spayed'),
-                    subtitle: const Text('Affects calorie requirements'),
+                    title: Text(l10n.neuteredSpayedTitle),
+                    subtitle: Text(l10n.neuteredSpayedDescription),
                   ),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
                     initialValue: _activityLevel,
-                    decoration: const InputDecoration(
-                      labelText: 'Activity level',
+                    decoration: InputDecoration(
+                      labelText: l10n.activityLevelLabel,
                       border: OutlineInputBorder(),
                     ),
-                    items: const [
+                    items: [
                       DropdownMenuItem(
                         value: 'sedentary',
-                        child: Text('Sedentary'),
+                        child: Text(_activityLabel(l10n, 'sedentary')),
                       ),
                       DropdownMenuItem(
                         value: 'moderate',
-                        child: Text('Moderate'),
+                        child: Text(_activityLabel(l10n, 'moderate')),
                       ),
-                      DropdownMenuItem(value: 'active', child: Text('Active')),
+                      DropdownMenuItem(
+                        value: 'active',
+                        child: Text(_activityLabel(l10n, 'active')),
+                      ),
                     ],
                     onChanged: (value) {
                       if (value != null) setState(() => _activityLevel = value);
@@ -523,38 +593,38 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                   const SizedBox(height: 14),
                   DropdownButtonFormField<String>(
                     initialValue: _goal,
-                    decoration: const InputDecoration(
-                      labelText: 'Goal',
+                    decoration: InputDecoration(
+                      labelText: l10n.goalLabel,
                       border: OutlineInputBorder(),
                     ),
-                    items: const [
+                    items: [
                       DropdownMenuItem(
                         value: 'maintenance',
-                        child: Text('Maintenance'),
+                        child: Text(_goalLabel(l10n, 'maintenance')),
                       ),
                       DropdownMenuItem(
                         value: 'loss',
-                        child: Text('Weight loss'),
+                        child: Text(_goalLabel(l10n, 'loss')),
                       ),
                       DropdownMenuItem(
                         value: 'gain',
-                        child: Text('Weight gain'),
+                        child: Text(_goalLabel(l10n, 'gain')),
                       ),
                       DropdownMenuItem(
                         value: 'kitten_growth',
-                        child: Text('Kitten growth'),
+                        child: Text(_goalLabel(l10n, 'kitten_growth')),
                       ),
                       DropdownMenuItem(
                         value: 'senior_support',
-                        child: Text('Senior support'),
+                        child: Text(_goalLabel(l10n, 'senior_support')),
                       ),
                       DropdownMenuItem(
                         value: 'recovery',
-                        child: Text('Recovery'),
+                        child: Text(_goalLabel(l10n, 'recovery')),
                       ),
                       DropdownMenuItem(
                         value: 'post_surgery',
-                        child: Text('Post-surgery'),
+                        child: Text(_goalLabel(l10n, 'post_surgery')),
                       ),
                     ],
                     onChanged: (value) {
@@ -564,15 +634,27 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                   const SizedBox(height: 14),
                   DropdownButtonFormField<int>(
                     initialValue: _preferredMealsPerDay,
-                    decoration: const InputDecoration(
-                      labelText: 'Preferred meals per day',
+                    decoration: InputDecoration(
+                      labelText: l10n.preferredMealsPerDayLabel,
                       border: OutlineInputBorder(),
                     ),
-                    items: const [
-                      DropdownMenuItem(value: 3, child: Text('3 meals')),
-                      DropdownMenuItem(value: 4, child: Text('4 meals')),
-                      DropdownMenuItem(value: 5, child: Text('5 meals')),
-                      DropdownMenuItem(value: 6, child: Text('6 meals')),
+                    items: [
+                      DropdownMenuItem(
+                        value: 3,
+                        child: Text(l10n.mealsPerDayChip(3)),
+                      ),
+                      DropdownMenuItem(
+                        value: 4,
+                        child: Text(l10n.mealsPerDayChip(4)),
+                      ),
+                      DropdownMenuItem(
+                        value: 5,
+                        child: Text(l10n.mealsPerDayChip(5)),
+                      ),
+                      DropdownMenuItem(
+                        value: 6,
+                        child: Text(l10n.mealsPerDayChip(6)),
+                      ),
                     ],
                     onChanged: (value) {
                       if (value != null) {
@@ -586,16 +668,16 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: const InputDecoration(
-                      labelText: 'Manual target kcal/day (optional)',
-                      helperText: 'Leave empty to keep automatic calculation',
+                    decoration: InputDecoration(
+                      labelText: l10n.manualTargetKcalPerDayOptionalLabel,
+                      helperText: l10n.manualTargetKcalHelperText,
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) return null;
                       final parsed = double.tryParse(value.trim());
                       if (parsed == null || parsed <= 0) {
-                        return 'Invalid kcal target';
+                        return l10n.invalidKcalTargetError;
                       }
                       return null;
                     },
@@ -608,11 +690,10 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const _ProfileSectionHeader(
+                  _ProfileSectionHeader(
                     icon: Icons.health_and_safety_outlined,
-                    title: 'Clinical Context',
-                    subtitle:
-                        'Optional fields that refine recommendations and clinical tracking.',
+                    title: l10n.clinicalContextSectionTitle,
+                    subtitle: l10n.clinicalContextSectionDescription,
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
@@ -620,16 +701,16 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: const InputDecoration(
-                      labelText: 'Ideal weight (kg) (optional)',
-                      helperText: 'Optional: used to refine kcal suggestions',
+                    decoration: InputDecoration(
+                      labelText: l10n.idealWeightOptionalLabel,
+                      helperText: l10n.idealWeightHelperText,
                       border: OutlineInputBorder(),
                     ),
                     validator: (value) {
                       if (value == null || value.trim().isEmpty) return null;
                       final parsed = double.tryParse(value.trim());
                       if (parsed == null || parsed <= 0) {
-                        return 'Invalid ideal weight';
+                        return l10n.invalidIdealWeightError;
                       }
                       return null;
                     },
@@ -639,7 +720,7 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Body Condition Score (1-9)',
+                        l10n.bodyConditionScoreLabel,
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       Slider(
@@ -655,17 +736,23 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
                     initialValue: _sex,
-                    decoration: const InputDecoration(
-                      labelText: 'Sex',
+                    decoration: InputDecoration(
+                      labelText: l10n.sexLabel,
                       border: OutlineInputBorder(),
                     ),
-                    items: const [
+                    items: [
                       DropdownMenuItem(
                         value: 'unknown',
-                        child: Text('Unknown'),
+                        child: Text(_sexLabel(l10n, 'unknown')),
                       ),
-                      DropdownMenuItem(value: 'male', child: Text('Male')),
-                      DropdownMenuItem(value: 'female', child: Text('Female')),
+                      DropdownMenuItem(
+                        value: 'male',
+                        child: Text(_sexLabel(l10n, 'male')),
+                      ),
+                      DropdownMenuItem(
+                        value: 'female',
+                        child: Text(_sexLabel(l10n, 'female')),
+                      ),
                     ],
                     onChanged: (v) {
                       if (v != null) setState(() => _sex = v);
@@ -674,8 +761,8 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _breedController,
-                    decoration: const InputDecoration(
-                      labelText: 'Breed (optional)',
+                    decoration: InputDecoration(
+                      labelText: l10n.breedOptionalLabel,
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -683,8 +770,8 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                   TextFormField(
                     controller: _birthDateController,
                     readOnly: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Date of birth (optional)',
+                    decoration: InputDecoration(
+                      labelText: l10n.dateOfBirthOptionalLabel,
                       border: OutlineInputBorder(),
                     ),
                     onTap: () async {
@@ -697,10 +784,10 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                       if (picked != null) {
                         setState(() {
                           _birthDate = picked;
-                          _birthDateController.text = picked
-                              .toIso8601String()
-                              .split('T')
-                              .first;
+                          _birthDateController.text = AppFormatters.formatDate(
+                            context,
+                            picked,
+                          );
                         });
                       }
                     },
@@ -708,37 +795,36 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _customActivityController,
-                    decoration: const InputDecoration(
-                      labelText: 'Custom activity level (optional)',
-                      helperText:
-                          'Overrides preset activity labels when provided',
+                    decoration: InputDecoration(
+                      labelText: l10n.customActivityLevelOptionalLabel,
+                      helperText: l10n.customActivityLevelHelperText,
                       border: OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _clinicalConditionsController,
-                    decoration: const InputDecoration(
-                      labelText: 'Clinical conditions (comma separated)',
-                      helperText: 'Examples: diabetes, ckd, arthritis',
+                    decoration: InputDecoration(
+                      labelText: l10n.clinicalConditionsLabel,
+                      helperText: l10n.clinicalConditionsHelperText,
                       border: OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _allergiesController,
-                    decoration: const InputDecoration(
-                      labelText: 'Allergies / restrictions (comma separated)',
-                      helperText: 'Examples: chicken, beef, dairy',
+                    decoration: InputDecoration(
+                      labelText: l10n.allergiesRestrictionsLabel,
+                      helperText: l10n.allergiesRestrictionsHelperText,
                       border: OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 14),
                   TextFormField(
                     controller: _dietaryPreferencesController,
-                    decoration: const InputDecoration(
-                      labelText: 'Dietary preferences (comma separated)',
-                      helperText: 'Examples: grain_free, low_fat',
+                    decoration: InputDecoration(
+                      labelText: l10n.dietaryPreferencesLabel,
+                      helperText: l10n.dietaryPreferencesHelperText,
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -747,8 +833,8 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     controller: _vetNotesController,
                     minLines: 2,
                     maxLines: 4,
-                    decoration: const InputDecoration(
-                      labelText: 'Veterinary notes (optional)',
+                    decoration: InputDecoration(
+                      labelText: l10n.veterinaryNotesOptionalLabel,
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -760,15 +846,14 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const _ProfileSectionHeader(
+                  _ProfileSectionHeader(
                     icon: Icons.track_changes_outlined,
-                    title: 'Targets & Alerts',
-                    subtitle:
-                        'Set safe weight range and threshold alerts for each check-in.',
+                    title: l10n.targetsAlertsSectionTitle,
+                    subtitle: l10n.targetsAlertsSectionDescription,
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    'Weight Goals & Alerts',
+                    l10n.weightGoalsAlertsTitle,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
@@ -779,8 +864,8 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: const InputDecoration(
-                      labelText: 'Goal min weight (kg)',
+                    decoration: InputDecoration(
+                      labelText: l10n.goalMinWeightKgLabel,
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -790,8 +875,8 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: const InputDecoration(
-                      labelText: 'Goal max weight (kg)',
+                    decoration: InputDecoration(
+                      labelText: l10n.goalMaxWeightKgLabel,
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -801,8 +886,8 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: const InputDecoration(
-                      labelText: 'Alert delta (kg) per check-in',
+                    decoration: InputDecoration(
+                      labelText: l10n.alertDeltaKgPerCheckInLabel,
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -812,8 +897,8 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: const InputDecoration(
-                      labelText: 'Alert delta (%) per check-in',
+                    decoration: InputDecoration(
+                      labelText: l10n.alertDeltaPercentPerCheckInLabel,
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -822,16 +907,15 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     controller: _notesController,
                     minLines: 3,
                     maxLines: 5,
-                    decoration: const InputDecoration(
-                      labelText: 'Clinical notes / preferences',
-                      helperText:
-                          'Examples: sensitive stomach, picky eater, post-surgery, senior support',
+                    decoration: InputDecoration(
+                      labelText: l10n.clinicalNotesPreferencesLabel,
+                      helperText: l10n.clinicalNotesPreferencesHelperText,
                       border: OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    'Limit: ${AppLimits.maxCats} individual cats. Groups are created separately as lightweight operational units.',
+                    l10n.catLimitHint(AppLimits.maxCats),
                     style: theme.textTheme.bodySmall?.copyWith(
                       color: secondary,
                     ),
@@ -846,15 +930,19 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                   ? const SizedBox.shrink()
                   : const Icon(Icons.save_outlined),
               label: _isSaving
-                  ? const AppLoadingState(compact: true, label: 'Saving...')
-                  : Text(_isEditing ? 'Save Changes' : 'Save Profile'),
+                  ? AppLoadingState(compact: true, label: l10n.savingLabel)
+                  : Text(
+                      _isEditing
+                          ? l10n.saveChangesAction
+                          : l10n.saveProfileAction,
+                    ),
             ),
             if (_isEditing) ...[
               const SizedBox(height: 12),
               OutlinedButton.icon(
                 onPressed: _deleteProfile,
                 icon: const Icon(Icons.delete_outline),
-                label: const Text('Delete Profile'),
+                label: Text(l10n.deleteProfileAction),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: theme.colorScheme.error,
                   side: BorderSide(color: theme.colorScheme.error),
@@ -863,7 +951,7 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
             ],
             const SizedBox(height: 8),
             Text(
-              'Profiles saved here will feed Home, Plans, Weight Check-in, and Dashboard.',
+              l10n.profileFeedsAppDescription,
               textAlign: TextAlign.center,
               style: theme.textTheme.bodyMedium?.copyWith(color: secondary),
             ),

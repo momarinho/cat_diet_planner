@@ -181,7 +181,9 @@ class AppSettings {
 
     return AppSettings(
       mealReminders: map['mealReminders'] as bool? ?? true,
-      languageCode: map['languageCode'] as String? ?? 'en',
+      languageCode: _normalizeLanguageCode(
+        map['languageCode'] as String? ?? 'en',
+      ),
       reminderTimes: times == null || times.isEmpty
           ? AppSettings.defaults().reminderTimes
           : times,
@@ -205,5 +207,16 @@ class AppSettings {
       suggestionAlertsOnly: map['suggestionAlertsOnly'] as bool? ?? false,
       suggestionAutoApply: map['suggestionAutoApply'] as bool? ?? false,
     );
+  }
+
+  static String _normalizeLanguageCode(String value) {
+    final lower = value.trim().toLowerCase();
+    if (lower == 'pt' || lower == 'pt-br' || lower == 'pt_br') {
+      return 'pt_BR';
+    }
+    if (lower == 'tl' || lower == 'fil') {
+      return 'tl';
+    }
+    return 'en';
   }
 }

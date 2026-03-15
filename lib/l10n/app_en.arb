@@ -1,0 +1,834 @@
+{
+  "@@locale": "en",
+  "appTitle": "CatDiet Planner",
+  "settingsTitle": "Settings",
+  "languageSectionTitle": "Language",
+  "appLanguageTitle": "App Language",
+  "localizedContentScopeTitle": "Localized content scope",
+  "localizedContentScopeDescription": "Notifications and report/share texts now follow the selected language.",
+  "navDaily": "Daily",
+  "navHome": "Home",
+  "navPlans": "Plans",
+  "navHistory": "History",
+  "routeErrorTitle": "Route Error",
+  "dashboardTitle": "Dashboard",
+  "activeCatTitle": "Active Cat",
+  "editAction": "Edit",
+  "catAgeYearsOld": "{years} Years Old",
+  "@catAgeYearsOld": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "scanFoodAction": "Scan Food",
+  "logWeightAction": "Log Weight",
+  "dailySummaryTitle": "Daily Summary",
+  "todayLabel": "Today",
+  "kcalLabel": "kcal",
+  "calorieIntakeLabel": "CALORIE INTAKE",
+  "createPlanToUnlockDailySummary": "Create a plan to unlock your daily summary",
+  "todayFullyCompleted": "Today is fully completed",
+  "remainingCaloriesForMeal": "{kcal} kcal remaining for {meal}",
+  "@remainingCaloriesForMeal": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      },
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "mealTimelineTitle": "Meal Timeline",
+  "viewPlanAction": "View Plan",
+  "noTimelineYetTitle": "No timeline yet",
+  "noTimelineYetDescription": "Save a meal plan to unlock the meal timeline.",
+  "mealFallbackTitle": "Meal {number}",
+  "@mealFallbackTitle": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "mealMarkedPending": "{meal} marked as pending.",
+  "@mealMarkedPending": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "mealMarkedCompleted": "{meal} marked as completed.",
+  "@mealMarkedCompleted": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "planInspectorTitle": "Plan Inspector",
+  "groupPlanInspectorTitle": "Group Plan Inspector",
+  "previewTab": "Preview",
+  "savedTab": "Saved",
+  "noPreviewYetTitle": "No preview yet",
+  "noPreviewYetDescription": "Adjust foods or plan inputs to generate a preview.",
+  "noCatSelectedTitle": "No cat selected",
+  "noCatSelectedDescription": "Select a cat to inspect its saved plans.",
+  "noSavedPlansYetTitle": "No saved plans yet",
+  "noSavedPlansYetDescription": "Save a plan to inspect it here.",
+  "noGroupSelectedTitle": "No group selected",
+  "noGroupSelectedDescription": "Select a group to inspect its saved plan.",
+  "noSavedGroupPlanTitle": "No saved group plan",
+  "noSavedGroupPlanDescription": "Save a group plan to inspect it here.",
+  "savedIndividualPlanTitle": "Saved Individual Plan",
+  "savedGroupPlanTitle": "Saved Group Plan",
+  "planPreviewTitle": "Plan Preview",
+  "groupPlanPreviewTitle": "Group Plan Preview",
+  "savedCoreTargetsTitle": "Core targets",
+  "savedCoreTargetsSubtitle": "Saved values currently being used by this plan.",
+  "savedMealTimelineTitle": "Meal timeline",
+  "savedMealTimelineSubtitle": "Saved schedule and portion split for each meal.",
+  "savedPlanDetailsTitle": "Plan details",
+  "savedPlanDetailsSubtitle": "Operational context, notes and saved configuration.",
+  "previewCoreTargetsTitle": "Core targets",
+  "previewCoreTargetsSubtitle": "The numbers that will be used when this draft is saved.",
+  "previewMealTimelineTitle": "Meal timeline",
+  "previewMealTimelineSubtitle": "Each feeding slot with time and exact portion.",
+  "previewPlanDetailsTitle": "Plan details",
+  "previewPlanDetailsSubtitle": "Context that affects execution but is easy to miss.",
+  "customPlanLabel": "Custom plan",
+  "startsTag": "Starts {date}",
+  "@startsTag": {
+    "description": "Compact tag shown on plan cards to indicate when a plan begins.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "mealsPerDayTag": "{count} meals/day",
+  "@mealsPerDayTag": {
+    "description": "Compact tag shown on plan cards for meal frequency.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "catsCountTag": "{count} cats",
+  "@catsCountTag": {
+    "description": "Compact tag shown on group plan cards for number of cats.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activePlanTag": "Active plan",
+  "metricDailyGoal": "Daily goal",
+  "metricFoodPerDay": "Food per day",
+  "metricAveragePerMeal": "Average per meal",
+  "metricServingUnit": "Serving unit",
+  "metricPerCat": "Per cat",
+  "metricGroupTotal": "Group total",
+  "metricGroupPerDay": "Group per day",
+  "metricGroupPerMeal": "Group per meal",
+  "metricSavedAt": "Saved at",
+  "metricOverrides": "Overrides",
+  "metricFoods": "Foods",
+  "metricNotes": "Notes",
+  "metricStarts": "Starts",
+  "metricDistribution": "Distribution",
+  "helperEnergyTarget": "Energy target",
+  "helperTotalPortion": "Total portion",
+  "helperBaselineSplit": "Baseline split",
+  "helperDisplayUnit": "Display unit",
+  "helperEnergyTargetPerCat": "Energy target per cat",
+  "helperCombinedEnergyTarget": "Combined energy target",
+  "helperAverageFeedingSlot": "Average feeding slot",
+  "noActiveOverrides": "No active overrides",
+  "activeOverridesCount": "{count} active overrides",
+  "@activeOverridesCount": {
+    "description": "Summary label for how many active daily overrides a plan has.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noNotesYet": "No notes yet",
+  "equalSplitLabel": "Equal split",
+  "unequalSplitLabel": "Unequal ({count} cats)",
+  "@unequalSplitLabel": {
+    "description": "Distribution label for group plans when cats do not share equal weights.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activePlanLabelText": "Active plan",
+  "usePlanAction": "Use {date}",
+  "@usePlanAction": {
+    "description": "Button label to activate a saved plan starting on a given date.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteActivePlanAction": "Delete active plan",
+  "scheduledFeedingSlotCaption": "Scheduled feeding slot",
+  "plusMoreFoods": "+ {count} more",
+  "@plusMoreFoods": {
+    "description": "Suffix for group plan headline when there are additional foods beyond the first one.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "plansTitle": "Plans",
+  "planInspectorTooltip": "Preview and saved plan",
+  "buildPlanTitle": "Build Plan",
+  "individualPlanMode": "Individual",
+  "groupPlanMode": "Group",
+  "catProfileLabel": "Cat Profile",
+  "groupLabel": "Group",
+  "groupWithCats": "{group} ({count} cats)",
+  "@groupWithCats": {
+    "description": "Label for a cat group with its member count.",
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "targetKcalPerCatPerDayLabel": "Target kcal per cat / day",
+  "createGroupAction": "Create Group",
+  "mealsPerDayChip": "{count} meals/day",
+  "@mealsPerDayChip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "planStartDateTitle": "Plan Start Date",
+  "startsOnLabel": "Starts on {date}",
+  "@startsOnLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "portionUnitTitle": "Portion Unit",
+  "unitLabel": "Unit",
+  "gramsPerUnitLabel": "Grams per unit",
+  "weekendAlternativeTitle": "Weekend alternative",
+  "weekendAlternativeDescription": "Apply a different kcal/portion factor on Saturday and Sunday.",
+  "weekendKcalFactorLabel": "Weekend kcal factor (%)",
+  "byWeekdayTitle": "By Weekday",
+  "byWeekdayDescription": "Enable specific days and set a kcal/portion factor for each day.",
+  "factorPercentLabel": "Factor %",
+  "operationalNotesLabel": "Operational notes",
+  "mealLabelsTitle": "Meal Labels",
+  "mealNameLabel": "Meal {count} name",
+  "@mealNameLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealPortionsTitle": "Meal Portions",
+  "mealPortionsDescription": "Set the percentage of the daily portion served in each meal. The app normalizes the total to 100%.",
+  "mealShareLabel": "{meal} share (%)",
+  "@mealShareLabel": {
+    "description": "Form label for the percentage of the daily portion assigned to a meal.",
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "mealScheduleTitle": "Meal Schedule",
+  "mealScheduleDescription": "Choose the time for each meal. Daily and Home will use this schedule.",
+  "suggestionsTitle": "Suggestions",
+  "noCatProfilesAvailableTitle": "No cat profiles available",
+  "noCatProfilesAvailableMessage": "Create a cat profile before building an individual meal plan.",
+  "noGroupsAvailableTitle": "No groups available",
+  "noGroupsAvailableMessage": "Create a group before building a shared meal plan.",
+  "availableFoodsTitle": "Available Foods",
+  "noFoodsAvailableTitle": "No foods available",
+  "noFoodsAvailableDescription": "Add foods in Food Database before creating a plan.",
+  "multipleFoodsTitle": "Multiple foods",
+  "multipleFoodsDescription": "Allow selecting multiple foods for the plan",
+  "unknownBrand": "Unknown brand",
+  "savePlanAction": "Save Plan",
+  "saveGroupPlanAction": "Save Group Plan",
+  "savingLabel": "Saving...",
+  "planDeletedMessage": "Plan deleted.",
+  "planSavedForCatMessage": "Plan saved for {name}",
+  "@planSavedForCatMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "planSavedForGroupMessage": "Plan saved for {name}",
+  "@planSavedForGroupMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValidKcalPerCatMessage": "Enter a valid kcal target per cat.",
+  "mondayLabel": "Monday",
+  "tuesdayLabel": "Tuesday",
+  "wednesdayLabel": "Wednesday",
+  "thursdayLabel": "Thursday",
+  "fridayLabel": "Friday",
+  "saturdayLabel": "Saturday",
+  "sundayLabel": "Sunday",
+  "dayFallbackLabel": "Day {weekday}",
+  "@dayFallbackLabel": {
+    "placeholders": {
+      "weekday": {
+        "type": "int"
+      }
+    }
+  },
+  "noActiveSuggestionsDescription": "No active suggestions right now. Keep logging meals and weight to improve guidance.",
+  "confirmPlanChangeTitle": "Confirm plan change",
+  "applySuggestionAfterReview": "Apply this suggestion to {catName} only after review.",
+  "@applySuggestionAfterReview": {
+    "description": "Confirmation dialog body before applying a suggestion to a cat plan.",
+    "placeholders": {
+      "catName": {
+        "type": "String"
+      }
+    }
+  },
+  "responsiblePersonLabel": "Responsible person",
+  "typeWhoApprovedHint": "Type who approved this change",
+  "approvalIdentityRequired": "Approval identity is required.",
+  "cancelAction": "Cancel",
+  "confirmAction": "Confirm",
+  "planUpdatedAfterConfirmation": "Plan updated after confirmation.",
+  "suggestionRecordedWithoutPlanChanges": "Suggestion recorded without plan changes.",
+  "suggestionConfidenceLabel": "Confidence {value}",
+  "@suggestionConfidenceLabel": {
+    "description": "Confidence badge shown on a suggestion card.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "suggestionAcceptedStatus": "Accepted",
+  "suggestionDeferredStatus": "Deferred",
+  "suggestionIgnoredStatus": "Ignored",
+  "whyThisSuggestionTitle": "Why this suggestion:",
+  "acceptAction": "Accept",
+  "deferAction": "Defer",
+  "ignoreAction": "Ignore",
+  "restoreAction": "Restore",
+  "autoApplyDisabledMessage": "Auto-apply is disabled. Plan changes always require confirmation.",
+  "suggestionTypeKcal": "Kcal",
+  "suggestionTypeSchedule": "Schedule",
+  "suggestionTypePortions": "Portions",
+  "suggestionTypePreventiveAlert": "Preventive Alert",
+  "suggestionTypeClinicalWatch": "Clinical Watch",
+  "reasonWeightTrendUp": "Recent weight trend is increasing",
+  "reasonWeightTrendDown": "Recent weight trend is decreasing",
+  "reasonOutOfGoalMax": "Weight is above configured goal range",
+  "reasonOutOfGoalMin": "Weight is below configured goal range",
+  "reasonApproachingGoalMax": "Trend is approaching the upper goal boundary",
+  "reasonApproachingGoalMin": "Trend is approaching the lower goal boundary",
+  "reasonAdherenceLow": "Meal adherence is below target",
+  "reasonRefusalFrequent": "Refusal events are frequent",
+  "reasonDelayedFrequent": "Delayed meals are frequent",
+  "reasonAppetiteReduced": "Reduced appetite was logged recently",
+  "reasonAppetitePoor": "Poor appetite was logged recently",
+  "reasonVomitFrequent": "Frequent vomit events were logged",
+  "reasonStoolDiarrhea": "Diarrhea events were logged",
+  "reasonClinicalConditionPresent": "Clinical conditions are configured on profile",
+  "reasonWeightAlertTriggered": "Weight alerts were triggered recently",
+  "reasonLowEvidence": "Limited data available (low evidence)",
+  "dietWeightRangeError": "Weight must be between {min} and {max} kg.",
+  "@dietWeightRangeError": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "dietAgeRangeError": "Age must be between {min} and {max} months.",
+  "@dietAgeRangeError": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "dietFoodCaloriesPositiveError": "Food calories must be greater than zero.",
+  "dietMealsRangeError": "Meals per day must be between {min} and {max}.",
+  "@dietMealsRangeError": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "dietWeightPositiveError": "Weight must be greater than zero.",
+  "dietMealsPositiveError": "Meals per day must be greater than zero.",
+  "portionUnknownUnitError": "Unknown portion unit \"{unit}\".",
+  "@portionUnknownUnitError": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "portionZeroEquivalentError": "Unit \"{unit}\" has a zero gram equivalent.",
+  "@portionZeroEquivalentError": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "noActivePlanAvailableForCat": "No active plan available for this cat.",
+  "noSuggestedPlanChangesAvailableToRevert": "No suggested plan changes available to revert.",
+  "lastSuggestedChangeReverted": "Last suggested change reverted.",
+  "suggestionDataIncomplete": "Suggestion data is incomplete.",
+  "suggestedKcalChangeExceedsSafeBand": "Suggested kcal change exceeds the safe adjustment band.",
+  "suggestedKcalTargetOutsideSafeRange": "Suggested kcal target is outside the allowed safe range.",
+  "unableToRecalculatePortionSafely": "Unable to recalculate portion size safely.",
+  "scheduleChangeExceedsSafeShiftLimit": "Schedule change exceeds the safe shift limit.",
+  "portionRedistributionInvalidForActivePlan": "Portion redistribution is invalid for the active plan.",
+  "portionShiftExceedsSafeRedistributionLimit": "Portion shift exceeds the safe redistribution limit.",
+  "portionRedistributionFailedSafetyValidation": "Portion redistribution failed safety validation.",
+  "summaryTargetKcalPerDayChange": "Target kcal/day: {fromValue} -> {toValue} ({delta})",
+  "@summaryTargetKcalPerDayChange": {
+    "description": "Localized audit summary line for kcal/day changes in a suggested plan adjustment.",
+    "placeholders": {
+      "fromValue": {
+        "type": "String"
+      },
+      "toValue": {
+        "type": "String"
+      },
+      "delta": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryDailyPortionChange": "Daily portion: {fromValue} -> {toValue}",
+  "@summaryDailyPortionChange": {
+    "description": "Localized audit summary line for total daily portion changes.",
+    "placeholders": {
+      "fromValue": {
+        "type": "String"
+      },
+      "toValue": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryMealTimeChange": "{meal}: {fromValue} -> {toValue}",
+  "@summaryMealTimeChange": {
+    "description": "Localized audit summary line for a meal time shift.",
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      },
+      "fromValue": {
+        "type": "String"
+      },
+      "toValue": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryMealPortionChange": "{meal}: {fromValue} -> {toValue}",
+  "@summaryMealPortionChange": {
+    "description": "Localized audit summary line for a meal portion redistribution.",
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      },
+      "fromValue": {
+        "type": "String"
+      },
+      "toValue": {
+        "type": "String"
+      }
+    }
+  },
+  "revertLastSuggestedChangeTitle": "Revert last suggested change",
+  "revertLastSuggestedChangeDescription": "This restores the plan snapshot from before the latest suggested change.",
+  "typeWhoIsRevertingHint": "Type who is reverting this change",
+  "responsiblePersonRequired": "Responsible person is required.",
+  "revertAction": "Revert",
+  "impactRevertedBy": "Reverted by {name}",
+  "@impactRevertedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impactActiveChange": "Active change",
+  "impactBeforeAfterKcal": "Before/after kcal: {beforeValue} -> {afterValue}",
+  "@impactBeforeAfterKcal": {
+    "placeholders": {
+      "beforeValue": {
+        "type": "String"
+      },
+      "afterValue": {
+        "type": "String"
+      }
+    }
+  },
+  "unknownPersonLabel": "unknown",
+  "shareMessageTitle": "Share message",
+  "shareMessageHint": "Message used when sharing report files",
+  "saveAction": "Save",
+  "mealReminderTimesTitle": "Meal Reminder Times",
+  "addTimeAction": "Add Time",
+  "saveScheduleAction": "Save Schedule",
+  "generateDemoDataTitle": "Generate demo data",
+  "generateDemoDataDescription": "This will replace the current local data with a ready-to-test scenario containing one group, one individual cat, foods, plans, meals and weight history.",
+  "generateAction": "Generate",
+  "demoDataReadyMessage": "Demo data ready: {groups} group, {cats} cat, {foods} foods, {schedules} schedules.",
+  "@demoDataReadyMessage": {
+    "description": "Snackbar shown after generating the ready-to-test demo scenario.",
+    "placeholders": {
+      "groups": {"type": "int"},
+      "cats": {"type": "int"},
+      "foods": {"type": "int"},
+      "schedules": {"type": "int"}
+    }
+  },
+  "clearDemoDataTitle": "Clear demo data",
+  "clearDemoDataDescription": "This will remove the local demo data from the app, including cats, groups, foods, plans, meals and history.",
+  "clearAction": "Clear",
+  "localDemoDataClearedMessage": "Local demo data cleared.",
+  "generateStressDataTitle": "Generate stress test data",
+  "generateStressDataDescription": "This will load a heavy operational scenario (up to 10 cats and 5 groups) to validate navigation, lists and daily routines in high-volume usage.",
+  "stressScenarioReadyMessage": "Stress scenario ready: {groups} groups, {cats} cats, {foods} foods, {schedules} schedules.",
+  "@stressScenarioReadyMessage": {
+    "description": "Snackbar shown after generating the high-volume stress scenario.",
+    "placeholders": {
+      "groups": {"type": "int"},
+      "cats": {"type": "int"},
+      "foods": {"type": "int"},
+      "schedules": {"type": "int"}
+    }
+  },
+  "customRangeDaysTitle": "Custom range days",
+  "customRangeDaysValue": "{days} days",
+  "@customRangeDaysValue": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "customRangeTitle": "Custom range",
+  "daysLabel": "Days",
+  "noAcceptedPlanChangesYetTitle": "No accepted plan changes yet",
+  "noAcceptedPlanChangesYetDescription": "Approved suggestion changes will record who accepted them, when, and what changed.",
+  "noSuggestionImpactHistoryYetTitle": "No suggestion impact history yet",
+  "noSuggestionImpactHistoryYetDescription": "Generated suggestions, accepted changes and before/after snapshots will be stored here.",
+  "revertLatestSuggestedAdjustmentDescription": "Restore the latest plan snapshot saved before a suggested adjustment was applied.",
+  "continueAction": "Continue",
+  "tryAgainAction": "Try Again",
+  "deleteAction": "Delete",
+  "kgUnit": "kg",
+  "catsUnit": "cats",
+  "noneOption": "None",
+  "normalOption": "Normal",
+  "highOption": "High",
+  "lowOption": "Low",
+  "poorOption": "Poor",
+  "reducedOption": "Reduced",
+  "softOption": "Soft",
+  "hardOption": "Hard",
+  "diarrheaOption": "Diarrhea",
+  "occasionalOption": "Occasional",
+  "frequentOption": "Frequent",
+  "otherOption": "Other",
+  "sedentaryOption": "Sedentary",
+  "moderateOption": "Moderate",
+  "activeOption": "Active",
+  "maleOption": "Male",
+  "femaleOption": "Female",
+  "unknownOption": "Unknown",
+  "maintenanceGoalOption": "Maintenance",
+  "weightLossGoalOption": "Weight loss",
+  "weightGainGoalOption": "Weight gain",
+  "kittenGrowthGoalOption": "Kitten growth",
+  "seniorSupportGoalOption": "Senior support",
+  "recoveryGoalOption": "Recovery",
+  "postSurgeryGoalOption": "Post-surgery",
+  "completedOption": "Completed",
+  "partialOption": "Partial",
+  "delayedOption": "Delayed",
+  "refusedOption": "Refused",
+  "reducedAppetiteOption": "Reduced appetite",
+  "skippedOption": "Skipped",
+  "loggedStatus": "Logged",
+  "weightCheckInTitle": "Weight Check-in",
+  "noActiveCatTitle": "No active cat",
+  "noActiveCatDescription": "Select a cat from Home before recording weight.",
+  "weightRecordedWithAlertMessage": "Weight recorded with alert. Review goals and clinical notes.",
+  "weightRecordedMessage": "Weight recorded.",
+  "weightNoteSuggestionHighAppetite": "High Appetite",
+  "weightNoteSuggestionEnergetic": "Energetic",
+  "weightNoteSuggestionLazyDay": "Lazy Day",
+  "weightContextFastingOption": "Fasting",
+  "weightContextAfterMealOption": "After meal",
+  "weightContextDifferentScaleOption": "Different scale",
+  "noPreviousCheckInLabel": "No previous check-in",
+  "lastCheckInLabel": "Last check-in: {date}",
+  "@lastCheckInLabel": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "recordingNowLabel": "Recording now: {date} at {time}",
+  "@recordingNowLabel": {
+    "placeholders": {
+      "date": {"type": "String"},
+      "time": {"type": "String"}
+    }
+  },
+  "lastWeightLabel": "LAST\nWEIGHT",
+  "checkInDateTimeTitle": "Check-in Date & Time",
+  "currentWeightLabel": "CURRENT WEIGHT",
+  "checkInContextTitle": "Check-in Context",
+  "checkInContextDescription": "Use this context to improve trend interpretation in reports.",
+  "weightContextLabel": "Weight context",
+  "appetiteLabel": "Appetite",
+  "stoolLabel": "Stool",
+  "vomitLabel": "Vomit",
+  "energyLabel": "Energy",
+  "checkInNotesTitle": "Check-in Notes",
+  "checkInNotesDescription": "Record behavior and clinical follow-up for this weight entry.",
+  "weightNotesHint": "How is your cat's appetite today? Any changes in mood or energy levels?",
+  "clinicalAssessmentStructuredLabel": "Clinical assessment (structured)",
+  "clinicalPlanFollowUpLabel": "Clinical plan / follow-up",
+  "recordWeightAction": "Record Weight",
+  "recordWeightActionUppercase": "RECORD WEIGHT",
+  "catProfileTitle": "Cat Profile",
+  "deleteProfileTitle": "Delete profile",
+  "removeProfileMessage": "Remove {name} from the app?",
+  "@removeProfileMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "editProfileTitle": "Edit profile",
+  "createNewCatProfileTitle": "Create a new cat profile",
+  "catProfileIntroDescription": "Personal data, clinical context and feeding targets in one place.",
+  "uploadPhotoAction": "Upload Photo",
+  "coreProfileSectionTitle": "Core Profile",
+  "coreProfileSectionDescription": "Identity and baseline metabolic data used across the app.",
+  "nameLabel": "Name",
+  "enterCatNameError": "Enter the cat name",
+  "weightKgLabel": "Weight (kg)",
+  "invalidWeightError": "Invalid weight",
+  "ageYearsLabel": "Age (years)",
+  "invalidAgeError": "Invalid age",
+  "neuteredSpayedTitle": "Neutered / Spayed",
+  "neuteredSpayedDescription": "Affects calorie requirements",
+  "activityLevelLabel": "Activity level",
+  "goalLabel": "Goal",
+  "preferredMealsPerDayLabel": "Preferred meals per day",
+  "manualTargetKcalPerDayOptionalLabel": "Manual target kcal/day (optional)",
+  "manualTargetKcalHelperText": "Leave empty to keep automatic calculation",
+  "invalidKcalTargetError": "Invalid kcal target",
+  "clinicalContextSectionTitle": "Clinical Context",
+  "clinicalContextSectionDescription": "Optional fields that refine recommendations and clinical tracking.",
+  "idealWeightOptionalLabel": "Ideal weight (kg) (optional)",
+  "idealWeightHelperText": "Optional: used to refine kcal suggestions",
+  "invalidIdealWeightError": "Invalid ideal weight",
+  "bodyConditionScoreLabel": "Body Condition Score (1-9)",
+  "sexLabel": "Sex",
+  "breedOptionalLabel": "Breed (optional)",
+  "dateOfBirthOptionalLabel": "Date of birth (optional)",
+  "customActivityLevelOptionalLabel": "Custom activity level (optional)",
+  "customActivityLevelHelperText": "Overrides preset activity labels when provided",
+  "clinicalConditionsLabel": "Clinical conditions (comma separated)",
+  "clinicalConditionsHelperText": "Examples: diabetes, ckd, arthritis",
+  "allergiesRestrictionsLabel": "Allergies / restrictions (comma separated)",
+  "allergiesRestrictionsHelperText": "Examples: chicken, beef, dairy",
+  "dietaryPreferencesLabel": "Dietary preferences (comma separated)",
+  "dietaryPreferencesHelperText": "Examples: grain_free, low_fat",
+  "veterinaryNotesOptionalLabel": "Veterinary notes (optional)",
+  "targetsAlertsSectionTitle": "Targets & Alerts",
+  "targetsAlertsSectionDescription": "Set safe weight range and threshold alerts for each check-in.",
+  "weightGoalsAlertsTitle": "Weight Goals & Alerts",
+  "goalMinWeightKgLabel": "Goal min weight (kg)",
+  "goalMaxWeightKgLabel": "Goal max weight (kg)",
+  "alertDeltaKgPerCheckInLabel": "Alert delta (kg) per check-in",
+  "alertDeltaPercentPerCheckInLabel": "Alert delta (%) per check-in",
+  "clinicalNotesPreferencesLabel": "Clinical notes / preferences",
+  "clinicalNotesPreferencesHelperText": "Examples: sensitive stomach, picky eater, post-surgery, senior support",
+  "catLimitHint": "Limit: {max} individual cats. Groups are created separately as lightweight operational units.",
+  "@catLimitHint": {
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "saveChangesAction": "Save Changes",
+  "saveProfileAction": "Save Profile",
+  "deleteProfileAction": "Delete Profile",
+  "profileFeedsAppDescription": "Profiles saved here will feed Home, Plans, Weight Check-in, and Dashboard.",
+  "nothingSelectedYetTitle": "Nothing selected yet",
+  "dailySelectionRequiredDescription": "Select an individual cat or a group from Home and save a plan to unlock the daily dashboard.",
+  "noGroupPlanYetTitle": "No group plan yet",
+  "saveGroupPlanBeforeDailyDescription": "Save a meal plan for {name} in Plans before using Daily.",
+  "@saveGroupPlanBeforeDailyDescription": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "groupPlanNotActiveYetTitle": "Group plan not active yet",
+  "groupPlanStartsOnDescription": "This plan for {name} starts on {date}.",
+  "@groupPlanStartsOnDescription": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  },
+  "groupSizeMetricTitle": "GROUP SIZE",
+  "dailyGoalMetricTitleUppercase": "DAILY GOAL",
+  "yesterdayRoutineDuplicatedMessage": "Yesterday routine duplicated for today.",
+  "duplicateYesterdayRoutineAction": "Duplicate Yesterday Routine",
+  "todaysGroupScheduleTitle": "Today's Group Schedule",
+  "noMealPlanYetTitle": "No meal plan yet",
+  "savePlanBeforeDailyDescription": "Save a meal plan for {name} in Plans before using Daily.",
+  "@savePlanBeforeDailyDescription": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "planNotActiveYetTitle": "Plan not active yet",
+  "planStartsOnDescription": "The plan for {name} starts on {date}.",
+  "@planStartsOnDescription": {
+    "placeholders": {
+      "name": {"type": "String"},
+      "date": {"type": "String"}
+    }
+  },
+  "currentWeightMetricTitle": "CURRENT WEIGHT",
+  "genericMealTitle": "Meal",
+  "mealTimeTitle": "Meal time",
+  "unsetLabel": "Unset",
+  "quantityLabel": "Quantity",
+  "observationsLabel": "Observations",
+  "dailyObservationsHint": "Delay reason, refusal, appetite, practical notes, etc.",
+  "saveLogAction": "Save Log",
+  "dailyGreetingTitle": "Good morning!",
+  "dailyGroupReadyDescription": "{name} group is ready for today's routine",
+  "@dailyGroupReadyDescription": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "dailyCatReadyDescription": "{name} is ready for today's meals",
+  "@dailyCatReadyDescription": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "todaysScheduleTitle": "Today's Schedule",
+  "loggedQuantityLabel": "Logged: {quantity} {unit}",
+  "@loggedQuantityLabel": {
+    "placeholders": {
+      "quantity": {"type": "String"},
+      "unit": {"type": "String"}
+    }
+  },
+  "noteWithValueLabel": "Note: {note}",
+  "@noteWithValueLabel": {
+    "placeholders": {
+      "note": {"type": "String"}
+    }
+  },
+  "updateLogAction": "UPDATE LOG",
+  "logMealAction": "LOG MEAL",
+  "logEventAction": "LOG EVENT",
+  "recordTodaysWeightProgressDescription": "Record today's weight progress",
+  "anytimeLabel": "Anytime",
+  "noMealsScheduledTitle": "No meals scheduled",
+  "noMealsScheduledDescription": "Save a plan in Plans to generate today's schedule.",
+  "dailyWaterEntryTitle": "Water",
+  "dailySnacksEntryTitle": "Snacks",
+  "dailySupplementsEntryTitle": "Supplements",
+  "dailyWaterGroupSubtitle": "Register water intake for the group",
+  "dailyWaterCatSubtitle": "Register water intake for the cat",
+  "dailySnacksGroupSubtitle": "Register snacks offered to the group",
+  "dailySnacksCatSubtitle": "Register snacks offered today",
+  "dailySupplementsGroupSubtitle": "Register supplements for the group",
+  "dailySupplementsCatSubtitle": "Register supplements for the cat",
+  "productConfirmedFromDatabaseMessage": "{name} confirmed from database",
+  "@productConfirmedFromDatabaseMessage": {
+    "placeholders": {
+      "name": {"type": "String"}
+    }
+  },
+  "foodGenericLabel": "Food",
+  "scannerTitle": "Scanner",
+  "cameraUnavailableTitle": "Camera unavailable",
+  "cameraUnavailableDescription": "Unable to start camera. On web, use localhost or https, allow camera access, and keep only one tab using the webcam.",
+  "webCameraNotRunningHint": "Web camera not running yet. Test one browser tab at a time, allow camera access, and try the switch-camera button.",
+  "alignBarcodeWithinFrameTitle": "Align barcode within frame",
+  "typeBarcodeToSimulateScanHint": "Type barcode to simulate scan",
+  "noBarcodeScannedYetTitle": "No barcode scanned yet",
+  "noProductFoundForBarcodeTitle": "No product found for {barcode}",
+  "@noProductFoundForBarcodeTitle": {
+    "placeholders": {
+      "barcode": {"type": "String"}
+    }
+  },
+  "unknownBrandLabel": "Unknown brand",
+  "kcalPer100gLabel": "kcal/100g",
+  "useLiveCameraOrBarcodeDescription": "Use the live camera or the barcode field above.",
+  "createFoodEntryFromBarcodeDescription": "You can create a new food entry with this barcode.",
+  "editManuallyAction": "Edit Manually",
+  "manualEntryAction": "Manual Entry",
+  "useProductAction": "Use Product",
+  "confirmProductAction": "Confirm Product",
+  "veterinaryGradeNutritionTagline": "VETERINARY-GRADE NUTRITION",
+  "catLimitReached": "Cat limit reached. You can create up to {max} cats.",
+  "@catLimitReached": {
+    "placeholders": {
+      "max": {"type": "int"}
+    }
+  },
+  "invalidImageFile": "Invalid image file.",
+  "languageEnglish": "English",
+  "languagePortugueseBrazil": "Portuguese (Brazil)",
+  "languageTagalog": "Tagalog"
+}

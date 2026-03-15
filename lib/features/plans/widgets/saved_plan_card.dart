@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 
 class SavedPlanCard extends StatelessWidget {
   const SavedPlanCard({
@@ -25,6 +26,7 @@ class SavedPlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final border = primary.withValues(alpha: 0.12);
     final softText =
         theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.68) ??
@@ -93,9 +95,9 @@ class SavedPlanCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          const _SectionTitle(
-            title: 'Core targets',
-            subtitle: 'Saved values currently being used by this plan.',
+          _SectionTitle(
+            title: l10n.savedCoreTargetsTitle,
+            subtitle: l10n.savedCoreTargetsSubtitle,
           ),
           const SizedBox(height: 12),
           LayoutBuilder(
@@ -123,9 +125,9 @@ class SavedPlanCard extends StatelessWidget {
           ),
           if (timeline.isNotEmpty) ...[
             const SizedBox(height: 22),
-            const _SectionTitle(
-              title: 'Meal timeline',
-              subtitle: 'Saved schedule and portion split for each meal.',
+            _SectionTitle(
+              title: l10n.savedMealTimelineTitle,
+              subtitle: l10n.savedMealTimelineSubtitle,
             ),
             const SizedBox(height: 12),
             ...List.generate(timeline.length, (index) {
@@ -140,9 +142,9 @@ class SavedPlanCard extends StatelessWidget {
           ],
           if (detailMetrics.isNotEmpty) ...[
             const SizedBox(height: 22),
-            const _SectionTitle(
-              title: 'Plan details',
-              subtitle: 'Operational context, notes and saved configuration.',
+            _SectionTitle(
+              title: l10n.savedPlanDetailsTitle,
+              subtitle: l10n.savedPlanDetailsSubtitle,
             ),
             const SizedBox(height: 12),
             Container(
@@ -207,14 +209,14 @@ class SavedPlanTimelineEntry {
     required this.label,
     required this.time,
     required this.value,
-    this.caption = 'Scheduled feeding slot',
+    this.caption,
   });
 
   final int index;
   final String label;
   final String time;
   final String value;
-  final String caption;
+  final String? caption;
 }
 
 class SavedPlanTag {
@@ -356,6 +358,7 @@ class _TimelineCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final muted =
         theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.66) ??
         const Color(0xFF7A7678);
@@ -397,7 +400,7 @@ class _TimelineCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 3),
                 Text(
-                  entry.caption,
+                  entry.caption ?? l10n.scheduledFeedingSlotCaption,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: muted,
                     fontWeight: FontWeight.w600,

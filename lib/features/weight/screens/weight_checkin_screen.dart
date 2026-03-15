@@ -1,9 +1,11 @@
 import 'package:cat_diet_planner/core/utils/cat_photo.dart';
+import 'package:cat_diet_planner/core/localization/app_formatters.dart';
 import 'package:cat_diet_planner/core/widgets/app_empty_state.dart';
 import 'package:cat_diet_planner/core/widgets/app_loading_state.dart';
 import 'package:cat_diet_planner/data/models/weight_record.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
 import 'package:cat_diet_planner/features/history/providers/weight_repository_provider.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -16,12 +18,6 @@ class WeightCheckInScreen extends ConsumerStatefulWidget {
 }
 
 class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
-  static const List<String> _noteSuggestions = [
-    'High Appetite',
-    'Energetic',
-    'Lazy Day',
-  ];
-
   double _weight = 5.0;
   WeightRecord? _latestRecord;
   final TextEditingController _notesController = TextEditingController();
@@ -61,30 +57,6 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
       _latestRecord = latest;
       _weight = latest.weight;
     });
-  }
-
-  String _formatDate(DateTime date) {
-    final months = [
-      'Jan',
-      'Feb',
-      'Mar',
-      'Apr',
-      'May',
-      'Jun',
-      'Jul',
-      'Aug',
-      'Sep',
-      'Oct',
-      'Nov',
-      'Dec',
-    ];
-    return '${months[date.month - 1]} ${date.day}, ${date.year}';
-  }
-
-  String _formatTime(DateTime date) {
-    final hour = date.hour.toString().padLeft(2, '0');
-    final minute = date.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
   }
 
   void _appendSuggestion(String suggestion) {
@@ -173,8 +145,8 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
         SnackBar(
           content: Text(
             alertTriggered
-                ? 'Weight recorded with alert. Review goals/clinical notes.'
-                : 'Weight recorded',
+                ? AppLocalizations.of(context).weightRecordedWithAlertMessage
+                : AppLocalizations.of(context).weightRecordedMessage,
           ),
         ),
       );
@@ -186,10 +158,80 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
     }
   }
 
+  List<String> _noteSuggestions(AppLocalizations l10n) => [
+    l10n.weightNoteSuggestionHighAppetite,
+    l10n.weightNoteSuggestionEnergetic,
+    l10n.weightNoteSuggestionLazyDay,
+  ];
+
+  String _weightContextLabel(AppLocalizations l10n, String value) {
+    switch (value) {
+      case 'fasting':
+        return l10n.weightContextFastingOption;
+      case 'after_meal':
+        return l10n.weightContextAfterMealOption;
+      case 'different_scale':
+        return l10n.weightContextDifferentScaleOption;
+      default:
+        return l10n.otherOption;
+    }
+  }
+
+  String _appetiteLabel(AppLocalizations l10n, String value) {
+    switch (value) {
+      case 'poor':
+        return l10n.poorOption;
+      case 'reduced':
+        return l10n.reducedOption;
+      case 'high':
+        return l10n.highOption;
+      default:
+        return l10n.normalOption;
+    }
+  }
+
+  String _stoolLabel(AppLocalizations l10n, String value) {
+    switch (value) {
+      case 'none':
+        return l10n.noneOption;
+      case 'soft':
+        return l10n.softOption;
+      case 'hard':
+        return l10n.hardOption;
+      case 'diarrhea':
+        return l10n.diarrheaOption;
+      default:
+        return l10n.normalOption;
+    }
+  }
+
+  String _vomitLabel(AppLocalizations l10n, String value) {
+    switch (value) {
+      case 'occasional':
+        return l10n.occasionalOption;
+      case 'frequent':
+        return l10n.frequentOption;
+      default:
+        return l10n.noneOption;
+    }
+  }
+
+  String _energyLabel(AppLocalizations l10n, String value) {
+    switch (value) {
+      case 'low':
+        return l10n.lowOption;
+      case 'high':
+        return l10n.highOption;
+      default:
+        return l10n.normalOption;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final selectedCat = ref.watch(selectedCatProvider);
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final primary = theme.colorScheme.primary;
     final secondary =
         theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.70) ??
@@ -197,14 +239,14 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
 
     if (selectedCat == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Weight Check-in')),
+        appBar: AppBar(title: Text(l10n.weightCheckInTitle)),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
-            child: const AppEmptyState(
+            child: AppEmptyState(
               icon: Icons.monitor_weight_outlined,
-              title: 'No active cat',
-              description: 'Select a cat from Home before recording weight.',
+              title: l10n.noActiveCatTitle,
+              description: l10n.noActiveCatDescription,
             ),
           ),
         ),
@@ -213,7 +255,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Weight Check-in'),
+        title: Text(l10n.weightCheckInTitle),
         centerTitle: true,
         backgroundColor: theme.scaffoldBackgroundColor,
         surfaceTintColor: Colors.transparent,
@@ -283,8 +325,13 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                     const SizedBox(height: 4),
                     Text(
                       _latestRecord == null
-                          ? 'No previous check-in'
-                          : 'Last check-in: ${_formatDate(_latestRecord!.date)}',
+                          ? l10n.noPreviousCheckInLabel
+                          : l10n.lastCheckInLabel(
+                              AppFormatters.formatDate(
+                                context,
+                                _latestRecord!.date,
+                              ),
+                            ),
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: const Color(0xFF7B8DA8),
                         fontWeight: FontWeight.w600,
@@ -292,7 +339,10 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Recording now: ${_formatDate(_checkInDateTime)} at ${_formatTime(_checkInDateTime)}',
+                      l10n.recordingNowLabel(
+                        AppFormatters.formatDate(context, _checkInDateTime),
+                        AppFormatters.formatTime(context, _checkInDateTime),
+                      ),
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: secondary,
                         fontWeight: FontWeight.w600,
@@ -307,7 +357,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                       : CrossAxisAlignment.end,
                   children: [
                     Text(
-                      'LAST\nWEIGHT',
+                      l10n.lastWeightLabel,
                       textAlign: narrow ? TextAlign.left : TextAlign.right,
                       style: theme.textTheme.labelMedium?.copyWith(
                         color: primary,
@@ -328,7 +378,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                                 .toStringAsFixed(1),
                           ),
                           TextSpan(
-                            text: ' kg',
+                            text: ' ${l10n.kgUnit}',
                             style: theme.textTheme.headlineSmall?.copyWith(
                               color: primary,
                               fontWeight: FontWeight.w900,
@@ -379,7 +429,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                     Icon(Icons.event_note_rounded, color: primary),
                     const SizedBox(width: 8),
                     Text(
-                      'Check-in Date & Time',
+                      l10n.checkInDateTimeTitle,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -415,7 +465,9 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                         });
                       },
                       icon: const Icon(Icons.event_rounded),
-                      label: Text(_formatDate(_checkInDateTime)),
+                      label: Text(
+                        AppFormatters.formatDate(context, _checkInDateTime),
+                      ),
                     ),
                     OutlinedButton.icon(
                       onPressed: () async {
@@ -438,7 +490,9 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                         });
                       },
                       icon: const Icon(Icons.schedule_rounded),
-                      label: Text(_formatTime(_checkInDateTime)),
+                      label: Text(
+                        AppFormatters.formatTime(context, _checkInDateTime),
+                      ),
                     ),
                   ],
                 ),
@@ -451,7 +505,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
             child: Column(
               children: [
                 Text(
-                  'CURRENT WEIGHT',
+                  l10n.currentWeightLabel,
                   style: theme.textTheme.titleMedium?.copyWith(
                     color: const Color(0xFF7B8DA8),
                     fontWeight: FontWeight.w900,
@@ -468,7 +522,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                     children: [
                       TextSpan(text: _weight.toStringAsFixed(1)),
                       TextSpan(
-                        text: ' kg',
+                        text: ' ${l10n.kgUnit}',
                         style: theme.textTheme.displaySmall?.copyWith(
                           color: primary,
                           fontWeight: FontWeight.w900,
@@ -497,7 +551,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                     Icon(Icons.medical_information_outlined, color: primary),
                     const SizedBox(width: 8),
                     Text(
-                      'Check-in Context',
+                      l10n.checkInContextTitle,
                       style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w800,
                       ),
@@ -506,7 +560,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Use this context to improve trend interpretation in reports.',
+                  l10n.checkInContextDescription,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: secondary,
                     fontWeight: FontWeight.w600,
@@ -515,21 +569,27 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _weightContext,
-                  decoration: const InputDecoration(
-                    labelText: 'Weight context',
+                  decoration: InputDecoration(
+                    labelText: l10n.weightContextLabel,
                     border: OutlineInputBorder(),
                   ),
-                  items: const [
-                    DropdownMenuItem(value: 'fasting', child: Text('Fasting')),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'fasting',
+                      child: Text(_weightContextLabel(l10n, 'fasting')),
+                    ),
                     DropdownMenuItem(
                       value: 'after_meal',
-                      child: Text('After meal'),
+                      child: Text(_weightContextLabel(l10n, 'after_meal')),
                     ),
                     DropdownMenuItem(
                       value: 'different_scale',
-                      child: Text('Different scale'),
+                      child: Text(_weightContextLabel(l10n, 'different_scale')),
                     ),
-                    DropdownMenuItem(value: 'other', child: Text('Other')),
+                    DropdownMenuItem(
+                      value: 'other',
+                      child: Text(_weightContextLabel(l10n, 'other')),
+                    ),
                   ],
                   onChanged: (value) {
                     if (value != null) setState(() => _weightContext = value);
@@ -538,15 +598,27 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _appetite,
-                  decoration: const InputDecoration(
-                    labelText: 'Appetite',
+                  decoration: InputDecoration(
+                    labelText: l10n.appetiteLabel,
                     border: OutlineInputBorder(),
                   ),
-                  items: const [
-                    DropdownMenuItem(value: 'poor', child: Text('Poor')),
-                    DropdownMenuItem(value: 'reduced', child: Text('Reduced')),
-                    DropdownMenuItem(value: 'normal', child: Text('Normal')),
-                    DropdownMenuItem(value: 'high', child: Text('High')),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'poor',
+                      child: Text(_appetiteLabel(l10n, 'poor')),
+                    ),
+                    DropdownMenuItem(
+                      value: 'reduced',
+                      child: Text(_appetiteLabel(l10n, 'reduced')),
+                    ),
+                    DropdownMenuItem(
+                      value: 'normal',
+                      child: Text(_appetiteLabel(l10n, 'normal')),
+                    ),
+                    DropdownMenuItem(
+                      value: 'high',
+                      child: Text(_appetiteLabel(l10n, 'high')),
+                    ),
                   ],
                   onChanged: (value) {
                     if (value != null) setState(() => _appetite = value);
@@ -555,18 +627,30 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _stool,
-                  decoration: const InputDecoration(
-                    labelText: 'Stool',
+                  decoration: InputDecoration(
+                    labelText: l10n.stoolLabel,
                     border: OutlineInputBorder(),
                   ),
-                  items: const [
-                    DropdownMenuItem(value: 'none', child: Text('None')),
-                    DropdownMenuItem(value: 'normal', child: Text('Normal')),
-                    DropdownMenuItem(value: 'soft', child: Text('Soft')),
-                    DropdownMenuItem(value: 'hard', child: Text('Hard')),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'none',
+                      child: Text(_stoolLabel(l10n, 'none')),
+                    ),
+                    DropdownMenuItem(
+                      value: 'normal',
+                      child: Text(_stoolLabel(l10n, 'normal')),
+                    ),
+                    DropdownMenuItem(
+                      value: 'soft',
+                      child: Text(_stoolLabel(l10n, 'soft')),
+                    ),
+                    DropdownMenuItem(
+                      value: 'hard',
+                      child: Text(_stoolLabel(l10n, 'hard')),
+                    ),
                     DropdownMenuItem(
                       value: 'diarrhea',
-                      child: Text('Diarrhea'),
+                      child: Text(_stoolLabel(l10n, 'diarrhea')),
                     ),
                   ],
                   onChanged: (value) {
@@ -576,19 +660,22 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _vomit,
-                  decoration: const InputDecoration(
-                    labelText: 'Vomit',
+                  decoration: InputDecoration(
+                    labelText: l10n.vomitLabel,
                     border: OutlineInputBorder(),
                   ),
-                  items: const [
-                    DropdownMenuItem(value: 'none', child: Text('None')),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'none',
+                      child: Text(_vomitLabel(l10n, 'none')),
+                    ),
                     DropdownMenuItem(
                       value: 'occasional',
-                      child: Text('Occasional'),
+                      child: Text(_vomitLabel(l10n, 'occasional')),
                     ),
                     DropdownMenuItem(
                       value: 'frequent',
-                      child: Text('Frequent'),
+                      child: Text(_vomitLabel(l10n, 'frequent')),
                     ),
                   ],
                   onChanged: (value) {
@@ -598,14 +685,23 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                 const SizedBox(height: 12),
                 DropdownButtonFormField<String>(
                   initialValue: _energy,
-                  decoration: const InputDecoration(
-                    labelText: 'Energy',
+                  decoration: InputDecoration(
+                    labelText: l10n.energyLabel,
                     border: OutlineInputBorder(),
                   ),
-                  items: const [
-                    DropdownMenuItem(value: 'low', child: Text('Low')),
-                    DropdownMenuItem(value: 'normal', child: Text('Normal')),
-                    DropdownMenuItem(value: 'high', child: Text('High')),
+                  items: [
+                    DropdownMenuItem(
+                      value: 'low',
+                      child: Text(_energyLabel(l10n, 'low')),
+                    ),
+                    DropdownMenuItem(
+                      value: 'normal',
+                      child: Text(_energyLabel(l10n, 'normal')),
+                    ),
+                    DropdownMenuItem(
+                      value: 'high',
+                      child: Text(_energyLabel(l10n, 'high')),
+                    ),
                   ],
                   onChanged: (value) {
                     if (value != null) setState(() => _energy = value);
@@ -624,7 +720,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                     Icon(Icons.edit_note_rounded, color: primary, size: 24),
                     const SizedBox(width: 8),
                     Text(
-                      'Check-in Notes',
+                      l10n.checkInNotesTitle,
                       style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w900,
                       ),
@@ -633,7 +729,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Record behavior and clinical follow-up for this weight entry.',
+                  l10n.checkInNotesDescription,
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: secondary,
                     fontWeight: FontWeight.w600,
@@ -643,9 +739,8 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                 TextField(
                   controller: _notesController,
                   maxLines: 4,
-                  decoration: const InputDecoration(
-                    hintText:
-                        'How is your cat\'s appetite today? Any changes in mood or energy levels?',
+                  decoration: InputDecoration(
+                    hintText: l10n.weightNotesHint,
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -653,8 +748,8 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                 TextField(
                   controller: _clinicalAssessmentController,
                   maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Clinical assessment (structured)',
+                  decoration: InputDecoration(
+                    labelText: l10n.clinicalAssessmentStructuredLabel,
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -662,8 +757,8 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                 TextField(
                   controller: _clinicalPlanController,
                   maxLines: 3,
-                  decoration: const InputDecoration(
-                    labelText: 'Clinical plan / follow-up',
+                  decoration: InputDecoration(
+                    labelText: l10n.clinicalPlanFollowUpLabel,
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -671,7 +766,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                 Wrap(
                   spacing: 12,
                   runSpacing: 12,
-                  children: _noteSuggestions.map((suggestion) {
+                  children: _noteSuggestions(l10n).map((suggestion) {
                     return FilledButton.tonal(
                       onPressed: () => _appendSuggestion(suggestion),
                       child: Text(
@@ -694,8 +789,8 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
               ? const SizedBox.shrink()
               : const Icon(Icons.monitor_weight_outlined),
           label: _isSaving
-              ? const AppLoadingState(compact: true, label: 'Saving...')
-              : const Text('Record Weight'),
+              ? AppLoadingState(compact: true, label: l10n.savingLabel)
+              : Text(l10n.recordWeightAction),
           style: FilledButton.styleFrom(
             minimumSize: const Size.fromHeight(68),
             shape: RoundedRectangleBorder(
@@ -793,11 +888,26 @@ class _WeightRuler extends StatelessWidget {
           spacing: 10,
           runSpacing: 6,
           children: [
-            _ScaleLabel(label: '2.0 kg', color: secondary),
-            _ScaleLabel(label: '5.0 kg', color: secondary),
-            _ScaleLabel(label: '8.5 kg', color: secondary),
-            _ScaleLabel(label: '12.0 kg', color: secondary),
-            _ScaleLabel(label: '15.0 kg', color: secondary),
+            _ScaleLabel(
+              label: '2.0 ${AppLocalizations.of(context).kgUnit}',
+              color: secondary,
+            ),
+            _ScaleLabel(
+              label: '5.0 ${AppLocalizations.of(context).kgUnit}',
+              color: secondary,
+            ),
+            _ScaleLabel(
+              label: '8.5 ${AppLocalizations.of(context).kgUnit}',
+              color: secondary,
+            ),
+            _ScaleLabel(
+              label: '12.0 ${AppLocalizations.of(context).kgUnit}',
+              color: secondary,
+            ),
+            _ScaleLabel(
+              label: '15.0 ${AppLocalizations.of(context).kgUnit}',
+              color: secondary,
+            ),
           ],
         ),
       ],

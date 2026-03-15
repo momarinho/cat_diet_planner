@@ -3,20 +3,28 @@ import 'package:cat_diet_planner/features/daily/screens/daily_overview_screen.da
 import 'package:cat_diet_planner/features/history/screens/history_screen.dart';
 import 'package:cat_diet_planner/features/home/screens/home_overview_screen.dart';
 import 'package:cat_diet_planner/features/plans/screens/plans_screen.dart';
-
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 enum AppShellTab {
-  daily('/daily', 'Daily', Icons.grid_view_rounded),
-  home('/home', 'Home', Icons.home_rounded),
-  plans('/plans', 'Plans', Icons.adjust_rounded),
-  history('/history', 'History', Icons.bar_chart_rounded);
+  daily('/daily', Icons.grid_view_rounded),
+  home('/home', Icons.home_rounded),
+  plans('/plans', Icons.adjust_rounded),
+  history('/history', Icons.bar_chart_rounded);
 
-  const AppShellTab(this.path, this.label, this.icon);
+  const AppShellTab(this.path, this.icon);
 
   final String path;
-  final String label;
   final IconData icon;
+
+  String label(AppLocalizations l10n) {
+    return switch (this) {
+      AppShellTab.daily => l10n.navDaily,
+      AppShellTab.home => l10n.navHome,
+      AppShellTab.plans => l10n.navPlans,
+      AppShellTab.history => l10n.navHistory,
+    };
+  }
 }
 
 class AppShellScreen extends StatefulWidget {
@@ -172,6 +180,7 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final active = tab == currentTab;
     final color = active ? activeColor : inactiveColor;
 
@@ -186,7 +195,7 @@ class _NavItem extends StatelessWidget {
             Icon(tab.icon, color: color, size: 24),
             const SizedBox(height: 3),
             Text(
-              tab.label.toUpperCase(),
+              tab.label(l10n).toUpperCase(),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: TextStyle(

@@ -1,4 +1,6 @@
+import 'package:cat_diet_planner/core/localization/app_formatters.dart';
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
+import 'package:cat_diet_planner/core/localization/app_feedback_localizer.dart';
 import 'package:cat_diet_planner/core/widgets/app_empty_state.dart';
 import 'package:cat_diet_planner/core/widgets/app_loading_state.dart';
 import 'package:cat_diet_planner/data/models/cat_group.dart';
@@ -18,6 +20,7 @@ import 'package:cat_diet_planner/features/plans/services/diet_calculator_service
 import 'package:cat_diet_planner/features/plans/services/portion/portion_unit_service.dart';
 import 'package:cat_diet_planner/features/plans/widgets/plan_inspector_sheet.dart';
 import 'package:cat_diet_planner/features/suggestions/widgets/cat_suggestions_section.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -437,9 +440,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
 
   String _formatDate(DateTime date) {
     final normalized = DailyMealScheduleService.normalizeDay(date);
-    final day = normalized.day.toString().padLeft(2, '0');
-    final month = normalized.month.toString().padLeft(2, '0');
-    return '$day/$month/${normalized.year}';
+    return AppFormatters.formatDate(context, normalized);
   }
 
   Future<void> _pickMealTime(BuildContext context, int index) async {
@@ -496,24 +497,25 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         : PortionUnitService.gramsPerUnit(_portionUnit);
   }
 
-  String _weekdayLabel(int weekday) {
+  String _weekdayLabel(BuildContext context, int weekday) {
+    final l10n = AppLocalizations.of(context);
     switch (weekday) {
       case DateTime.monday:
-        return 'Monday';
+        return l10n.mondayLabel;
       case DateTime.tuesday:
-        return 'Tuesday';
+        return l10n.tuesdayLabel;
       case DateTime.wednesday:
-        return 'Wednesday';
+        return l10n.wednesdayLabel;
       case DateTime.thursday:
-        return 'Thursday';
+        return l10n.thursdayLabel;
       case DateTime.friday:
-        return 'Friday';
+        return l10n.fridayLabel;
       case DateTime.saturday:
-        return 'Saturday';
+        return l10n.saturdayLabel;
       case DateTime.sunday:
-        return 'Sunday';
+        return l10n.sundayLabel;
       default:
-        return 'Day $weekday';
+        return l10n.dayFallbackLabel(weekday);
     }
   }
 
@@ -591,9 +593,9 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
     await ref.read(planRepositoryProvider).deletePlanById(planId);
     if (!mounted) return;
     setState(() => _hydratedCatId = null);
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Plan deleted.')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context).planDeletedMessage)),
+    );
     final remaining = ref.read(planRepositoryProvider).getPlansForCat(cat.id);
     if (remaining.isNotEmpty) {
       final fallbackId = remaining.first.planId;
@@ -644,18 +646,26 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
       final savedPlanId = await repository.savePlanForCat(plan);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Plan saved for ${cat.name}')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).planSavedForCatMessage(cat.name),
+          ),
+        ),
+      );
       setState(() {
         _hydratedCatId = null;
       });
       await repository.setActivePlanForCat(catId: cat.id, planId: savedPlanId);
-    } on ArgumentError catch (error) {
+    } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.message.toString())));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            localizeErrorMessage(AppLocalizations.of(context), error),
+          ),
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -673,7 +683,11 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
     final targetPerCat = double.tryParse(_groupKcalController.text.trim());
     if (targetPerCat == null || targetPerCat <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Enter a valid kcal target per cat.')),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).enterValidKcalPerCatMessage,
+          ),
+        ),
       );
       return;
     }
@@ -729,15 +743,23 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
       await repository.savePlanForGroup(plan);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Plan saved for ${group.name}')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).planSavedForGroupMessage(group.name),
+          ),
+        ),
+      );
       setState(() => _hydratedGroupId = null);
-    } on ArgumentError catch (error) {
+    } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(error.message.toString())));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            localizeErrorMessage(AppLocalizations.of(context), error),
+          ),
+        ),
+      );
     } finally {
       if (mounted) {
         setState(() => _isSaving = false);
@@ -785,6 +807,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final cats = ref.watch(catProfilesProvider);
     final groups = ref.watch(catGroupsProvider);
     final activeCat = ref.watch(selectedCatProvider);
@@ -855,14 +878,14 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Plans'),
+        title: Text(l10n.plansTitle),
         centerTitle: true,
         backgroundColor: theme.scaffoldBackgroundColor,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
         actions: [
           IconButton(
-            tooltip: 'Preview and saved plan',
+            tooltip: l10n.planInspectorTooltip,
             onPressed: () => _openPlanInspector(
               repository: repository,
               primary: primary,
@@ -884,7 +907,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Build Plan',
+                  l10n.buildPlanTitle,
                   style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w900,
                   ),
@@ -894,7 +917,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                   spacing: 10,
                   children: [
                     ChoiceChip(
-                      label: const Text('Individual'),
+                      label: Text(l10n.individualPlanMode),
                       selected: !_planningForGroup,
                       onSelected: (_) {
                         setState(() {
@@ -918,7 +941,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                       },
                     ),
                     ChoiceChip(
-                      label: const Text('Group'),
+                      label: Text(l10n.groupPlanMode),
                       selected: _planningForGroup,
                       onSelected: (_) {
                         setState(() {
@@ -947,8 +970,8 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                 if (!_planningForGroup)
                   DropdownButtonFormField<String>(
                     initialValue: selectedCat?.id,
-                    decoration: const InputDecoration(
-                      labelText: 'Cat Profile',
+                    decoration: InputDecoration(
+                      labelText: l10n.catProfileLabel,
                       border: OutlineInputBorder(),
                     ),
                     items: cats.map((cat) {
@@ -974,14 +997,16 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                 else ...[
                   DropdownButtonFormField<String>(
                     initialValue: selectedGroup?.id,
-                    decoration: const InputDecoration(
-                      labelText: 'Group',
+                    decoration: InputDecoration(
+                      labelText: l10n.groupLabel,
                       border: OutlineInputBorder(),
                     ),
                     items: groups.map((group) {
                       return DropdownMenuItem(
                         value: group.id,
-                        child: Text('${group.name} (${group.catCount} cats)'),
+                        child: Text(
+                          l10n.groupWithCats(group.name, group.catCount),
+                        ),
                       );
                     }).toList(),
                     onChanged: groups.isEmpty
@@ -1000,8 +1025,8 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: const InputDecoration(
-                      labelText: 'Target kcal per cat / day',
+                    decoration: InputDecoration(
+                      labelText: l10n.targetKcalPerCatPerDayLabel,
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -1030,7 +1055,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                         Navigator.of(context).pushNamed(AppRoutes.catGroup);
                       },
                       icon: const Icon(Icons.groups_outlined),
-                      label: const Text('Create Group'),
+                      label: Text(l10n.createGroupAction),
                     ),
                   ),
                 ],
@@ -1042,7 +1067,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                     final meals = index + 3;
                     final selected = meals == _mealsPerDay;
                     return ChoiceChip(
-                      label: Text('$meals meals/day'),
+                      label: Text(l10n.mealsPerDayChip(meals)),
                       selected: selected,
                       onSelected: (_) => setState(() {
                         _mealsPerDay = meals;
@@ -1066,7 +1091,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  'Plan Start Date',
+                  l10n.planStartDateTitle,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -1075,11 +1100,11 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                 OutlinedButton.icon(
                   onPressed: () => _pickPlanStartDate(context),
                   icon: const Icon(Icons.event_rounded),
-                  label: Text('Starts on ${_formatDate(_planStartDate)}'),
+                  label: Text(l10n.startsOnLabel(_formatDate(_planStartDate))),
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  'Portion Unit',
+                  l10n.portionUnitTitle,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -1087,8 +1112,8 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                 const SizedBox(height: 8),
                 DropdownButtonFormField<String>(
                   initialValue: _portionUnit,
-                  decoration: const InputDecoration(
-                    labelText: 'Unit',
+                  decoration: InputDecoration(
+                    labelText: l10n.unitLabel,
                     border: OutlineInputBorder(),
                   ),
                   items: PortionUnitService.supportedUnits().map((unit) {
@@ -1111,8 +1136,8 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                   keyboardType: const TextInputType.numberWithOptions(
                     decimal: true,
                   ),
-                  decoration: const InputDecoration(
-                    labelText: 'Grams per unit',
+                  decoration: InputDecoration(
+                    labelText: l10n.gramsPerUnitLabel,
                     border: OutlineInputBorder(),
                   ),
                 ),
@@ -1120,10 +1145,8 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                 SwitchListTile(
                   value: _weekendAlternative,
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Weekend alternative'),
-                  subtitle: const Text(
-                    'Apply a different kcal/portion factor on Saturday and Sunday.',
-                  ),
+                  title: Text(l10n.weekendAlternativeTitle),
+                  subtitle: Text(l10n.weekendAlternativeDescription),
                   onChanged: _planningForGroup
                       ? null
                       : (value) => setState(() => _weekendAlternative = value),
@@ -1135,8 +1158,8 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
-                    decoration: const InputDecoration(
-                      labelText: 'Weekend kcal factor (%)',
+                    decoration: InputDecoration(
+                      labelText: l10n.weekendKcalFactorLabel,
                       border: OutlineInputBorder(),
                     ),
                   ),
@@ -1144,14 +1167,14 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                 if (!_planningForGroup) ...[
                   const SizedBox(height: 8),
                   Text(
-                    'By Weekday',
+                    l10n.byWeekdayTitle,
                     style: theme.textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w800,
                     ),
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Enable specific days and set a kcal/portion factor for each day.',
+                    l10n.byWeekdayDescription,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       color: secondary,
                     ),
@@ -1167,7 +1190,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                           Expanded(
                             child: SwitchListTile(
                               contentPadding: EdgeInsets.zero,
-                              title: Text(_weekdayLabel(weekday)),
+                              title: Text(_weekdayLabel(context, weekday)),
                               value: enabled,
                               onChanged: (value) {
                                 setState(() {
@@ -1187,8 +1210,8 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                                   const TextInputType.numberWithOptions(
                                     decimal: true,
                                   ),
-                              decoration: const InputDecoration(
-                                labelText: 'Factor %',
+                              decoration: InputDecoration(
+                                labelText: l10n.factorPercentLabel,
                                 border: OutlineInputBorder(),
                               ),
                             ),
@@ -1203,14 +1226,14 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                   controller: _operationalNotesController,
                   minLines: 2,
                   maxLines: 4,
-                  decoration: const InputDecoration(
-                    labelText: 'Operational notes',
+                  decoration: InputDecoration(
+                    labelText: l10n.operationalNotesLabel,
                     border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 14),
                 Text(
-                  'Meal Labels',
+                  l10n.mealLabelsTitle,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -1222,7 +1245,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                     child: TextFormField(
                       controller: _mealLabelControllers[index],
                       decoration: InputDecoration(
-                        labelText: 'Meal ${index + 1} name',
+                        labelText: l10n.mealNameLabel(index + 1),
                         border: const OutlineInputBorder(),
                       ),
                     ),
@@ -1230,14 +1253,14 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                 }),
                 const SizedBox(height: 6),
                 Text(
-                  'Meal Portions',
+                  l10n.mealPortionsTitle,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Set the percentage of the daily portion served in each meal. The app normalizes the total to 100%.',
+                  l10n.mealPortionsDescription,
                   style: theme.textTheme.bodyMedium?.copyWith(color: secondary),
                 ),
                 const SizedBox(height: 12),
@@ -1250,8 +1273,11 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                         decimal: true,
                       ),
                       decoration: InputDecoration(
-                        labelText:
-                            '${_mealLabelControllers[index].text.trim().isEmpty ? 'Meal ${index + 1}' : _mealLabelControllers[index].text.trim()} share (%)',
+                        labelText: l10n.mealShareLabel(
+                          _mealLabelControllers[index].text.trim().isEmpty
+                              ? l10n.mealFallbackTitle(index + 1)
+                              : _mealLabelControllers[index].text.trim(),
+                        ),
                         border: const OutlineInputBorder(),
                         suffixText: '%',
                       ),
@@ -1260,14 +1286,14 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                 }),
                 const SizedBox(height: 6),
                 Text(
-                  'Meal Schedule',
+                  l10n.mealScheduleTitle,
                   style: theme.textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Choose the time for each meal. Daily and Home will use this schedule.',
+                  l10n.mealScheduleDescription,
                   style: theme.textTheme.bodyMedium?.copyWith(color: secondary),
                 ),
                 const SizedBox(height: 12),
@@ -1278,7 +1304,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                       onPressed: () => _pickMealTime(context, index),
                       icon: const Icon(Icons.schedule_rounded),
                       label: Text(
-                        '${DailyMealScheduleService.mealLabel(index)} • ${_mealTimes[index]}',
+                        '${AppLocalizations.of(context).mealFallbackTitle(index + 1)} • ${AppFormatters.formatStoredMealTime(context, _mealTimes[index])}',
                       ),
                     ),
                   );
@@ -1290,7 +1316,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
             const SizedBox(height: 16),
             CatSuggestionsSection(
               cat: selectedCat,
-              title: 'Suggestions',
+              title: l10n.suggestionsTitle,
               maxItems: 3,
             ),
           ],
@@ -1299,9 +1325,8 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
             _EmptyPlanState(
               primary: primary,
               secondary: secondary,
-              title: 'No cat profiles available',
-              message:
-                  'Create a cat profile before building an individual meal plan.',
+              title: l10n.noCatProfilesAvailableTitle,
+              message: l10n.noCatProfilesAvailableMessage,
             ),
           ],
           if (showGroupEmpty) ...[
@@ -1309,13 +1334,13 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
             _EmptyPlanState(
               primary: primary,
               secondary: secondary,
-              title: 'No groups available',
-              message: 'Create a group before building a shared meal plan.',
+              title: l10n.noGroupsAvailableTitle,
+              message: l10n.noGroupsAvailableMessage,
             ),
           ],
           const SizedBox(height: 16),
           Text(
-            'Available Foods',
+            l10n.availableFoodsTitle,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w800,
             ),
@@ -1327,11 +1352,10 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
               final foods = repository.getAllFoods();
 
               if (foods.isEmpty) {
-                return const AppEmptyState(
+                return AppEmptyState(
                   icon: Icons.pets_rounded,
-                  title: 'No foods available',
-                  description:
-                      'Add foods in Food Database before creating a plan.',
+                  title: l10n.noFoodsAvailableTitle,
+                  description: l10n.noFoodsAvailableDescription,
                 );
               }
 
@@ -1340,10 +1364,8 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                   SwitchListTile(
                     value: _allowMultipleFoods,
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('Multiple foods'),
-                    subtitle: const Text(
-                      'Allow selecting multiple foods for the plan',
-                    ),
+                    title: Text(l10n.multipleFoodsTitle),
+                    subtitle: Text(l10n.multipleFoodsDescription),
                     onChanged: (v) => setState(() => _allowMultipleFoods = v),
                   ),
                   ...List<Widget>.generate(foods.length, (index) {
@@ -1429,7 +1451,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                                                   const SizedBox(height: 4),
                                                   Text(
                                                     food.brand ??
-                                                        'Unknown brand',
+                                                        l10n.unknownBrand,
                                                     style: theme
                                                         .textTheme
                                                         .bodyMedium
@@ -1483,7 +1505,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                                               ),
                                               const SizedBox(height: 4),
                                               Text(
-                                                food.brand ?? 'Unknown brand',
+                                                food.brand ?? l10n.unknownBrand,
                                                 style: theme
                                                     .textTheme
                                                     .bodyMedium
@@ -1529,8 +1551,12 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                 ? const SizedBox.shrink()
                 : const Icon(Icons.save_rounded),
             label: _isSaving
-                ? const AppLoadingState(compact: true, label: 'Saving...')
-                : Text(_planningForGroup ? 'Save Group Plan' : 'Save Plan'),
+                ? AppLoadingState(compact: true, label: l10n.savingLabel)
+                : Text(
+                    _planningForGroup
+                        ? l10n.saveGroupPlanAction
+                        : l10n.savePlanAction,
+                  ),
           ),
         ],
       ),

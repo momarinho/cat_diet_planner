@@ -1,0 +1,754 @@
+{
+  "@@locale": "pt_BR",
+  "appTitle": "CatDiet Planner",
+  "settingsTitle": "Configuracoes",
+  "languageSectionTitle": "Idioma",
+  "appLanguageTitle": "Idioma do app",
+  "localizedContentScopeTitle": "Escopo do conteudo localizado",
+  "localizedContentScopeDescription": "Notificacoes e textos de relatorio/compartilhamento agora seguem o idioma selecionado.",
+  "navDaily": "Dia",
+  "navHome": "Inicio",
+  "navPlans": "Planos",
+  "navHistory": "Historico",
+  "routeErrorTitle": "Erro de rota",
+  "dashboardTitle": "Painel",
+  "activeCatTitle": "Gato ativo",
+  "editAction": "Editar",
+  "catAgeYearsOld": "{years} anos",
+  "@catAgeYearsOld": {
+    "placeholders": {
+      "years": {
+        "type": "int"
+      }
+    }
+  },
+  "scanFoodAction": "Escanear alimento",
+  "logWeightAction": "Registrar peso",
+  "dailySummaryTitle": "Resumo diario",
+  "todayLabel": "Hoje",
+  "kcalLabel": "kcal",
+  "calorieIntakeLabel": "CONSUMO CALORICO",
+  "createPlanToUnlockDailySummary": "Crie um plano para liberar seu resumo diario",
+  "todayFullyCompleted": "Hoje foi totalmente concluido",
+  "remainingCaloriesForMeal": "{kcal} kcal restantes para {meal}",
+  "@remainingCaloriesForMeal": {
+    "placeholders": {
+      "kcal": {
+        "type": "int"
+      },
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "mealTimelineTitle": "Linha do tempo das refeicoes",
+  "viewPlanAction": "Ver plano",
+  "noTimelineYetTitle": "Sem linha do tempo ainda",
+  "noTimelineYetDescription": "Salve um plano alimentar para liberar a linha do tempo das refeicoes.",
+  "mealFallbackTitle": "Refeicao {number}",
+  "@mealFallbackTitle": {
+    "placeholders": {
+      "number": {
+        "type": "int"
+      }
+    }
+  },
+  "mealMarkedPending": "{meal} marcada como pendente.",
+  "@mealMarkedPending": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "mealMarkedCompleted": "{meal} marcada como concluida.",
+  "@mealMarkedCompleted": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "planInspectorTitle": "Inspetor de plano",
+  "groupPlanInspectorTitle": "Inspetor de plano do grupo",
+  "previewTab": "Preview",
+  "savedTab": "Salvo",
+  "noPreviewYetTitle": "Ainda sem preview",
+  "noPreviewYetDescription": "Ajuste alimentos ou parametros do plano para gerar um preview.",
+  "noCatSelectedTitle": "Nenhum gato selecionado",
+  "noCatSelectedDescription": "Selecione um gato para inspecionar seus planos salvos.",
+  "noSavedPlansYetTitle": "Ainda sem planos salvos",
+  "noSavedPlansYetDescription": "Salve um plano para inspeciona-lo aqui.",
+  "noGroupSelectedTitle": "Nenhum grupo selecionado",
+  "noGroupSelectedDescription": "Selecione um grupo para inspecionar seu plano salvo.",
+  "noSavedGroupPlanTitle": "Sem plano de grupo salvo",
+  "noSavedGroupPlanDescription": "Salve um plano de grupo para inspeciona-lo aqui.",
+  "savedIndividualPlanTitle": "Plano individual salvo",
+  "savedGroupPlanTitle": "Plano de grupo salvo",
+  "planPreviewTitle": "Preview do plano",
+  "groupPlanPreviewTitle": "Preview do plano do grupo",
+  "savedCoreTargetsTitle": "Metas centrais",
+  "savedCoreTargetsSubtitle": "Valores salvos que estao sendo usados por este plano.",
+  "savedMealTimelineTitle": "Linha do tempo das refeicoes",
+  "savedMealTimelineSubtitle": "Agenda salva e divisao de porcao por refeicao.",
+  "savedPlanDetailsTitle": "Detalhes do plano",
+  "savedPlanDetailsSubtitle": "Contexto operacional, notas e configuracao salva.",
+  "previewCoreTargetsTitle": "Metas centrais",
+  "previewCoreTargetsSubtitle": "Numeros que serao usados quando este rascunho for salvo.",
+  "previewMealTimelineTitle": "Linha do tempo das refeicoes",
+  "previewMealTimelineSubtitle": "Cada refeicao com horario e porcao exata.",
+  "previewPlanDetailsTitle": "Detalhes do plano",
+  "previewPlanDetailsSubtitle": "Contexto que afeta a execucao, mas e facil perder.",
+  "customPlanLabel": "Plano personalizado",
+  "startsTag": "Comeca {date}",
+  "@startsTag": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "mealsPerDayTag": "{count} refeicoes/dia",
+  "@mealsPerDayTag": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "catsCountTag": "{count} gatos",
+  "@catsCountTag": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activePlanTag": "Plano ativo",
+  "metricDailyGoal": "Meta diaria",
+  "metricFoodPerDay": "Alimento por dia",
+  "metricAveragePerMeal": "Media por refeicao",
+  "metricServingUnit": "Unidade de porcao",
+  "metricPerCat": "Por gato",
+  "metricGroupTotal": "Total do grupo",
+  "metricGroupPerDay": "Grupo por dia",
+  "metricGroupPerMeal": "Grupo por refeicao",
+  "metricSavedAt": "Salvo em",
+  "metricOverrides": "Overrides",
+  "metricFoods": "Alimentos",
+  "metricNotes": "Notas",
+  "metricStarts": "Comeca",
+  "metricDistribution": "Distribuicao",
+  "helperEnergyTarget": "Meta energetica",
+  "helperTotalPortion": "Porcao total",
+  "helperBaselineSplit": "Divisao base",
+  "helperDisplayUnit": "Unidade exibida",
+  "helperEnergyTargetPerCat": "Meta energetica por gato",
+  "helperCombinedEnergyTarget": "Meta energetica combinada",
+  "helperAverageFeedingSlot": "Media por horario",
+  "noActiveOverrides": "Sem overrides ativos",
+  "activeOverridesCount": "{count} overrides ativos",
+  "@activeOverridesCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noNotesYet": "Sem notas ainda",
+  "equalSplitLabel": "Divisao igual",
+  "unequalSplitLabel": "Divisao desigual ({count} gatos)",
+  "@unequalSplitLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "activePlanLabelText": "Plano ativo",
+  "usePlanAction": "Usar {date}",
+  "@usePlanAction": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteActivePlanAction": "Excluir plano ativo",
+  "scheduledFeedingSlotCaption": "Horario programado de alimentacao",
+  "plusMoreFoods": "+ {count} a mais",
+  "@plusMoreFoods": {
+    "description": "Sufixo para o titulo do plano em grupo quando ha alimentos adicionais alem do primeiro.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "plansTitle": "Planos",
+  "planInspectorTooltip": "Preview e plano salvo",
+  "buildPlanTitle": "Montar plano",
+  "individualPlanMode": "Individual",
+  "groupPlanMode": "Grupo",
+  "catProfileLabel": "Perfil do gato",
+  "groupLabel": "Grupo",
+  "groupWithCats": "{group} ({count} gatos)",
+  "@groupWithCats": {
+    "placeholders": {
+      "group": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "targetKcalPerCatPerDayLabel": "Meta de kcal por gato / dia",
+  "createGroupAction": "Criar grupo",
+  "mealsPerDayChip": "{count} refeicoes/dia",
+  "@mealsPerDayChip": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "planStartDateTitle": "Data de inicio do plano",
+  "startsOnLabel": "Comeca em {date}",
+  "@startsOnLabel": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "portionUnitTitle": "Unidade da porcao",
+  "unitLabel": "Unidade",
+  "gramsPerUnitLabel": "Gramas por unidade",
+  "weekendAlternativeTitle": "Alternativa para fim de semana",
+  "weekendAlternativeDescription": "Aplicar um fator diferente de kcal/porcao no sabado e domingo.",
+  "weekendKcalFactorLabel": "Fator de kcal no fim de semana (%)",
+  "byWeekdayTitle": "Por dia da semana",
+  "byWeekdayDescription": "Ative dias especificos e defina um fator de kcal/porcao para cada dia.",
+  "factorPercentLabel": "Fator %",
+  "operationalNotesLabel": "Notas operacionais",
+  "mealLabelsTitle": "Nomes das refeicoes",
+  "mealNameLabel": "Nome da refeicao {count}",
+  "@mealNameLabel": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealPortionsTitle": "Porcoes por refeicao",
+  "mealPortionsDescription": "Defina a porcentagem da porcao diaria servida em cada refeicao. O app normaliza o total para 100%.",
+  "mealShareLabel": "Participacao de {meal} (%)",
+  "@mealShareLabel": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      }
+    }
+  },
+  "mealScheduleTitle": "Horario das refeicoes",
+  "mealScheduleDescription": "Escolha o horario de cada refeicao. Daily e Home usarao esta agenda.",
+  "suggestionsTitle": "Sugestoes",
+  "noCatProfilesAvailableTitle": "Nenhum perfil de gato disponivel",
+  "noCatProfilesAvailableMessage": "Crie um perfil de gato antes de montar um plano individual.",
+  "noGroupsAvailableTitle": "Nenhum grupo disponivel",
+  "noGroupsAvailableMessage": "Crie um grupo antes de montar um plano compartilhado.",
+  "availableFoodsTitle": "Alimentos disponiveis",
+  "noFoodsAvailableTitle": "Nenhum alimento disponivel",
+  "noFoodsAvailableDescription": "Adicione alimentos em Food Database antes de criar um plano.",
+  "multipleFoodsTitle": "Multiplos alimentos",
+  "multipleFoodsDescription": "Permitir selecionar varios alimentos para o plano",
+  "unknownBrand": "Marca desconhecida",
+  "savePlanAction": "Salvar plano",
+  "saveGroupPlanAction": "Salvar plano do grupo",
+  "savingLabel": "Salvando...",
+  "planDeletedMessage": "Plano excluido.",
+  "planSavedForCatMessage": "Plano salvo para {name}",
+  "@planSavedForCatMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "planSavedForGroupMessage": "Plano salvo para {name}",
+  "@planSavedForGroupMessage": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "enterValidKcalPerCatMessage": "Digite uma meta de kcal valida por gato.",
+  "mondayLabel": "Segunda-feira",
+  "tuesdayLabel": "Terca-feira",
+  "wednesdayLabel": "Quarta-feira",
+  "thursdayLabel": "Quinta-feira",
+  "fridayLabel": "Sexta-feira",
+  "saturdayLabel": "Sabado",
+  "sundayLabel": "Domingo",
+  "dayFallbackLabel": "Dia {weekday}",
+  "@dayFallbackLabel": {
+    "placeholders": {
+      "weekday": {
+        "type": "int"
+      }
+    }
+  },
+  "noActiveSuggestionsDescription": "Nenhuma sugestao ativa agora. Continue registrando refeicoes e peso para melhorar as orientacoes.",
+  "confirmPlanChangeTitle": "Confirmar mudanca no plano",
+  "applySuggestionAfterReview": "Aplique esta sugestao a {catName} somente apos revisao.",
+  "@applySuggestionAfterReview": {
+    "placeholders": {
+      "catName": {
+        "type": "String"
+      }
+    }
+  },
+  "responsiblePersonLabel": "Pessoa responsavel",
+  "typeWhoApprovedHint": "Digite quem aprovou esta mudanca",
+  "approvalIdentityRequired": "A identificacao do aprovador e obrigatoria.",
+  "cancelAction": "Cancelar",
+  "confirmAction": "Confirmar",
+  "planUpdatedAfterConfirmation": "Plano atualizado apos confirmacao.",
+  "suggestionRecordedWithoutPlanChanges": "Sugestao registrada sem mudancas no plano.",
+  "suggestionConfidenceLabel": "Confianca {value}",
+  "@suggestionConfidenceLabel": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "suggestionAcceptedStatus": "Aceita",
+  "suggestionDeferredStatus": "Adiada",
+  "suggestionIgnoredStatus": "Ignorada",
+  "whyThisSuggestionTitle": "Por que esta sugestao:",
+  "acceptAction": "Aceitar",
+  "deferAction": "Adiar",
+  "ignoreAction": "Ignorar",
+  "restoreAction": "Restaurar",
+  "autoApplyDisabledMessage": "A aplicacao automatica esta desativada. Mudancas no plano sempre exigem confirmacao.",
+  "suggestionTypeKcal": "Kcal",
+  "suggestionTypeSchedule": "Horario",
+  "suggestionTypePortions": "Porcoes",
+  "suggestionTypePreventiveAlert": "Alerta preventivo",
+  "suggestionTypeClinicalWatch": "Alerta clinico",
+  "reasonWeightTrendUp": "A tendencia recente de peso esta aumentando",
+  "reasonWeightTrendDown": "A tendencia recente de peso esta diminuindo",
+  "reasonOutOfGoalMax": "O peso esta acima da faixa configurada",
+  "reasonOutOfGoalMin": "O peso esta abaixo da faixa configurada",
+  "reasonApproachingGoalMax": "A tendencia esta se aproximando do limite superior da meta",
+  "reasonApproachingGoalMin": "A tendencia esta se aproximando do limite inferior da meta",
+  "reasonAdherenceLow": "A adesao das refeicoes esta abaixo da meta",
+  "reasonRefusalFrequent": "Eventos de recusa sao frequentes",
+  "reasonDelayedFrequent": "Refeicoes atrasadas sao frequentes",
+  "reasonAppetiteReduced": "Reducao de apetite foi registrada recentemente",
+  "reasonAppetitePoor": "Baixo apetite foi registrado recentemente",
+  "reasonVomitFrequent": "Eventos frequentes de vomito foram registrados",
+  "reasonStoolDiarrhea": "Eventos de diarreia foram registrados",
+  "reasonClinicalConditionPresent": "Condicoes clinicas estao configuradas no perfil",
+  "reasonWeightAlertTriggered": "Alertas de peso foram disparados recentemente",
+  "reasonLowEvidence": "Dados limitados disponiveis (baixa evidencia)",
+  "dietWeightRangeError": "O peso deve estar entre {min} e {max} kg.",
+  "@dietWeightRangeError": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "dietAgeRangeError": "A idade deve estar entre {min} e {max} meses.",
+  "@dietAgeRangeError": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "dietFoodCaloriesPositiveError": "As calorias do alimento devem ser maiores que zero.",
+  "dietMealsRangeError": "As refeicoes por dia devem estar entre {min} e {max}.",
+  "@dietMealsRangeError": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "dietWeightPositiveError": "O peso deve ser maior que zero.",
+  "dietMealsPositiveError": "As refeicoes por dia devem ser maiores que zero.",
+  "portionUnknownUnitError": "Unidade de porcao desconhecida \"{unit}\".",
+  "@portionUnknownUnitError": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "portionZeroEquivalentError": "A unidade \"{unit}\" tem equivalente em gramas igual a zero.",
+  "@portionZeroEquivalentError": {
+    "placeholders": {
+      "unit": {
+        "type": "String"
+      }
+    }
+  },
+  "noActivePlanAvailableForCat": "Nenhum plano ativo disponivel para este gato.",
+  "noSuggestedPlanChangesAvailableToRevert": "Nenhuma mudanca sugerida disponivel para reverter.",
+  "lastSuggestedChangeReverted": "A ultima mudanca sugerida foi revertida.",
+  "suggestionDataIncomplete": "Os dados da sugestao estao incompletos.",
+  "suggestedKcalChangeExceedsSafeBand": "A mudanca sugerida de kcal excede a faixa segura de ajuste.",
+  "suggestedKcalTargetOutsideSafeRange": "A meta sugerida de kcal esta fora da faixa segura permitida.",
+  "unableToRecalculatePortionSafely": "Nao foi possivel recalcular a porcao com seguranca.",
+  "scheduleChangeExceedsSafeShiftLimit": "A mudanca de horario excede o limite seguro de deslocamento.",
+  "portionRedistributionInvalidForActivePlan": "A redistribuicao de porcao e invalida para o plano ativo.",
+  "portionShiftExceedsSafeRedistributionLimit": "O deslocamento de porcao excede o limite seguro de redistribuicao.",
+  "portionRedistributionFailedSafetyValidation": "A redistribuicao de porcao falhou na validacao de seguranca.",
+  "summaryTargetKcalPerDayChange": "Meta kcal/dia: {fromValue} -> {toValue} ({delta})",
+  "@summaryTargetKcalPerDayChange": {
+    "placeholders": {
+      "fromValue": {
+        "type": "String"
+      },
+      "toValue": {
+        "type": "String"
+      },
+      "delta": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryDailyPortionChange": "Porcao diaria: {fromValue} -> {toValue}",
+  "@summaryDailyPortionChange": {
+    "placeholders": {
+      "fromValue": {
+        "type": "String"
+      },
+      "toValue": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryMealTimeChange": "{meal}: {fromValue} -> {toValue}",
+  "@summaryMealTimeChange": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      },
+      "fromValue": {
+        "type": "String"
+      },
+      "toValue": {
+        "type": "String"
+      }
+    }
+  },
+  "summaryMealPortionChange": "{meal}: {fromValue} -> {toValue}",
+  "@summaryMealPortionChange": {
+    "placeholders": {
+      "meal": {
+        "type": "String"
+      },
+      "fromValue": {
+        "type": "String"
+      },
+      "toValue": {
+        "type": "String"
+      }
+    }
+  },
+  "revertLastSuggestedChangeTitle": "Reverter ultima mudanca sugerida",
+  "revertLastSuggestedChangeDescription": "Isso restaura o snapshot do plano anterior a ultima mudanca sugerida.",
+  "typeWhoIsRevertingHint": "Informe quem esta revertendo esta mudanca",
+  "responsiblePersonRequired": "A identificacao da pessoa responsavel e obrigatoria.",
+  "revertAction": "Reverter",
+  "impactRevertedBy": "Revertido por {name}",
+  "@impactRevertedBy": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "impactActiveChange": "Mudanca ativa",
+  "impactBeforeAfterKcal": "Kcal antes/depois: {beforeValue} -> {afterValue}",
+  "@impactBeforeAfterKcal": {
+    "placeholders": {
+      "beforeValue": {
+        "type": "String"
+      },
+      "afterValue": {
+        "type": "String"
+      }
+    }
+  },
+  "unknownPersonLabel": "desconhecido",
+  "shareMessageTitle": "Mensagem de compartilhamento",
+  "shareMessageHint": "Mensagem usada ao compartilhar arquivos de relatorio",
+  "saveAction": "Salvar",
+  "mealReminderTimesTitle": "Horarios de lembrete de refeicao",
+  "addTimeAction": "Adicionar horario",
+  "saveScheduleAction": "Salvar agenda",
+  "generateDemoDataTitle": "Gerar dados demo",
+  "generateDemoDataDescription": "Isso vai substituir os dados locais atuais por um cenario pronto para teste com um grupo, um gato individual, alimentos, planos, refeicoes e historico de peso.",
+  "generateAction": "Gerar",
+  "demoDataReadyMessage": "Dados demo prontos: {groups} grupo, {cats} gato, {foods} alimentos, {schedules} agendas.",
+  "@demoDataReadyMessage": {
+    "placeholders": {
+      "groups": {"type": "int"},
+      "cats": {"type": "int"},
+      "foods": {"type": "int"},
+      "schedules": {"type": "int"}
+    }
+  },
+  "clearDemoDataTitle": "Limpar dados demo",
+  "clearDemoDataDescription": "Isso vai remover os dados demo locais do app, incluindo gatos, grupos, alimentos, planos, refeicoes e historico.",
+  "clearAction": "Limpar",
+  "localDemoDataClearedMessage": "Dados demo locais removidos.",
+  "generateStressDataTitle": "Gerar dados de teste de estresse",
+  "generateStressDataDescription": "Isso vai carregar um cenario operacional pesado (ate 10 gatos e 5 grupos) para validar navegacao, listas e rotinas diarias em uso de alto volume.",
+  "stressScenarioReadyMessage": "Cenario de estresse pronto: {groups} grupos, {cats} gatos, {foods} alimentos, {schedules} agendas.",
+  "@stressScenarioReadyMessage": {
+    "placeholders": {
+      "groups": {"type": "int"},
+      "cats": {"type": "int"},
+      "foods": {"type": "int"},
+      "schedules": {"type": "int"}
+    }
+  },
+  "customRangeDaysTitle": "Dias do intervalo personalizado",
+  "customRangeDaysValue": "{days} dias",
+  "@customRangeDaysValue": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "customRangeTitle": "Intervalo personalizado",
+  "daysLabel": "Dias",
+  "noAcceptedPlanChangesYetTitle": "Nenhuma mudanca de plano aceita ainda",
+  "noAcceptedPlanChangesYetDescription": "Mudancas aprovadas por sugestao vao registrar quem aceitou, quando e o que mudou.",
+  "noSuggestionImpactHistoryYetTitle": "Nenhum historico de impacto de sugestoes ainda",
+  "noSuggestionImpactHistoryYetDescription": "Sugestoes geradas, mudancas aceitas e snapshots de antes/depois serao armazenados aqui.",
+  "revertLatestSuggestedAdjustmentDescription": "Restaura o snapshot mais recente do plano salvo antes da aplicacao de um ajuste sugerido.",
+  "continueAction": "Continuar",
+  "tryAgainAction": "Tentar novamente",
+  "deleteAction": "Excluir",
+  "kgUnit": "kg",
+  "catsUnit": "gatos",
+  "noneOption": "Nenhum",
+  "normalOption": "Normal",
+  "highOption": "Alta",
+  "lowOption": "Baixa",
+  "poorOption": "Ruim",
+  "reducedOption": "Reduzido",
+  "softOption": "Mole",
+  "hardOption": "Duro",
+  "diarrheaOption": "Diarreia",
+  "occasionalOption": "Ocasional",
+  "frequentOption": "Frequente",
+  "otherOption": "Outro",
+  "sedentaryOption": "Sedentario",
+  "moderateOption": "Moderado",
+  "activeOption": "Ativo",
+  "maleOption": "Macho",
+  "femaleOption": "Femea",
+  "unknownOption": "Desconhecido",
+  "maintenanceGoalOption": "Manutencao",
+  "weightLossGoalOption": "Perda de peso",
+  "weightGainGoalOption": "Ganho de peso",
+  "kittenGrowthGoalOption": "Crescimento do filhote",
+  "seniorSupportGoalOption": "Suporte senior",
+  "recoveryGoalOption": "Recuperacao",
+  "postSurgeryGoalOption": "Pos-cirurgia",
+  "completedOption": "Concluido",
+  "partialOption": "Parcial",
+  "delayedOption": "Atrasado",
+  "refusedOption": "Recusado",
+  "reducedAppetiteOption": "Apetite reduzido",
+  "skippedOption": "Pulado",
+  "loggedStatus": "Registrado",
+  "weightCheckInTitle": "Check-in de peso",
+  "noActiveCatTitle": "Nenhum gato ativo",
+  "noActiveCatDescription": "Selecione um gato em Home antes de registrar o peso.",
+  "weightRecordedWithAlertMessage": "Peso registrado com alerta. Revise metas e notas clinicas.",
+  "weightRecordedMessage": "Peso registrado.",
+  "weightNoteSuggestionHighAppetite": "Muito apetite",
+  "weightNoteSuggestionEnergetic": "Energetico",
+  "weightNoteSuggestionLazyDay": "Dia preguiçoso",
+  "weightContextFastingOption": "Jejum",
+  "weightContextAfterMealOption": "Apos refeicao",
+  "weightContextDifferentScaleOption": "Balanca diferente",
+  "noPreviousCheckInLabel": "Nenhum check-in anterior",
+  "lastCheckInLabel": "Ultimo check-in: {date}",
+  "@lastCheckInLabel": {"placeholders": {"date": {"type": "String"}}},
+  "recordingNowLabel": "Registrando agora: {date} as {time}",
+  "@recordingNowLabel": {"placeholders": {"date": {"type": "String"}, "time": {"type": "String"}}},
+  "lastWeightLabel": "ULTIMO\nPESO",
+  "checkInDateTimeTitle": "Data e hora do check-in",
+  "currentWeightLabel": "PESO ATUAL",
+  "checkInContextTitle": "Contexto do check-in",
+  "checkInContextDescription": "Use este contexto para melhorar a interpretacao da tendencia nos relatorios.",
+  "weightContextLabel": "Contexto do peso",
+  "appetiteLabel": "Apetite",
+  "stoolLabel": "Fezes",
+  "vomitLabel": "Vomito",
+  "energyLabel": "Energia",
+  "checkInNotesTitle": "Notas do check-in",
+  "checkInNotesDescription": "Registre comportamento e acompanhamento clinico desta entrada de peso.",
+  "weightNotesHint": "Como esta o apetite hoje? Houve mudanca de humor ou energia?",
+  "clinicalAssessmentStructuredLabel": "Avaliacao clinica (estruturada)",
+  "clinicalPlanFollowUpLabel": "Plano clinico / acompanhamento",
+  "recordWeightAction": "Registrar peso",
+  "recordWeightActionUppercase": "REGISTRAR PESO",
+  "catProfileTitle": "Perfil do gato",
+  "deleteProfileTitle": "Excluir perfil",
+  "removeProfileMessage": "Remover {name} do app?",
+  "@removeProfileMessage": {"placeholders": {"name": {"type": "String"}}},
+  "editProfileTitle": "Editar perfil",
+  "createNewCatProfileTitle": "Criar um novo perfil de gato",
+  "catProfileIntroDescription": "Dados pessoais, contexto clinico e metas alimentares em um so lugar.",
+  "uploadPhotoAction": "Enviar foto",
+  "coreProfileSectionTitle": "Perfil base",
+  "coreProfileSectionDescription": "Identidade e dados metabolicos usados em todo o app.",
+  "nameLabel": "Nome",
+  "enterCatNameError": "Informe o nome do gato",
+  "weightKgLabel": "Peso (kg)",
+  "invalidWeightError": "Peso invalido",
+  "ageYearsLabel": "Idade (anos)",
+  "invalidAgeError": "Idade invalida",
+  "neuteredSpayedTitle": "Castrado / esterilizado",
+  "neuteredSpayedDescription": "Afeta a necessidade calorica",
+  "activityLevelLabel": "Nivel de atividade",
+  "goalLabel": "Objetivo",
+  "preferredMealsPerDayLabel": "Refeicoes preferidas por dia",
+  "manualTargetKcalPerDayOptionalLabel": "Meta manual de kcal/dia (opcional)",
+  "manualTargetKcalHelperText": "Deixe vazio para manter o calculo automatico",
+  "invalidKcalTargetError": "Meta de kcal invalida",
+  "clinicalContextSectionTitle": "Contexto clinico",
+  "clinicalContextSectionDescription": "Campos opcionais que refinam recomendacoes e acompanhamento clinico.",
+  "idealWeightOptionalLabel": "Peso ideal (kg) (opcional)",
+  "idealWeightHelperText": "Opcional: usado para refinar sugestoes de kcal",
+  "invalidIdealWeightError": "Peso ideal invalido",
+  "bodyConditionScoreLabel": "Escore de condicao corporal (1-9)",
+  "sexLabel": "Sexo",
+  "breedOptionalLabel": "Raca (opcional)",
+  "dateOfBirthOptionalLabel": "Data de nascimento (opcional)",
+  "customActivityLevelOptionalLabel": "Nivel de atividade customizado (opcional)",
+  "customActivityLevelHelperText": "Substitui os rotulos predefinidos quando informado",
+  "clinicalConditionsLabel": "Condicoes clinicas (separadas por virgula)",
+  "clinicalConditionsHelperText": "Exemplos: diabetes, drc, artrite",
+  "allergiesRestrictionsLabel": "Alergias / restricoes (separadas por virgula)",
+  "allergiesRestrictionsHelperText": "Exemplos: frango, carne bovina, leite",
+  "dietaryPreferencesLabel": "Preferencias alimentares (separadas por virgula)",
+  "dietaryPreferencesHelperText": "Exemplos: grain_free, low_fat",
+  "veterinaryNotesOptionalLabel": "Notas veterinarias (opcional)",
+  "targetsAlertsSectionTitle": "Metas e alertas",
+  "targetsAlertsSectionDescription": "Defina faixa segura de peso e alertas para cada check-in.",
+  "weightGoalsAlertsTitle": "Metas e alertas de peso",
+  "goalMinWeightKgLabel": "Peso minimo da meta (kg)",
+  "goalMaxWeightKgLabel": "Peso maximo da meta (kg)",
+  "alertDeltaKgPerCheckInLabel": "Delta de alerta (kg) por check-in",
+  "alertDeltaPercentPerCheckInLabel": "Delta de alerta (%) por check-in",
+  "clinicalNotesPreferencesLabel": "Notas clinicas / preferencias",
+  "clinicalNotesPreferencesHelperText": "Exemplos: estomago sensivel, seletivo, pos-cirurgia, suporte senior",
+  "catLimitHint": "Limite: {max} gatos individuais. Grupos sao criados separadamente como unidades operacionais leves.",
+  "@catLimitHint": {"placeholders": {"max": {"type": "int"}}},
+  "saveChangesAction": "Salvar alteracoes",
+  "saveProfileAction": "Salvar perfil",
+  "deleteProfileAction": "Excluir perfil",
+  "profileFeedsAppDescription": "Os perfis salvos aqui alimentam Home, Plans, Check-in de peso e Dashboard.",
+  "nothingSelectedYetTitle": "Nada selecionado ainda",
+  "dailySelectionRequiredDescription": "Selecione um gato individual ou grupo em Home e salve um plano para desbloquear o Daily.",
+  "noGroupPlanYetTitle": "Ainda nao ha plano de grupo",
+  "saveGroupPlanBeforeDailyDescription": "Salve um plano alimentar para {name} em Plans antes de usar o Daily.",
+  "@saveGroupPlanBeforeDailyDescription": {"placeholders": {"name": {"type": "String"}}},
+  "groupPlanNotActiveYetTitle": "Plano de grupo ainda nao esta ativo",
+  "groupPlanStartsOnDescription": "Este plano de {name} comeca em {date}.",
+  "@groupPlanStartsOnDescription": {"placeholders": {"name": {"type": "String"}, "date": {"type": "String"}}},
+  "groupSizeMetricTitle": "TAMANHO DO GRUPO",
+  "dailyGoalMetricTitleUppercase": "META DIARIA",
+  "yesterdayRoutineDuplicatedMessage": "A rotina de ontem foi duplicada para hoje.",
+  "duplicateYesterdayRoutineAction": "Duplicar rotina de ontem",
+  "todaysGroupScheduleTitle": "Agenda do grupo de hoje",
+  "noMealPlanYetTitle": "Ainda nao ha plano alimentar",
+  "savePlanBeforeDailyDescription": "Salve um plano alimentar para {name} em Plans antes de usar o Daily.",
+  "@savePlanBeforeDailyDescription": {"placeholders": {"name": {"type": "String"}}},
+  "planNotActiveYetTitle": "Plano ainda nao esta ativo",
+  "planStartsOnDescription": "O plano de {name} comeca em {date}.",
+  "@planStartsOnDescription": {"placeholders": {"name": {"type": "String"}, "date": {"type": "String"}}},
+  "currentWeightMetricTitle": "PESO ATUAL",
+  "genericMealTitle": "Refeicao",
+  "mealTimeTitle": "Horario da refeicao",
+  "unsetLabel": "Nao definido",
+  "quantityLabel": "Quantidade",
+  "observationsLabel": "Observacoes",
+  "dailyObservationsHint": "Motivo do atraso, recusa, apetite, notas praticas etc.",
+  "saveLogAction": "Salvar registro",
+  "dailyGreetingTitle": "Bom dia!",
+  "dailyGroupReadyDescription": "O grupo {name} esta pronto para a rotina de hoje",
+  "@dailyGroupReadyDescription": {"placeholders": {"name": {"type": "String"}}},
+  "dailyCatReadyDescription": "{name} esta pronto para as refeicoes de hoje",
+  "@dailyCatReadyDescription": {"placeholders": {"name": {"type": "String"}}},
+  "todaysScheduleTitle": "Agenda de hoje",
+  "loggedQuantityLabel": "Registrado: {quantity} {unit}",
+  "@loggedQuantityLabel": {"placeholders": {"quantity": {"type": "String"}, "unit": {"type": "String"}}},
+  "noteWithValueLabel": "Nota: {note}",
+  "@noteWithValueLabel": {"placeholders": {"note": {"type": "String"}}},
+  "updateLogAction": "ATUALIZAR REGISTRO",
+  "logMealAction": "REGISTRAR REFEICAO",
+  "logEventAction": "REGISTRAR EVENTO",
+  "recordTodaysWeightProgressDescription": "Registre o progresso do peso de hoje",
+  "anytimeLabel": "A qualquer hora",
+  "noMealsScheduledTitle": "Nenhuma refeicao programada",
+  "noMealsScheduledDescription": "Salve um plano em Plans para gerar a agenda de hoje.",
+  "dailyWaterEntryTitle": "Agua",
+  "dailySnacksEntryTitle": "Petiscos",
+  "dailySupplementsEntryTitle": "Suplementos",
+  "dailyWaterGroupSubtitle": "Registrar ingestao de agua do grupo",
+  "dailyWaterCatSubtitle": "Registrar ingestao de agua do gato",
+  "dailySnacksGroupSubtitle": "Registrar petiscos oferecidos ao grupo",
+  "dailySnacksCatSubtitle": "Registrar petiscos oferecidos hoje",
+  "dailySupplementsGroupSubtitle": "Registrar suplementos do grupo",
+  "dailySupplementsCatSubtitle": "Registrar suplementos do gato",
+  "productConfirmedFromDatabaseMessage": "{name} confirmado do banco de dados",
+  "@productConfirmedFromDatabaseMessage": {"placeholders": {"name": {"type": "String"}}},
+  "foodGenericLabel": "Alimento",
+  "scannerTitle": "Scanner",
+  "cameraUnavailableTitle": "Camera indisponivel",
+  "cameraUnavailableDescription": "Nao foi possivel iniciar a camera. Na web, use localhost ou https, permita o acesso a camera e mantenha apenas uma aba usando a webcam.",
+  "webCameraNotRunningHint": "A camera web ainda nao esta ativa. Teste uma aba por vez, permita o acesso a camera e tente o botao de trocar camera.",
+  "alignBarcodeWithinFrameTitle": "Alinhe o codigo de barras dentro da moldura",
+  "typeBarcodeToSimulateScanHint": "Digite um codigo de barras para simular a leitura",
+  "noBarcodeScannedYetTitle": "Nenhum codigo de barras lido ainda",
+  "noProductFoundForBarcodeTitle": "Nenhum produto encontrado para {barcode}",
+  "@noProductFoundForBarcodeTitle": {"placeholders": {"barcode": {"type": "String"}}},
+  "unknownBrandLabel": "Marca desconhecida",
+  "kcalPer100gLabel": "kcal/100g",
+  "useLiveCameraOrBarcodeDescription": "Use a camera ao vivo ou o campo de codigo de barras acima.",
+  "createFoodEntryFromBarcodeDescription": "Voce pode criar um novo alimento com este codigo de barras.",
+  "editManuallyAction": "Editar manualmente",
+  "manualEntryAction": "Entrada manual",
+  "useProductAction": "Usar produto",
+  "confirmProductAction": "Confirmar produto",
+  "veterinaryGradeNutritionTagline": "NUTRICAO DE NIVEL VETERINARIO",
+  "catLimitReached": "Limite de gatos atingido. Voce pode criar ate {max} gatos.",
+  "@catLimitReached": {"placeholders": {"max": {"type": "int"}}},
+  "invalidImageFile": "Arquivo de imagem invalido.",
+  "languageEnglish": "Ingles",
+  "languagePortugueseBrazil": "Portugues (Brasil)",
+  "languageTagalog": "Tagalog"
+}

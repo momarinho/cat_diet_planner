@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 
 class DailySummaryRing extends StatelessWidget {
   final int consumedCalories;
@@ -18,6 +19,7 @@ class DailySummaryRing extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
+    final l10n = AppLocalizations.of(context);
     final double progress = goalCalories == 0
         ? 0
         : (consumedCalories / goalCalories).clamp(0.0, 1.0);
@@ -61,7 +63,7 @@ class DailySummaryRing extends StatelessWidget {
                 ),
               ),
               Text(
-                '$goalCalories kcal',
+                '${goalCalories.toString()} ${l10n.kcalLabel}',
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
                 ),

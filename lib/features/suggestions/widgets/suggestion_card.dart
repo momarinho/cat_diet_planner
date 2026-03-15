@@ -1,6 +1,6 @@
 import 'package:cat_diet_planner/features/suggestions/models/smart_suggestion.dart';
 import 'package:cat_diet_planner/features/suggestions/providers/suggestion_decision_provider.dart';
-import 'package:cat_diet_planner/features/suggestions/utils/suggestion_reason_label.dart';
+import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 class SuggestionCard extends StatelessWidget {
@@ -23,8 +23,43 @@ class SuggestionCard extends StatelessWidget {
   final VoidCallback onIgnore;
   final VoidCallback onRestore;
 
+  String _suggestionTypeLabel(AppLocalizations l10n) {
+    return switch (suggestion.type) {
+      SuggestionType.kcalAdjustment => l10n.suggestionTypeKcal,
+      SuggestionType.scheduleAdjustment => l10n.suggestionTypeSchedule,
+      SuggestionType.portionSplitAdjustment => l10n.suggestionTypePortions,
+      SuggestionType.preventiveTrendAlert => l10n.suggestionTypePreventiveAlert,
+      SuggestionType.clinicalWatch => l10n.suggestionTypeClinicalWatch,
+    };
+  }
+
+  String _reasonLabel(AppLocalizations l10n, String code) {
+    return switch (code) {
+      SuggestionReasonCodes.weightTrendUp => l10n.reasonWeightTrendUp,
+      SuggestionReasonCodes.weightTrendDown => l10n.reasonWeightTrendDown,
+      SuggestionReasonCodes.outOfGoalMax => l10n.reasonOutOfGoalMax,
+      SuggestionReasonCodes.outOfGoalMin => l10n.reasonOutOfGoalMin,
+      SuggestionReasonCodes.approachingGoalMax => l10n.reasonApproachingGoalMax,
+      SuggestionReasonCodes.approachingGoalMin => l10n.reasonApproachingGoalMin,
+      SuggestionReasonCodes.adherenceLow => l10n.reasonAdherenceLow,
+      SuggestionReasonCodes.refusalFrequent => l10n.reasonRefusalFrequent,
+      SuggestionReasonCodes.delayedFrequent => l10n.reasonDelayedFrequent,
+      SuggestionReasonCodes.appetiteReduced => l10n.reasonAppetiteReduced,
+      SuggestionReasonCodes.appetitePoor => l10n.reasonAppetitePoor,
+      SuggestionReasonCodes.vomitFrequent => l10n.reasonVomitFrequent,
+      SuggestionReasonCodes.stoolDiarrhea => l10n.reasonStoolDiarrhea,
+      SuggestionReasonCodes.clinicalConditionPresent =>
+        l10n.reasonClinicalConditionPresent,
+      SuggestionReasonCodes.weightAlertTriggered =>
+        l10n.reasonWeightAlertTriggered,
+      SuggestionReasonCodes.lowEvidence => l10n.reasonLowEvidence,
+      _ => code,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
     final secondary =
@@ -61,7 +96,7 @@ class SuggestionCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  suggestionTypeLabel(suggestion.type),
+                  _suggestionTypeLabel(l10n),
                   style: theme.textTheme.labelLarge?.copyWith(
                     color: primary,
                     fontWeight: FontWeight.w800,
@@ -78,7 +113,7 @@ class SuggestionCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
-                  'Confidence $confidenceLabel',
+                  l10n.suggestionConfidenceLabel(confidenceLabel),
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: secondary,
                     fontWeight: FontWeight.w700,
@@ -107,9 +142,12 @@ class SuggestionCard extends StatelessWidget {
                   ),
                   child: Text(
                     switch (decision!) {
-                      SuggestionDecision.accepted => 'Accepted',
-                      SuggestionDecision.deferred => 'Deferred',
-                      SuggestionDecision.ignored => 'Ignored',
+                      SuggestionDecision.accepted =>
+                        l10n.suggestionAcceptedStatus,
+                      SuggestionDecision.deferred =>
+                        l10n.suggestionDeferredStatus,
+                      SuggestionDecision.ignored =>
+                        l10n.suggestionIgnoredStatus,
                     },
                     style: theme.textTheme.labelMedium?.copyWith(
                       fontWeight: FontWeight.w800,
@@ -140,7 +178,7 @@ class SuggestionCard extends StatelessWidget {
           if (suggestion.reasonCodes.isNotEmpty) ...[
             const SizedBox(height: 10),
             Text(
-              'Why this suggestion:',
+              l10n.whyThisSuggestionTitle,
               style: theme.textTheme.labelLarge?.copyWith(
                 color: secondary,
                 fontWeight: FontWeight.w800,
@@ -157,7 +195,7 @@ class SuggestionCard extends StatelessWidget {
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        suggestionReasonLabel(code),
+                        _reasonLabel(l10n, code),
                         style: theme.textTheme.bodySmall?.copyWith(
                           color: secondary,
                           fontWeight: FontWeight.w600,
@@ -176,21 +214,27 @@ class SuggestionCard extends StatelessWidget {
             children: [
               FilledButton.tonal(
                 onPressed: onAccept,
-                child: const Text('Accept'),
+                child: Text(l10n.acceptAction),
               ),
               FilledButton.tonal(
                 onPressed: onDefer,
-                child: const Text('Defer'),
+                child: Text(l10n.deferAction),
               ),
-              OutlinedButton(onPressed: onIgnore, child: const Text('Ignore')),
+              OutlinedButton(
+                onPressed: onIgnore,
+                child: Text(l10n.ignoreAction),
+              ),
               if (decision != null)
-                TextButton(onPressed: onRestore, child: const Text('Restore')),
+                TextButton(
+                  onPressed: onRestore,
+                  child: Text(l10n.restoreAction),
+                ),
             ],
           ),
           if (!autoApplyEnabled) ...[
             const SizedBox(height: 8),
             Text(
-              'Auto-apply is disabled. Plan changes always require confirmation.',
+              l10n.autoApplyDisabledMessage,
               style: theme.textTheme.bodySmall?.copyWith(color: secondary),
             ),
           ],
