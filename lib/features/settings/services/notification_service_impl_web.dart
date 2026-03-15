@@ -3,6 +3,8 @@
 import 'dart:async';
 import 'dart:js_interop';
 
+import 'package:cat_diet_planner/features/notifications/models/app_notification_item.dart';
+import 'package:cat_diet_planner/features/notifications/repositories/notification_inbox_repository.dart';
 import 'package:cat_diet_planner/features/settings/models/app_settings.dart';
 import 'package:web/web.dart' as web;
 
@@ -11,6 +13,8 @@ import 'notification_support.dart';
 
 class WebNotificationServiceImpl implements NotificationServiceImpl {
   final List<Timer> _timers = [];
+  final NotificationInboxRepository _inboxRepository =
+      NotificationInboxRepository();
 
   @override
   Future<void> init() async {}
@@ -68,6 +72,15 @@ class WebNotificationServiceImpl implements NotificationServiceImpl {
       title: 'CatDiet Planner',
       body: 'Browser notifications are working while the app stays open.',
     );
+    await _inboxRepository.upsert(
+      AppNotificationItem(
+        id: 'test-notification-${DateTime.now().millisecondsSinceEpoch}',
+        type: AppNotificationType.mealReminder,
+        title: 'CatDiet Planner',
+        message: 'Browser notifications are working while the app stays open.',
+        createdAt: DateTime.now(),
+      ),
+    );
   }
 
   @override
@@ -105,6 +118,17 @@ class WebNotificationServiceImpl implements NotificationServiceImpl {
       final content = NotificationSupport.buildContentForReminder(
         mealIndex: mealIndex,
         reminderTime: rawTime,
+      );
+      unawaited(
+        _inboxRepository.upsert(
+          AppNotificationItem(
+            id: 'meal-runtime-$mealIndex-${DateTime.now().millisecondsSinceEpoch}',
+            type: AppNotificationType.mealReminder,
+            title: content.title,
+            message: content.body,
+            createdAt: DateTime.now(),
+          ),
+        ),
       );
       _showBrowserNotification(title: content.title, body: content.body);
 

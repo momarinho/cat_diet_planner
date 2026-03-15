@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/core/theme/theme_provider.dart';
+import 'package:cat_diet_planner/features/notifications/providers/notifications_provider.dart';
 import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ class DashboardBlurAppBar extends ConsumerWidget
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
+    final notificationCount = ref.watch(notificationCountProvider);
 
     return AppBar(
       backgroundColor: Colors.transparent,
@@ -67,21 +69,22 @@ class DashboardBlurAppBar extends ConsumerWidget
               _IconCircleButton(
                 icon: Icons.notifications_outlined,
                 onTap: () =>
-                    Navigator.of(context).pushNamed(AppRoutes.settings),
+                    Navigator.of(context).pushNamed(AppRoutes.notifications),
               ),
-              Positioned(
-                right: 2,
-                top: 2,
-                child: Container(
-                  width: 9,
-                  height: 9,
-                  decoration: BoxDecoration(
-                    color: Colors.redAccent,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: theme.scaffoldBackgroundColor),
+              if (notificationCount > 0)
+                Positioned(
+                  right: 2,
+                  top: 2,
+                  child: Container(
+                    width: 9,
+                    height: 9,
+                    decoration: BoxDecoration(
+                      color: Colors.redAccent,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: theme.scaffoldBackgroundColor),
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

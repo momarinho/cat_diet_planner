@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:cat_diet_planner/features/notifications/models/app_notification_item.dart';
+import 'package:cat_diet_planner/features/notifications/repositories/notification_inbox_repository.dart';
 import 'package:cat_diet_planner/features/settings/models/app_settings.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -27,6 +29,8 @@ class NativeNotificationServiceImpl implements NotificationServiceImpl {
   static const _recurringIdOffset = 1000;
   static const _snoozedIdOffset = 10000;
   static const _repeatTomorrowIdOffset = 20000;
+  static final NotificationInboxRepository _inboxRepository =
+      NotificationInboxRepository();
 
   @override
   Future<void> init() async {
@@ -150,6 +154,15 @@ class NativeNotificationServiceImpl implements NotificationServiceImpl {
       _details,
       payload: content.payload,
     );
+    await _inboxRepository.upsert(
+      AppNotificationItem(
+        id: 'test-notification-${DateTime.now().millisecondsSinceEpoch}',
+        type: AppNotificationType.mealReminder,
+        title: content.title,
+        message: '${content.body} Test notification.',
+        createdAt: DateTime.now(),
+      ),
+    );
   }
 
   @override
@@ -183,6 +196,16 @@ class NativeNotificationServiceImpl implements NotificationServiceImpl {
     if (payload == null) return;
 
     if (response.actionId == NotificationSupport.snoozeActionId) {
+      await _inboxRepository.upsert(
+        AppNotificationItem(
+          id: 'notification-action-snooze-${DateTime.now().millisecondsSinceEpoch}',
+          type: AppNotificationType.mealReminder,
+          title: 'Reminder snoozed',
+          message:
+              '${payload.mealLabel} for ${payload.entityName} was snoozed for 15 minutes.',
+          createdAt: DateTime.now(),
+        ),
+      );
       await _scheduleSingleReminder(
         id: _snoozedIdOffset + payload.mealIndex,
         when: tz.TZDateTime.now(tz.local).add(const Duration(minutes: 15)),
@@ -192,6 +215,16 @@ class NativeNotificationServiceImpl implements NotificationServiceImpl {
     }
 
     if (response.actionId == NotificationSupport.repeatTomorrowActionId) {
+      await _inboxRepository.upsert(
+        AppNotificationItem(
+          id: 'notification-action-repeat-${DateTime.now().millisecondsSinceEpoch}',
+          type: AppNotificationType.mealReminder,
+          title: 'Reminder postponed',
+          message:
+              '${payload.mealLabel} for ${payload.entityName} was moved to tomorrow.',
+          createdAt: DateTime.now(),
+        ),
+      );
       final parts = payload.reminderTime.split(':');
       final hour = parts.isNotEmpty ? int.tryParse(parts[0]) ?? 7 : 7;
       final minute = parts.length > 1 ? int.tryParse(parts[1]) ?? 30 : 30;

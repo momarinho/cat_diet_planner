@@ -67,6 +67,7 @@ void main() {
     await openAndClose(AppRoutes.catProfile, arguments: sampleCat);
     await openAndClose(AppRoutes.catGroup, arguments: sampleGroup);
     await openAndClose(AppRoutes.settings);
+    await openAndClose(AppRoutes.notifications);
     await openAndClose(AppRoutes.howItWorks);
     await openAndClose(AppRoutes.weightCheckIn);
     await openAndClose(AppRoutes.scanner);

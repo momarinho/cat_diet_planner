@@ -6,6 +6,7 @@ import 'package:cat_diet_planner/features/cat_group/screens/cat_group_screen.dar
 import 'package:cat_diet_planner/features/cat_profile/screens/cat_profile_screen.dart';
 import 'package:cat_diet_planner/features/food_database/screens/food_database_screen.dart';
 import 'package:cat_diet_planner/features/history/screens/weekly_diet_report_screen.dart';
+import 'package:cat_diet_planner/features/notifications/screens/notifications_screen.dart';
 import 'package:cat_diet_planner/features/shell/screens/app_shell_screen.dart';
 import 'package:cat_diet_planner/features/scanner/screens/scanner_screen.dart';
 import 'package:cat_diet_planner/features/settings/screens/settings_screen.dart';
@@ -76,6 +77,11 @@ class AppRouter {
       case AppRoutes.settings:
         return MaterialPageRoute(
           builder: (_) => const SettingsScreen(),
+          settings: settings,
+        );
+      case AppRoutes.notifications:
+        return MaterialPageRoute(
+          builder: (_) => const NotificationsScreen(),
           settings: settings,
         );
       case AppRoutes.howItWorks:

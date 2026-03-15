@@ -1,5 +1,6 @@
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/core/theme/theme_provider.dart';
+import 'package:cat_diet_planner/features/notifications/providers/notifications_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,7 @@ class HomeHeaderAppBar extends ConsumerWidget implements PreferredSizeWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
+    final notificationCount = ref.watch(notificationCountProvider);
 
     return AppBar(
       automaticallyImplyLeading: false,
@@ -47,20 +49,22 @@ class HomeHeaderAppBar extends ConsumerWidget implements PreferredSizeWidget {
             children: [
               _CircleIconButton(
                 icon: Icons.notifications_outlined,
-                onTap: () => Navigator.pushNamed(context, AppRoutes.settings),
+                onTap: () =>
+                    Navigator.pushNamed(context, AppRoutes.notifications),
               ),
-              Positioned(
-                right: 2,
-                top: 2,
-                child: Container(
-                  width: 9,
-                  height: 9,
-                  decoration: BoxDecoration(
-                    color: primary,
-                    shape: BoxShape.circle,
+              if (notificationCount > 0)
+                Positioned(
+                  right: 2,
+                  top: 2,
+                  child: Container(
+                    width: 9,
+                    height: 9,
+                    decoration: BoxDecoration(
+                      color: primary,
+                      shape: BoxShape.circle,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),
