@@ -114,4 +114,9 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
     state = state.copyWith(suggestionAlertsOnly: enabled);
     await _service.save(state);
   }
+
+  Future<void> setSuggestionAutoApply(bool enabled) async {
+    state = state.copyWith(suggestionAutoApply: enabled);
+    await _service.save(state);
+  }
 }

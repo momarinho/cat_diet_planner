@@ -27,16 +27,16 @@ Checklist para evoluir o app com comportamento mais inteligente e sugestivo, man
 - [x] modo `somente alertas` (sem ajustar plano)
 
 ## 5. Seguranca e controle
-- [ ] `autoApply` desativado por padrao
-- [ ] confirmacao obrigatoria antes de alterar plano
-- [ ] limites rigidos de ajuste (faixas seguras)
-- [ ] trilha de auditoria: quem aceitou, quando, e o que mudou
+- [x] `autoApply` desativado por padrao
+- [x] confirmacao obrigatoria antes de alterar plano
+- [x] limites rigidos de ajuste (faixas seguras)
+- [x] trilha de auditoria: quem aceitou, quando, e o que mudou
 
 ## 6. Persistencia e historico
-- [ ] salvar sugestoes geradas
-- [ ] salvar decisao do usuario por sugestao
-- [ ] historico de impacto (antes/depois)
-- [ ] acao `reverter ultima mudanca sugerida`
+- [x] salvar sugestoes geradas
+- [x] salvar decisao do usuario por sugestao
+- [x] historico de impacto (antes/depois)
+- [x] acao `reverter ultima mudanca sugerida`
 
 ## 7. Qualidade
 - [x] testes unitarios do `SuggestionEngine`
@@ -47,4 +47,4 @@ Checklist para evoluir o app com comportamento mais inteligente e sugestivo, man
 ## 8. Entrega incremental
 - [x] Fase 1: engine + 2 sugestoes (kcal e alerta de tendencia)
 - [x] Fase 2: UI de sugestoes + personalizacao no `Settings`
-- [ ] Fase 3: historico de impacto + refinamento de regras
+- [x] Fase 3: historico de impacto + refinamento de regras

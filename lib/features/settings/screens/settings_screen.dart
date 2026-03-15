@@ -8,6 +8,9 @@ import 'package:cat_diet_planner/features/settings/providers/app_settings_provid
 import 'package:cat_diet_planner/features/settings/services/data_export_service.dart';
 import 'package:cat_diet_planner/features/settings/services/demo_data_service.dart';
 import 'package:cat_diet_planner/features/settings/services/notification_service.dart';
+import 'package:cat_diet_planner/features/suggestions/providers/plan_change_audit_provider.dart';
+import 'package:cat_diet_planner/features/suggestions/providers/suggestion_impact_history_provider.dart';
+import 'package:cat_diet_planner/features/suggestions/services/plan_adjustment_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -39,6 +42,91 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _isGeneratingDemoData = false;
   bool _isGeneratingStressData = false;
   bool _isClearingDemoData = false;
+  bool _isRevertingSuggestionChange = false;
+
+  String _formatAuditTimestamp(DateTime value) {
+    final day = value.day.toString().padLeft(2, '0');
+    final month = value.month.toString().padLeft(2, '0');
+    final hour = value.hour.toString().padLeft(2, '0');
+    final minute = value.minute.toString().padLeft(2, '0');
+    return '$day/$month/${value.year} $hour:$minute';
+  }
+
+  Future<void> _revertLastSuggestedChange() async {
+    final controller = TextEditingController();
+    var validationMessage = '';
+    final revertedBy = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (dialogContext, setDialogState) {
+            return AlertDialog(
+              title: const Text('Revert last suggested change'),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'This restores the plan snapshot from before the latest suggested change.',
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      border: const OutlineInputBorder(),
+                      hintText: 'Type who is reverting this change',
+                      errorText: validationMessage.isEmpty
+                          ? null
+                          : validationMessage,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(),
+                  child: const Text('Cancel'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final value = controller.text.trim();
+                    if (value.isEmpty) {
+                      setDialogState(() {
+                        validationMessage = 'Responsible person is required.';
+                      });
+                      return;
+                    }
+                    Navigator.of(dialogContext).pop(value);
+                  },
+                  child: const Text('Revert'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+    controller.dispose();
+    if (revertedBy == null || !mounted) return;
+
+    setState(() => _isRevertingSuggestionChange = true);
+    try {
+      final result = await ref
+          .read(planAdjustmentServiceProvider)
+          .revertLastSuggestedChange(revertedBy: revertedBy);
+      ref.invalidate(planChangeAuditProvider);
+      ref.invalidate(suggestionImpactHistoryProvider);
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result.message ?? 'Revert completed.')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isRevertingSuggestionChange = false);
+      }
+    }
+  }
 
   String _notificationProfileValue(
     AppSettings settings,
@@ -443,6 +531,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final primary = theme.colorScheme.primary;
     final themeMode = ref.watch(themeProvider);
     final appSettings = ref.watch(appSettingsProvider);
+    final planAuditEntries = ref.watch(planChangeAuditProvider);
+    final impactEntries = ref.watch(suggestionImpactHistoryProvider);
     final isDarkMode = themeMode == ThemeMode.dark;
     final secondaryText =
         theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.65) ??
@@ -640,6 +730,15 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
               ),
               SwitchListTile(
+                value: appSettings.suggestionAutoApply,
+                onChanged: null,
+                title: const Text('Auto-apply suggestions'),
+                subtitle: const Text(
+                  'Disabled by default and locked off. Any plan change requires manual confirmation.',
+                ),
+                contentPadding: EdgeInsets.zero,
+              ),
+              SwitchListTile(
                 value: appSettings.suggestionAlertsOnly,
                 onChanged: (value) async {
                   await ref
@@ -671,6 +770,83 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         : 'Plan suggestion category',
                   ),
                   contentPadding: EdgeInsets.zero,
+                );
+              }),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _SectionCard(
+            title: 'Plan Audit Trail',
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.history_toggle_off_rounded, color: primary),
+                title: const Text('Revert last suggested change'),
+                subtitle: const Text(
+                  'Restore the latest plan snapshot saved before a suggested adjustment was applied.',
+                ),
+                trailing: _isRevertingSuggestionChange
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.undo_rounded),
+                onTap: _isRevertingSuggestionChange
+                    ? null
+                    : _revertLastSuggestedChange,
+              ),
+              if (planAuditEntries.isEmpty)
+                const ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text('No accepted plan changes yet'),
+                  subtitle: Text(
+                    'Approved suggestion changes will record who accepted them, when, and what changed.',
+                  ),
+                ),
+              ...planAuditEntries.take(5).map((entry) {
+                final summary = entry.changeSummary.join(' • ');
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.fact_check_rounded, color: primary),
+                  title: Text('${entry.catName} • ${entry.acceptedBy}'),
+                  subtitle: Text(
+                    '${_formatAuditTimestamp(entry.acceptedAt)}\n$summary',
+                  ),
+                  isThreeLine: true,
+                );
+              }),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _SectionCard(
+            title: 'Suggestion History',
+            children: [
+              if (impactEntries.isEmpty)
+                const ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: Text('No suggestion impact history yet'),
+                  subtitle: Text(
+                    'Generated suggestions, accepted changes and before/after snapshots will be stored here.',
+                  ),
+                ),
+              ...impactEntries.take(5).map((entry) {
+                final status = entry.isReverted
+                    ? 'Reverted by ${entry.revertedBy ?? 'unknown'}'
+                    : 'Active change';
+                final before = entry.beforePlan.targetKcalPerDay
+                    .toStringAsFixed(0);
+                final after = entry.afterPlan.targetKcalPerDay.toStringAsFixed(
+                  0,
+                );
+                return ListTile(
+                  contentPadding: EdgeInsets.zero,
+                  leading: Icon(Icons.insights_rounded, color: primary),
+                  title: Text('${entry.catName} • ${entry.suggestion.title}'),
+                  subtitle: Text(
+                    '${_formatAuditTimestamp(entry.appliedAt)} • $status\nBefore/after kcal: $before -> $after',
+                  ),
+                  isThreeLine: true,
                 );
               }),
             ],

@@ -2,7 +2,10 @@ import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/features/daily/providers/daily_schedule_repository_provider.dart';
 import 'package:cat_diet_planner/features/history/providers/weight_repository_provider.dart';
 import 'package:cat_diet_planner/features/plans/providers/plan_repository_provider.dart';
+import 'package:cat_diet_planner/features/settings/providers/app_settings_provider.dart';
 import 'package:cat_diet_planner/features/suggestions/models/smart_suggestion.dart';
+import 'package:cat_diet_planner/features/suggestions/providers/suggestion_persistence_provider.dart';
+import 'package:cat_diet_planner/features/suggestions/services/plan_adjustment_service.dart';
 import 'package:cat_diet_planner/features/suggestions/providers/suggestion_decision_provider.dart';
 import 'package:cat_diet_planner/features/suggestions/providers/suggestion_engine_provider.dart';
 import 'package:cat_diet_planner/features/suggestions/utils/suggestion_reason_label.dart';
@@ -32,6 +35,8 @@ class CatSuggestionsSection extends ConsumerWidget {
     final weightRepository = ref.read(weightRepositoryProvider);
     final scheduleRepository = ref.read(dailyScheduleRepositoryProvider);
     final engine = ref.read(suggestionEngineProvider);
+    final adjustmentService = ref.read(planAdjustmentServiceProvider);
+    final appSettings = ref.watch(appSettingsProvider);
     final decisions = ref.watch(suggestionDecisionProvider);
     final decisionNotifier = ref.read(suggestionDecisionProvider.notifier);
     final today = DateTime.now();
@@ -78,6 +83,15 @@ class CatSuggestionsSection extends ConsumerWidget {
                   recentMealSchedules: schedules,
                   activePlan: activePlan,
                 );
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  ref
+                      .read(suggestionPersistenceServiceProvider)
+                      .saveGeneratedForCat(
+                        catId: cat.id,
+                        suggestions: generated,
+                      );
+                  ref.invalidate(generatedSuggestionsProvider(cat.id));
+                });
                 final visible = generated
                     .where(
                       (suggestion) =>
@@ -144,8 +158,47 @@ class CatSuggestionsSection extends ConsumerWidget {
                           child: _SuggestionCard(
                             suggestion: suggestion,
                             decision: decision,
-                            onAccept: () =>
-                                decisionNotifier.accept(suggestion.id),
+                            autoApplyEnabled: appSettings.suggestionAutoApply,
+                            onAccept: () async {
+                              if (!adjustmentService.requiresPlanChange(
+                                suggestion,
+                              )) {
+                                decisionNotifier.accept(suggestion.id);
+                                return;
+                              }
+
+                              final acceptedBy =
+                                  await _showPlanChangeConfirmationDialog(
+                                    context: context,
+                                    catName: cat.name,
+                                    suggestion: suggestion,
+                                  );
+                              if (acceptedBy == null || !context.mounted) {
+                                return;
+                              }
+
+                              final result = await adjustmentService
+                                  .applySuggestion(
+                                    cat: cat,
+                                    suggestion: suggestion,
+                                    acceptedBy: acceptedBy,
+                                  );
+                              if (!context.mounted) return;
+
+                              if (result.changed) {
+                                decisionNotifier.accept(suggestion.id);
+                              }
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    result.message ??
+                                        (result.changed
+                                            ? 'Plan updated after confirmation.'
+                                            : 'Suggestion recorded without plan changes.'),
+                                  ),
+                                ),
+                              );
+                            },
                             onDefer: () =>
                                 decisionNotifier.defer(suggestion.id),
                             onIgnore: () =>
@@ -167,10 +220,86 @@ class CatSuggestionsSection extends ConsumerWidget {
   }
 }
 
+Future<String?> _showPlanChangeConfirmationDialog({
+  required BuildContext context,
+  required String catName,
+  required SmartSuggestion suggestion,
+}) async {
+  final controller = TextEditingController();
+  var validationMessage = '';
+
+  final acceptedBy = await showDialog<String>(
+    context: context,
+    builder: (dialogContext) {
+      return StatefulBuilder(
+        builder: (dialogContext, setDialogState) {
+          return AlertDialog(
+            title: const Text('Confirm plan change'),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Apply this suggestion to $catName only after review.'),
+                const SizedBox(height: 8),
+                Text(
+                  suggestion.recommendedAction,
+                  style: Theme.of(
+                    dialogContext,
+                  ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 12),
+                const Text(
+                  'Responsible person',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+                const SizedBox(height: 6),
+                TextField(
+                  controller: controller,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    border: const OutlineInputBorder(),
+                    hintText: 'Type who approved this change',
+                    errorText: validationMessage.isEmpty
+                        ? null
+                        : validationMessage,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: () {
+                  final value = controller.text.trim();
+                  if (value.isEmpty) {
+                    setDialogState(() {
+                      validationMessage = 'Approval identity is required.';
+                    });
+                    return;
+                  }
+                  Navigator.of(dialogContext).pop(value);
+                },
+                child: const Text('Confirm'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  );
+
+  controller.dispose();
+  return acceptedBy;
+}
+
 class _SuggestionCard extends StatelessWidget {
   const _SuggestionCard({
     required this.suggestion,
     required this.decision,
+    required this.autoApplyEnabled,
     required this.onAccept,
     required this.onDefer,
     required this.onIgnore,
@@ -179,7 +308,8 @@ class _SuggestionCard extends StatelessWidget {
 
   final SmartSuggestion suggestion;
   final SuggestionDecision? decision;
-  final VoidCallback onAccept;
+  final bool autoApplyEnabled;
+  final Future<void> Function() onAccept;
   final VoidCallback onDefer;
   final VoidCallback onIgnore;
   final VoidCallback onRestore;
@@ -348,6 +478,13 @@ class _SuggestionCard extends StatelessWidget {
                 TextButton(onPressed: onRestore, child: const Text('Restore')),
             ],
           ),
+          if (!autoApplyEnabled) ...[
+            const SizedBox(height: 8),
+            Text(
+              'Auto-apply is disabled. Plan changes always require confirmation.',
+              style: theme.textTheme.bodySmall?.copyWith(color: secondary),
+            ),
+          ],
         ],
       ),
     );

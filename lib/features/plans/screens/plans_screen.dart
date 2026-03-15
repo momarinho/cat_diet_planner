@@ -10,9 +10,13 @@ import 'package:cat_diet_planner/features/cat_profile/providers/cat_groups_provi
 import 'package:cat_diet_planner/features/cat_profile/providers/cat_profiles_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
 import 'package:cat_diet_planner/features/daily/services/daily_meal_schedule_service.dart';
+import 'package:cat_diet_planner/features/plans/models/plan_preview_data.dart';
 import 'package:cat_diet_planner/features/plans/providers/plan_repository_provider.dart';
+import 'package:cat_diet_planner/features/plans/repositories/plan_repository.dart';
+import 'package:cat_diet_planner/features/plans/services/plan_preview_builder.dart';
 import 'package:cat_diet_planner/features/plans/services/diet_calculator_service.dart';
 import 'package:cat_diet_planner/features/plans/services/portion/portion_unit_service.dart';
+import 'package:cat_diet_planner/features/plans/widgets/plan_inspector_sheet.dart';
 import 'package:cat_diet_planner/features/suggestions/widgets/cat_suggestions_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,6 +57,12 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
     DateTime.now(),
   );
 
+  void _handleDraftChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -60,9 +70,14 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
     _operationalNotesController = TextEditingController();
     _portionUnitGramsController = TextEditingController(text: '1');
     _weekendKcalFactorController = TextEditingController(text: '100');
+    _groupKcalController.addListener(_handleDraftChanged);
+    _operationalNotesController.addListener(_handleDraftChanged);
+    _portionUnitGramsController.addListener(_handleDraftChanged);
+    _weekendKcalFactorController.addListener(_handleDraftChanged);
     _weekdayKcalFactorControllers = {
       for (var weekday = 1; weekday <= 7; weekday++)
-        weekday: TextEditingController(text: '100'),
+        weekday: TextEditingController(text: '100')
+          ..addListener(_handleDraftChanged),
     };
     for (var weekday = 1; weekday <= 7; weekday++) {
       _weekdayOverridesEnabled[weekday] = false;
@@ -98,7 +113,11 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
       controller.dispose();
     }
     _mealLabelControllers = labels
-        .map((label) => TextEditingController(text: label))
+        .map(
+          (label) =>
+              TextEditingController(text: label)
+                ..addListener(_handleDraftChanged),
+        )
         .toList();
   }
 
@@ -113,7 +132,11 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
       controller.dispose();
     }
     _mealShareControllers = shares
-        .map((share) => TextEditingController(text: share.toStringAsFixed(0)))
+        .map(
+          (share) =>
+              TextEditingController(text: share.toStringAsFixed(0))
+                ..addListener(_handleDraftChanged),
+        )
         .toList();
   }
 
@@ -205,10 +228,98 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
     return null;
   }
 
+  String _catHydrationKey(String catId, DietPlan? plan) {
+    return '$catId:${plan?.planId ?? 'none'}:${plan?.createdAt.toIso8601String() ?? 'none'}';
+  }
+
+  String _groupHydrationKey(String groupId, GroupDietPlan? plan) {
+    return '$groupId:${plan?.createdAt.toIso8601String() ?? 'none'}';
+  }
+
+  List<FoodItem> _selectedFoods(PlanRepository repository) {
+    return _selectedFoodKeys
+        .map((key) => repository.findFoodByKey(key))
+        .whereType<FoodItem>()
+        .toList(growable: false);
+  }
+
+  PlanPreviewData? _buildIndividualPreview({
+    required CatProfile cat,
+    required PlanRepository repository,
+  }) {
+    final selectedFoods = _selectedFoods(repository);
+    if (selectedFoods.isEmpty) return null;
+    final targetKcalPerDay =
+        cat.manualTargetKcal ??
+        DietCalculatorService.suggestTargetKcal(
+          weightKg: cat.weight,
+          idealWeightKg: cat.idealWeight,
+          ageMonths: cat.age,
+          neutered: cat.neutered,
+          activityLevel: cat.activityLevel,
+          goal: cat.goal,
+          bcs: cat.bcs,
+        );
+    final portionGramsPerDay = DietCalculatorService.calculateDailyPortionGrams(
+      targetKcal: targetKcalPerDay,
+      kcalPer100g: selectedFoods.first.kcalPer100g,
+    );
+    final dailyOverrides = _buildDailyOverrides(
+      targetKcalPerDay: targetKcalPerDay,
+      portionGramsPerDay: portionGramsPerDay,
+    );
+
+    return PlanPreviewBuilder.buildIndividual(
+      cat: cat,
+      selectedFoods: selectedFoods,
+      mealsPerDay: _mealsPerDay,
+      mealTimes: List<String>.from(_mealTimes),
+      mealLabels: _currentMealLabels(),
+      normalizedMealShares: _normalizedMealShares(),
+      startDate: _planStartDate,
+      portionUnit: _portionUnit,
+      portionUnitGrams: _portionUnitGramsValue(),
+      dailyOverrides: dailyOverrides,
+      operationalNotes: _operationalNotesController.text.trim().isEmpty
+          ? null
+          : _operationalNotesController.text.trim(),
+    );
+  }
+
+  PlanPreviewData? _buildGroupPreview({
+    required CatGroup group,
+    required PlanRepository repository,
+  }) {
+    final selectedFoods = _selectedFoods(repository);
+    final targetKcalPerCat = double.tryParse(_groupKcalController.text.trim());
+    if (selectedFoods.isEmpty ||
+        targetKcalPerCat == null ||
+        targetKcalPerCat <= 0) {
+      return null;
+    }
+
+    return PlanPreviewBuilder.buildGroup(
+      groupName: group.name,
+      catCount: group.catCount,
+      targetKcalPerCat: targetKcalPerCat,
+      selectedFoods: selectedFoods,
+      mealsPerDay: _mealsPerDay,
+      mealTimes: List<String>.from(_mealTimes),
+      mealLabels: _currentMealLabels(),
+      normalizedMealShares: _normalizedMealShares(),
+      startDate: _planStartDate,
+      portionUnit: _portionUnit,
+      portionUnitGrams: _portionUnitGramsValue(),
+      operationalNotes: _operationalNotesController.text.trim().isEmpty
+          ? null
+          : _operationalNotesController.text.trim(),
+    );
+  }
+
   void _hydratePlanForCat(CatProfile cat, WidgetRef ref) {
     final repository = ref.read(planRepositoryProvider);
     final existingPlan = repository.getPlanForCat(cat.id);
-    _hydratedCatId = cat.id;
+    _hydratedCatId = _catHydrationKey(cat.id, existingPlan);
     _selectedFood = existingPlan == null
         ? null
         : repository.findFoodByKey(existingPlan.foodKey);
@@ -263,7 +374,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
   void _hydratePlanForGroup(String groupId, WidgetRef ref) {
     final repository = ref.read(planRepositoryProvider);
     final existingPlan = repository.getPlanForGroup(groupId);
-    _hydratedGroupId = groupId;
+    _hydratedGroupId = _groupHydrationKey(groupId, existingPlan);
     _selectedFood = existingPlan == null
         ? null
         : repository.findFoodByKey(existingPlan.foodKey);
@@ -493,10 +604,11 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
   }
 
   Future<void> _saveIndividualPlan(CatProfile cat) async {
-    if (_selectedFoodKeys.isEmpty) return;
-    final food = _selectedFood;
-    if (food == null) return;
     final repository = ref.read(planRepositoryProvider);
+    final preview = _buildIndividualPreview(cat: cat, repository: repository);
+    final selectedFoods = _selectedFoods(repository);
+    if (preview == null || selectedFoods.isEmpty) return;
+    final food = selectedFoods.first;
     setState(() => _isSaving = true);
 
     try {
@@ -507,73 +619,26 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         mealsPerDay: _mealsPerDay,
       );
 
-      final targetKcalPerDay =
-          cat.manualTargetKcal ??
-          DietCalculatorService.suggestTargetKcal(
-            weightKg: cat.weight,
-            idealWeightKg: cat.idealWeight,
-            ageMonths: cat.age,
-            neutered: cat.neutered,
-            activityLevel: cat.activityLevel,
-            goal: cat.goal,
-            bcs: cat.bcs,
-          );
-      final dailyPortionGrams =
-          DietCalculatorService.calculateDailyPortionGrams(
-            targetKcal: targetKcalPerDay,
-            kcalPer100g: food.kcalPer100g,
-          );
-      final perMealGrams = DietCalculatorService.calculatePortionPerMealGrams(
-        portionPerDayGrams: dailyPortionGrams,
-        mealsPerDay: _mealsPerDay,
-      );
-      final mealPortions = _mealPortionsFromTotal(dailyPortionGrams);
-      final selectedFoods = _selectedFoodKeys
-          .map((key) => repository.findFoodByKey(key))
-          .whereType<FoodItem>()
-          .toList(growable: false);
-      final unitGrams = _portionUnitGramsValue();
-      final notes = _operationalNotesController.text.trim();
-      final dailyOverrides = _buildDailyOverrides(
-        targetKcalPerDay: targetKcalPerDay,
-        portionGramsPerDay: dailyPortionGrams,
-      );
-
       final plan = DietPlan(
         catId: cat.id,
-        // maintain backward-compatible single-key fields; choose a representative
-        // when multiple foods are selected so older callers that read first entry work.
-        foodKey: _allowMultipleFoods
-            ? (_selectedFoodKeys.isNotEmpty
-                  ? _selectedFoodKeys.first
-                  : food.key)
-            : food.key,
-        foodName: _allowMultipleFoods
-            ? (_selectedFoodKeys.isNotEmpty
-                  ? (repository.findFoodByKey(_selectedFoodKeys.first)?.name ??
-                        '')
-                  : food.name)
-            : food.name,
-        targetKcalPerDay: targetKcalPerDay,
-        portionGramsPerDay: dailyPortionGrams,
-        mealsPerDay: _mealsPerDay,
-        portionGramsPerMeal: perMealGrams,
+        foodKey: _allowMultipleFoods ? selectedFoods.first.key : food.key,
+        foodName: _allowMultipleFoods ? selectedFoods.first.name : food.name,
+        targetKcalPerDay: preview.targetKcalPerDay,
+        portionGramsPerDay: preview.portionGramsPerDay,
+        mealsPerDay: preview.mealsPerDay,
+        portionGramsPerMeal: preview.portionGramsPerMeal,
         createdAt: DateTime.now(),
         goal: cat.goal,
-        mealTimes: List<String>.from(_mealTimes),
-        mealLabels: DailyMealScheduleService.normalizeMealLabels(
-          _currentMealLabels(),
-          mealsPerDay: _mealsPerDay,
-        ),
-        mealPortionGrams: mealPortions,
-        startDate: _planStartDate,
-        // New multi-food fields (kept optional so legacy data stays compatible)
+        mealTimes: preview.mealTimes,
+        mealLabels: preview.mealLabels,
+        mealPortionGrams: preview.mealPortionGrams,
+        startDate: preview.startDate,
         foodKeys: selectedFoods.map((f) => f.key).toList(growable: false),
         foodNames: selectedFoods.map((f) => f.name).toList(growable: false),
-        portionUnit: _portionUnit,
-        portionUnitGrams: unitGrams,
-        dailyOverrides: dailyOverrides,
-        operationalNotes: notes.isEmpty ? null : notes,
+        portionUnit: preview.portionUnit,
+        portionUnitGrams: preview.portionUnitGrams,
+        dailyOverrides: preview.dailyOverrides,
+        operationalNotes: preview.operationalNotes,
       );
 
       final savedPlanId = await repository.savePlanForCat(plan);
@@ -583,7 +648,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         context,
       ).showSnackBar(SnackBar(content: Text('Plan saved for ${cat.name}')));
       setState(() {
-        _hydratedCatId = cat.id;
+        _hydratedCatId = null;
       });
       await repository.setActivePlanForCat(catId: cat.id, planId: savedPlanId);
     } on ArgumentError catch (error) {
@@ -599,10 +664,11 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
   }
 
   Future<void> _saveGroupPlan(CatGroup group) async {
-    if (_selectedFoodKeys.isEmpty) return;
-    final food = _selectedFood;
-    if (food == null) return;
     final repository = ref.read(planRepositoryProvider);
+    final preview = _buildGroupPreview(group: group, repository: repository);
+    final selectedFoods = _selectedFoods(repository);
+    if (preview == null || selectedFoods.isEmpty) return;
+    final food = selectedFoods.first;
 
     final targetPerCat = double.tryParse(_groupKcalController.text.trim());
     if (targetPerCat == null || targetPerCat <= 0) {
@@ -631,19 +697,6 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         kcalPer100g: food.kcalPer100g,
       );
       final totalKcal = targetPerCat * weightedCats;
-      final totalPortion = portionPerCat * weightedCats;
-      final portionPerGroupMeal =
-          DietCalculatorService.calculatePortionPerMealGrams(
-            portionPerDayGrams: totalPortion,
-            mealsPerDay: _mealsPerDay,
-          );
-      final mealPortions = _mealPortionsFromTotal(totalPortion);
-      final selectedFoods = _selectedFoodKeys
-          .map((key) => repository.findFoodByKey(key))
-          .whereType<FoodItem>()
-          .toList(growable: false);
-      final notes = _operationalNotesController.text.trim();
-
       final plan = GroupDietPlan(
         groupId: group.id,
         foodKey: food.key,
@@ -652,22 +705,19 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         targetKcalPerCatPerDay: targetPerCat,
         targetKcalPerGroupPerDay: totalKcal,
         portionGramsPerCatPerDay: portionPerCat,
-        portionGramsPerGroupPerDay: totalPortion,
-        mealsPerDay: _mealsPerDay,
-        portionGramsPerGroupPerMeal: portionPerGroupMeal,
+        portionGramsPerGroupPerDay: preview.portionGramsPerDay,
+        mealsPerDay: preview.mealsPerDay,
+        portionGramsPerGroupPerMeal: preview.portionGramsPerMeal,
         createdAt: DateTime.now(),
-        mealTimes: List<String>.from(_mealTimes),
-        mealLabels: DailyMealScheduleService.normalizeMealLabels(
-          _currentMealLabels(),
-          mealsPerDay: _mealsPerDay,
-        ),
-        mealPortionGrams: mealPortions,
-        startDate: _planStartDate,
+        mealTimes: preview.mealTimes,
+        mealLabels: preview.mealLabels,
+        mealPortionGrams: preview.mealPortionGrams,
+        startDate: preview.startDate,
         manualTargetKcal: targetPerCat,
         foodKeys: selectedFoods.map((f) => f.key).toList(growable: false),
-        portionUnit: _portionUnit,
-        portionUnitGrams: _portionUnitGramsValue(),
-        operationalNotes: notes.isEmpty ? null : notes,
+        portionUnit: preview.portionUnit,
+        portionUnitGrams: preview.portionUnitGrams,
+        operationalNotes: preview.operationalNotes,
         perCatShareWeights: hasUnevenDistribution
             ? {
                 for (final catId in group.catIds)
@@ -682,7 +732,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Plan saved for ${group.name}')));
-      setState(() => _hydratedGroupId = group.id);
+      setState(() => _hydratedGroupId = null);
     } on ArgumentError catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -693,6 +743,44 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         setState(() => _isSaving = false);
       }
     }
+  }
+
+  Future<void> _openPlanInspector({
+    required PlanRepository repository,
+    required Color primary,
+    required CatProfile? selectedCat,
+    required CatGroup? selectedGroup,
+    required PlanPreviewData? individualPreview,
+    required PlanPreviewData? groupPreview,
+  }) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) {
+        final navigator = Navigator.of(context);
+        return PlanInspectorSheet(
+          planningForGroup: _planningForGroup,
+          selectedCat: selectedCat,
+          selectedGroup: selectedGroup,
+          individualPreview: individualPreview,
+          groupPreview: groupPreview,
+          repository: repository,
+          primary: primary,
+          formatDate: _formatDate,
+          onSetActivePlanForCat: (cat, planId) async {
+            await _setActivePlanForCat(cat: cat, planId: planId);
+          },
+          onDeletePlanForCat: (cat, planId) async {
+            await _deletePlanForCat(cat: cat, planId: planId);
+            if (!mounted) return;
+            if (navigator.canPop()) {
+              navigator.pop();
+            }
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -715,9 +803,22 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         _findGroupById(groups, _selectedGroupId) ??
         (groups.isNotEmpty ? groups.first : null);
 
+    final selectedCatHydrationKey = selectedCat == null
+        ? null
+        : _catHydrationKey(
+            selectedCat.id,
+            repository.getPlanForCat(selectedCat.id),
+          );
+    final selectedGroupHydrationKey = selectedGroup == null
+        ? null
+        : _groupHydrationKey(
+            selectedGroup.id,
+            repository.getPlanForGroup(selectedGroup.id),
+          );
+
     if (!_planningForGroup &&
         selectedCat != null &&
-        _hydratedCatId != selectedCat.id) {
+        _hydratedCatId != selectedCatHydrationKey) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _hydratePlanForCat(selectedCat, ref);
@@ -726,7 +827,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
 
     if (_planningForGroup &&
         selectedGroup != null &&
-        _hydratedGroupId != selectedGroup.id) {
+        _hydratedGroupId != selectedGroupHydrationKey) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         _hydratePlanForGroup(selectedGroup.id, ref);
@@ -735,13 +836,6 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
 
     final showIndividualEmpty = !_planningForGroup && cats.isEmpty;
     final showGroupEmpty = _planningForGroup && groups.isEmpty;
-    final selectedCatPlans = selectedCat == null
-        ? const <DietPlan>[]
-        : (repository.getPlansForCat(selectedCat.id)
-            ..sort((a, b) => b.createdAt.compareTo(a.createdAt)));
-    final activePlanId = selectedCat == null
-        ? null
-        : repository.getActivePlanIdForCat(selectedCat.id);
     final groupKcalPresets = <double>{
       160,
       180,
@@ -752,17 +846,12 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         repository.getPlanForGroup(selectedGroup.id)?.targetKcalPerCatPerDay ??
             0,
     }.where((value) => value > 0).toList()..sort();
-    final canPreviewIndividual =
-        !_planningForGroup &&
-        selectedCat != null &&
-        _selectedFood != null &&
-        _selectedFoodKeys.isNotEmpty;
-    final canPreviewGroup =
-        _planningForGroup &&
-        selectedGroup != null &&
-        _selectedFood != null &&
-        _selectedFoodKeys.isNotEmpty &&
-        (double.tryParse(_groupKcalController.text.trim()) ?? 0) > 0;
+    final individualPreview = !_planningForGroup && selectedCat != null
+        ? _buildIndividualPreview(cat: selectedCat, repository: repository)
+        : null;
+    final groupPreview = _planningForGroup && selectedGroup != null
+        ? _buildGroupPreview(group: selectedGroup, repository: repository)
+        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -771,6 +860,20 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         backgroundColor: theme.scaffoldBackgroundColor,
         surfaceTintColor: Colors.transparent,
         elevation: 0,
+        actions: [
+          IconButton(
+            tooltip: 'Preview and saved plan',
+            onPressed: () => _openPlanInspector(
+              repository: repository,
+              primary: primary,
+              selectedCat: selectedCat,
+              selectedGroup: selectedGroup,
+              individualPreview: individualPreview,
+              groupPreview: groupPreview,
+            ),
+            icon: const Icon(Icons.visibility_outlined),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
@@ -1210,286 +1313,6 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
               message: 'Create a group before building a shared meal plan.',
             ),
           ],
-          if (!_planningForGroup && selectedCat != null) ...[
-            const SizedBox(height: 16),
-            ValueListenableBuilder(
-              valueListenable: repository.individualPlanListenable(),
-              builder: (context, Box<DietPlan> box, _) {
-                final plans = selectedCatPlans;
-                if (plans.isEmpty) return const SizedBox.shrink();
-                final activePlan = plans.firstWhere(
-                  (plan) => plan.planId == activePlanId,
-                  orElse: () => repository.getPlanForCat(selectedCat.id)!,
-                );
-                final activePlanFoods = activePlan.foodNames.isEmpty
-                    ? activePlan.foodName
-                    : activePlan.foodNames.join(' + ');
-
-                return _SavedPlanCard(
-                  title: 'Saved Individual Plan',
-                  metrics: [
-                    _PlanMetric(label: 'Food', value: activePlanFoods),
-                    _PlanMetric(
-                      label: 'Daily Goal',
-                      value:
-                          '${activePlan.targetKcalPerDay.toStringAsFixed(0)} kcal',
-                    ),
-                    _PlanMetric(
-                      label: 'Per Day',
-                      value:
-                          '${activePlan.portionGramsPerDay.toStringAsFixed(1)} g',
-                    ),
-                    _PlanMetric(
-                      label: 'Per Meal',
-                      value:
-                          '${activePlan.portionGramsPerMeal.toStringAsFixed(1)} g',
-                    ),
-                    _PlanMetric(
-                      label: 'Schedule',
-                      value: activePlan.mealTimes.join(' • '),
-                    ),
-                    _PlanMetric(
-                      label: 'Meal Names',
-                      value: activePlan.mealLabels.join(' • '),
-                    ),
-                    _PlanMetric(
-                      label: 'Starts',
-                      value: _formatDate(activePlan.startDate),
-                    ),
-                    _PlanMetric(
-                      label: 'Portions',
-                      value: activePlan.mealPortionGrams
-                          .map((value) => '${value.toStringAsFixed(1)} g')
-                          .join(' • '),
-                    ),
-                    _PlanMetric(
-                      label: 'Unit',
-                      value:
-                          '${activePlan.portionUnit} (${activePlan.portionUnitGrams.toStringAsFixed(2)} g)',
-                    ),
-                    _PlanMetric(
-                      label: 'Notes',
-                      value: activePlan.operationalNotes ?? '-',
-                    ),
-                    _PlanMetric(
-                      label: 'Weekend Alt',
-                      value: activePlan.dailyOverrides.containsKey(0)
-                          ? 'Enabled'
-                          : 'Disabled',
-                    ),
-                    _PlanMetric(
-                      label: 'Weekday Overrides',
-                      value: activePlan.dailyOverrides.keys
-                          .where((key) => key >= 1 && key <= 7)
-                          .length
-                          .toString(),
-                    ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: DropdownButtonFormField<String>(
-                        initialValue: activePlan.planId,
-                        decoration: const InputDecoration(
-                          labelText: 'Active plan',
-                          border: OutlineInputBorder(),
-                        ),
-                        items: plans.where((plan) => plan.planId != null).map((
-                          plan,
-                        ) {
-                          return DropdownMenuItem<String>(
-                            value: plan.planId!,
-                            child: Text(
-                              '${_formatDate(plan.startDate)} • ${plan.createdAt.hour.toString().padLeft(2, '0')}:${plan.createdAt.minute.toString().padLeft(2, '0')}',
-                            ),
-                          );
-                        }).toList(),
-                        onChanged: (value) async {
-                          if (value == null) return;
-                          await _setActivePlanForCat(
-                            cat: selectedCat,
-                            planId: value,
-                          );
-                        },
-                      ),
-                    ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children: plans
-                            .where((plan) => plan.planId != null)
-                            .map((plan) {
-                              final isActive = plan.planId == activePlanId;
-                              return OutlinedButton.icon(
-                                onPressed: isActive
-                                    ? null
-                                    : () async {
-                                        await _setActivePlanForCat(
-                                          cat: selectedCat,
-                                          planId: plan.planId!,
-                                        );
-                                      },
-                                icon: const Icon(Icons.check_circle_outline),
-                                label: Text(
-                                  'Use ${_formatDate(plan.startDate)}',
-                                ),
-                              );
-                            })
-                            .toList(),
-                      ),
-                    ),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: activePlan.planId == null
-                            ? null
-                            : () async {
-                                await _deletePlanForCat(
-                                  cat: selectedCat,
-                                  planId: activePlan.planId!,
-                                );
-                              },
-                        icon: const Icon(Icons.delete_outline),
-                        label: const Text('Delete active plan'),
-                      ),
-                    ),
-                  ],
-                  primary: primary,
-                );
-              },
-            ),
-          ],
-          if (_planningForGroup && selectedGroup != null) ...[
-            const SizedBox(height: 16),
-            ValueListenableBuilder(
-              valueListenable: repository.groupPlanListenable(selectedGroup.id),
-              builder: (context, Box<GroupDietPlan> box, _) {
-                final plan = box.get(selectedGroup.id);
-                if (plan == null) return const SizedBox.shrink();
-
-                return _SavedPlanCard(
-                  title: 'Saved Group Plan',
-                  metrics: [
-                    _PlanMetric(
-                      label: 'Food',
-                      value: plan.foodKeys.length > 1
-                          ? '${plan.foodName} + ${plan.foodKeys.length - 1} more'
-                          : plan.foodName,
-                    ),
-                    _PlanMetric(label: 'Cats', value: '${plan.catCount}'),
-                    _PlanMetric(
-                      label: 'Per Cat',
-                      value:
-                          '${plan.targetKcalPerCatPerDay.toStringAsFixed(0)} kcal',
-                    ),
-                    _PlanMetric(
-                      label: 'Group Total',
-                      value:
-                          '${plan.targetKcalPerGroupPerDay.toStringAsFixed(0)} kcal',
-                    ),
-                    _PlanMetric(
-                      label: 'Group / Day',
-                      value:
-                          '${plan.portionGramsPerGroupPerDay.toStringAsFixed(1)} g',
-                    ),
-                    _PlanMetric(
-                      label: 'Group / Meal',
-                      value:
-                          '${plan.portionGramsPerGroupPerMeal.toStringAsFixed(1)} g',
-                    ),
-                    _PlanMetric(
-                      label: 'Schedule',
-                      value: plan.mealTimes.join(' • '),
-                    ),
-                    _PlanMetric(
-                      label: 'Meal Names',
-                      value: plan.mealLabels.join(' • '),
-                    ),
-                    _PlanMetric(
-                      label: 'Starts',
-                      value: _formatDate(plan.startDate),
-                    ),
-                    _PlanMetric(
-                      label: 'Portions',
-                      value: plan.mealPortionGrams
-                          .map((value) => '${value.toStringAsFixed(1)} g')
-                          .join(' • '),
-                    ),
-                    _PlanMetric(
-                      label: 'Unit',
-                      value:
-                          '${plan.portionUnit} (${plan.portionUnitGrams.toStringAsFixed(2)} g)',
-                    ),
-                    _PlanMetric(
-                      label: 'Notes',
-                      value: plan.operationalNotes ?? '-',
-                    ),
-                    _PlanMetric(
-                      label: 'Distribution',
-                      value: plan.perCatShareWeights.isEmpty
-                          ? 'Equal'
-                          : 'Unequal (${plan.perCatShareWeights.length} cats)',
-                    ),
-                  ],
-                  primary: primary,
-                );
-              },
-            ),
-          ],
-          if (canPreviewIndividual) ...[
-            const SizedBox(height: 16),
-            _IndividualPlanSummaryCard(
-              cat: selectedCat,
-              food: _selectedFood!,
-              mealsPerDay: _mealsPerDay,
-              mealTimes: _mealTimes,
-              mealLabels: DailyMealScheduleService.normalizeMealLabels(
-                _currentMealLabels(),
-                mealsPerDay: _mealsPerDay,
-              ),
-              mealPortions: _mealPortionsFromTotal(
-                DietCalculatorService.calculateDailyPortionGrams(
-                  targetKcal:
-                      selectedCat.manualTargetKcal ??
-                      DietCalculatorService.suggestTargetKcal(
-                        weightKg: selectedCat.weight,
-                        idealWeightKg: selectedCat.idealWeight,
-                        ageMonths: selectedCat.age,
-                        neutered: selectedCat.neutered,
-                        activityLevel: selectedCat.activityLevel,
-                        goal: selectedCat.goal,
-                        bcs: selectedCat.bcs,
-                      ),
-                  kcalPer100g: _selectedFood!.kcalPer100g,
-                ),
-              ),
-              startDate: _planStartDate,
-            ),
-          ],
-          if (canPreviewGroup) ...[
-            const SizedBox(height: 16),
-            _GroupPlanSummaryCard(
-              group: selectedGroup,
-              food: _selectedFood!,
-              mealsPerDay: _mealsPerDay,
-              targetKcalPerCat: double.parse(_groupKcalController.text.trim()),
-              mealTimes: _mealTimes,
-              mealLabels: DailyMealScheduleService.normalizeMealLabels(
-                _currentMealLabels(),
-                mealsPerDay: _mealsPerDay,
-              ),
-              mealPortions: _mealPortionsFromTotal(
-                DietCalculatorService.calculateDailyPortionGrams(
-                      targetKcal: double.parse(
-                        _groupKcalController.text.trim(),
-                      ),
-                      kcalPer100g: _selectedFood!.kcalPer100g,
-                    ) *
-                    selectedGroup.catCount,
-              ),
-              startDate: _planStartDate,
-            ),
-          ],
           const SizedBox(height: 16),
           Text(
             'Available Foods',
@@ -1695,13 +1518,11 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
           FilledButton.icon(
             onPressed: _isSaving
                 ? null
-                : _selectedFood == null || _selectedFoodKeys.isEmpty
-                ? null
                 : _planningForGroup
-                ? (selectedGroup == null
+                ? (groupPreview == null || selectedGroup == null
                       ? null
                       : () => _saveGroupPlan(selectedGroup))
-                : (selectedCat == null
+                : (individualPreview == null || selectedCat == null
                       ? null
                       : () => _saveIndividualPlan(selectedCat)),
             icon: _isSaving
@@ -1712,328 +1533,6 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                 : Text(_planningForGroup ? 'Save Group Plan' : 'Save Plan'),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _PlanMetric extends StatelessWidget {
-  const _PlanMetric({required this.label, required this.value});
-
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final secondary =
-        theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.65) ??
-        const Color(0xFF7A7678);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: theme.textTheme.labelMedium?.copyWith(
-            color: secondary,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          value,
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w900,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _IndividualPlanSummaryCard extends StatelessWidget {
-  const _IndividualPlanSummaryCard({
-    required this.cat,
-    required this.food,
-    required this.mealsPerDay,
-    required this.mealTimes,
-    required this.mealLabels,
-    required this.mealPortions,
-    required this.startDate,
-  });
-
-  final CatProfile cat;
-  final FoodItem food;
-  final int mealsPerDay;
-  final List<String> mealTimes;
-  final List<String> mealLabels;
-  final List<double> mealPortions;
-  final DateTime startDate;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final primary = theme.colorScheme.primary;
-    final secondary =
-        theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.65) ??
-        const Color(0xFF7A7678);
-    final targetKcal =
-        cat.manualTargetKcal ??
-        DietCalculatorService.suggestTargetKcal(
-          weightKg: cat.weight,
-          idealWeightKg: cat.idealWeight,
-          ageMonths: cat.age,
-          neutered: cat.neutered,
-          activityLevel: cat.activityLevel,
-          goal: cat.goal,
-          bcs: cat.bcs,
-        );
-    final dailyPortion = DietCalculatorService.calculateDailyPortionGrams(
-      targetKcal: targetKcal,
-      kcalPer100g: food.kcalPer100g,
-    );
-    final perMeal = DietCalculatorService.calculatePortionPerMealGrams(
-      portionPerDayGrams: dailyPortion,
-      mealsPerDay: mealsPerDay,
-    );
-    final alert = DietCalculatorService.healthAlertForWeight(cat.weight);
-
-    return _SectionCard(
-      primary: primary,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Plan Preview',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '${cat.name} with ${food.name}',
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '${food.kcalPer100g.toStringAsFixed(0)} kcal per 100g',
-            style: theme.textTheme.bodyMedium?.copyWith(color: secondary),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              _PlanMetric(
-                label: 'Daily Goal',
-                value: '${targetKcal.toStringAsFixed(0)} kcal',
-              ),
-              _PlanMetric(
-                label: 'Daily Portion',
-                value: '${dailyPortion.toStringAsFixed(1)} g',
-              ),
-              _PlanMetric(
-                label: 'Per Meal',
-                value: '${perMeal.toStringAsFixed(1)} g',
-              ),
-              _PlanMetric(label: 'Goal', value: catGoalLabel(cat.goal)),
-              _PlanMetric(label: 'Meals/day', value: mealsPerDay.toString()),
-              _PlanMetric(
-                label: 'Starts',
-                value:
-                    '${startDate.day.toString().padLeft(2, '0')}/${startDate.month.toString().padLeft(2, '0')}/${startDate.year}',
-              ),
-              _PlanMetric(label: 'Meal Names', value: mealLabels.join(' • ')),
-              _PlanMetric(label: 'Schedule', value: mealTimes.join(' • ')),
-              _PlanMetric(
-                label: 'Portions',
-                value: mealPortions
-                    .map((value) => '${value.toStringAsFixed(1)} g')
-                    .join(' • '),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: primary.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Text(
-              alert,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: secondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _GroupPlanSummaryCard extends StatelessWidget {
-  const _GroupPlanSummaryCard({
-    required this.group,
-    required this.food,
-    required this.mealsPerDay,
-    required this.targetKcalPerCat,
-    required this.mealTimes,
-    required this.mealLabels,
-    required this.mealPortions,
-    required this.startDate,
-  });
-
-  final CatGroup group;
-  final FoodItem food;
-  final int mealsPerDay;
-  final double targetKcalPerCat;
-  final List<String> mealTimes;
-  final List<String> mealLabels;
-  final List<double> mealPortions;
-  final DateTime startDate;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final primary = theme.colorScheme.primary;
-    final secondary =
-        theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.65) ??
-        const Color(0xFF7A7678);
-
-    final portionPerCat = DietCalculatorService.calculateDailyPortionGrams(
-      targetKcal: targetKcalPerCat,
-      kcalPer100g: food.kcalPer100g,
-    );
-    final totalKcal = targetKcalPerCat * group.catCount;
-    final totalPortion = portionPerCat * group.catCount;
-    final perGroupMeal = DietCalculatorService.calculatePortionPerMealGrams(
-      portionPerDayGrams: totalPortion,
-      mealsPerDay: mealsPerDay,
-    );
-
-    return _SectionCard(
-      primary: primary,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Group Plan Preview',
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            '${group.name} with ${food.name}',
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            '${group.catCount} cats • ${food.kcalPer100g.toStringAsFixed(0)} kcal per 100g',
-            style: theme.textTheme.bodyMedium?.copyWith(color: secondary),
-          ),
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              _PlanMetric(
-                label: 'Per Cat',
-                value: '${targetKcalPerCat.toStringAsFixed(0)} kcal',
-              ),
-              _PlanMetric(
-                label: 'Group Total',
-                value: '${totalKcal.toStringAsFixed(0)} kcal',
-              ),
-              _PlanMetric(
-                label: 'Cat / Day',
-                value: '${portionPerCat.toStringAsFixed(1)} g',
-              ),
-              _PlanMetric(
-                label: 'Group / Day',
-                value: '${totalPortion.toStringAsFixed(1)} g',
-              ),
-              _PlanMetric(
-                label: 'Group / Meal',
-                value: '${perGroupMeal.toStringAsFixed(1)} g',
-              ),
-              _PlanMetric(
-                label: 'Starts',
-                value:
-                    '${startDate.day.toString().padLeft(2, '0')}/${startDate.month.toString().padLeft(2, '0')}/${startDate.year}',
-              ),
-              _PlanMetric(label: 'Meal Names', value: mealLabels.join(' • ')),
-              _PlanMetric(label: 'Schedule', value: mealTimes.join(' • ')),
-              _PlanMetric(
-                label: 'Portions',
-                value: mealPortions
-                    .map((value) => '${value.toStringAsFixed(1)} g')
-                    .join(' • '),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: primary.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Text(
-              'This shared plan uses a single kcal target per cat and scales the total portion by the group size.',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: secondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SavedPlanCard extends StatelessWidget {
-  const _SavedPlanCard({
-    required this.title,
-    required this.metrics,
-    required this.primary,
-  });
-
-  final String title;
-  final List<Widget> metrics;
-  final Color primary;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: _SectionCard(
-        primary: primary,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 12),
-            Wrap(spacing: 12, runSpacing: 12, children: metrics),
-          ],
-        ),
       ),
     );
   }

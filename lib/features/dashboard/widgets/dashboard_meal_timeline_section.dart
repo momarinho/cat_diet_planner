@@ -1,18 +1,136 @@
-import 'package:cat_diet_planner/features/dashboard/providers/dashboard_summary_provider.dart';
+import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/core/widgets/app_empty_state.dart';
+import 'package:cat_diet_planner/core/widgets/meal_horizontal_card.dart';
+import 'package:cat_diet_planner/data/models/cat_profile.dart';
+import 'package:cat_diet_planner/features/daily/providers/daily_schedule_repository_provider.dart';
+import 'package:cat_diet_planner/features/daily/services/daily_meal_schedule_service.dart';
+import 'package:cat_diet_planner/features/dashboard/providers/dashboard_summary_provider.dart';
+import 'package:cat_diet_planner/features/plans/providers/plan_repository_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/widgets/meal_horizontal_card.dart';
+class DashboardMealTimelineSection extends ConsumerWidget {
+  const DashboardMealTimelineSection({super.key, required this.cat});
 
-class DashboardMealTimelineSection extends StatelessWidget {
-  const DashboardMealTimelineSection({super.key, required this.summary});
+  final CatProfile cat;
 
-  final DashboardSummaryData? summary;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final planRepository = ref.read(planRepositoryProvider);
+    final scheduleRepository = ref.read(dailyScheduleRepositoryProvider);
+    final todayKey = scheduleRepository.catDayKey(cat.id);
+
+    return ValueListenableBuilder(
+      valueListenable: planRepository.individualPlanListenable(),
+      builder: (context, _, _) {
+        final plan = planRepository.getPlanForCat(cat.id);
+        if (plan == null ||
+            !DailyMealScheduleService.isPlanActiveOn(
+              startDate: plan.startDate,
+            )) {
+          return _TimelineScaffold(
+            onViewPlan: () => Navigator.of(context).pushNamed(AppRoutes.plans),
+            child: const AppEmptyState(
+              icon: Icons.timeline_outlined,
+              title: 'No timeline yet',
+              description: 'Save a meal plan to unlock the meal timeline.',
+            ),
+          );
+        }
+
+        DailyMealScheduleService.ensureTodaySchedule(cat: cat, plan: plan);
+
+        return ValueListenableBuilder(
+          valueListenable: scheduleRepository.mealsListenable(keys: [todayKey]),
+          builder: (context, _, _) {
+            final schedule =
+                scheduleRepository.readSchedule(todayKey) ??
+                DailyMealScheduleService.ensureTodaySchedule(
+                  cat: cat,
+                  plan: plan,
+                );
+            final items = ((schedule['items'] as List?) ?? const [])
+                .map((item) => Map<String, dynamic>.from(item as Map))
+                .where((item) => item['type'] == 'meal')
+                .toList(growable: false);
+
+            var nextMealIndex = -1;
+            for (var index = 0; index < items.length; index++) {
+              if (items[index]['completed'] != true) {
+                nextMealIndex = index;
+                break;
+              }
+            }
+
+            final meals = List<DashboardMealItem>.generate(items.length, (
+              index,
+            ) {
+              final item = items[index];
+              return DashboardMealItem(
+                id: item['id']?.toString() ?? 'meal_$index',
+                title: item['title']?.toString() ?? 'Meal ${index + 1}',
+                time: item['time']?.toString() ?? '--:--',
+                calories: ((item['kcal'] as num?)?.toDouble() ?? 0).round(),
+                isCompleted: item['completed'] == true,
+                isNext: index == nextMealIndex,
+              );
+            });
+
+            return _TimelineScaffold(
+              onViewPlan: () =>
+                  Navigator.of(context).pushNamed(AppRoutes.plans),
+              child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                clipBehavior: Clip.none,
+                child: Row(
+                  children: [
+                    for (var index = 0; index < meals.length; index++) ...[
+                      MealHorizontalCard(
+                        title: meals[index].title,
+                        time: meals[index].time,
+                        calories: meals[index].calories,
+                        icon: dashboardMealIconForTitle(meals[index].title),
+                        isCompleted: meals[index].isCompleted,
+                        isNext: meals[index].isNext,
+                        onTap: () async {
+                          await DailyMealScheduleService.markMealCompleted(
+                            catId: cat.id,
+                            mealId: meals[index].id,
+                            completed: !meals[index].isCompleted,
+                          );
+                          if (!context.mounted) return;
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                meals[index].isCompleted
+                                    ? '${meals[index].title} marked as pending.'
+                                    : '${meals[index].title} marked as completed.',
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      if (index != meals.length - 1) const SizedBox(width: 12),
+                    ],
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _TimelineScaffold extends StatelessWidget {
+  const _TimelineScaffold({required this.child, required this.onViewPlan});
+
+  final Widget child;
+  final VoidCallback onViewPlan;
 
   @override
   Widget build(BuildContext context) {
-    final meals = summary?.meals ?? const <DashboardMealItem>[];
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -25,41 +143,11 @@ class DashboardMealTimelineSection extends StatelessWidget {
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
             ),
             const Spacer(),
-            Text(
-              'View Plan',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
+            TextButton(onPressed: onViewPlan, child: const Text('View Plan')),
           ],
         ),
         const SizedBox(height: 12),
-        if (meals.isEmpty)
-          const AppEmptyState(
-            icon: Icons.timeline_outlined,
-            title: 'No timeline yet',
-            description: 'Save a meal plan to unlock the meal timeline.',
-          )
-        else
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            clipBehavior: Clip.none,
-            child: Row(
-              children: [
-                for (var index = 0; index < meals.length; index++) ...[
-                  MealHorizontalCard(
-                    title: meals[index].title,
-                    time: meals[index].time,
-                    calories: meals[index].calories,
-                    icon: dashboardMealIconForTitle(meals[index].title),
-                    isCompleted: meals[index].isCompleted,
-                    isNext: meals[index].isNext,
-                  ),
-                  if (index != meals.length - 1) const SizedBox(width: 12),
-                ],
-              ],
-            ),
-          ),
+        child,
       ],
     );
   }

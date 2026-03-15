@@ -32,6 +32,50 @@ class SmartSuggestion {
   final List<String> reasonCodes;
   final Map<String, dynamic> metadata;
   final DateTime generatedAt;
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'type': type.name,
+      'priority': priority.name,
+      'title': title,
+      'summary': summary,
+      'recommendedAction': recommendedAction,
+      'confidenceScore': confidenceScore,
+      'reasonCodes': reasonCodes,
+      'metadata': metadata,
+      'generatedAt': generatedAt.toIso8601String(),
+    };
+  }
+
+  factory SmartSuggestion.fromMap(Map<dynamic, dynamic> map) {
+    return SmartSuggestion(
+      id: map['id']?.toString() ?? '',
+      type: SuggestionType.values.firstWhere(
+        (value) => value.name == map['type']?.toString(),
+        orElse: () => SuggestionType.preventiveTrendAlert,
+      ),
+      priority: SuggestionPriority.values.firstWhere(
+        (value) => value.name == map['priority']?.toString(),
+        orElse: () => SuggestionPriority.medium,
+      ),
+      title: map['title']?.toString() ?? '',
+      summary: map['summary']?.toString() ?? '',
+      recommendedAction: map['recommendedAction']?.toString() ?? '',
+      confidenceScore: (map['confidenceScore'] as num?)?.toDouble() ?? 0.0,
+      reasonCodes:
+          (map['reasonCodes'] as List?)
+              ?.map((value) => value.toString())
+              .toList(growable: false) ??
+          const [],
+      metadata: Map<String, dynamic>.from(
+        (map['metadata'] as Map?) ?? const {},
+      ),
+      generatedAt:
+          DateTime.tryParse(map['generatedAt']?.toString() ?? '') ??
+          DateTime.fromMillisecondsSinceEpoch(0),
+    );
+  }
 }
 
 abstract final class SuggestionReasonCodes {

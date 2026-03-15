@@ -18,6 +18,7 @@ class AppSettings {
     required this.suggestionCategoryToggles,
     required this.suggestionDailyLimit,
     required this.suggestionAlertsOnly,
+    required this.suggestionAutoApply,
   });
 
   final bool mealReminders;
@@ -39,6 +40,7 @@ class AppSettings {
   final Map<String, bool> suggestionCategoryToggles;
   final int suggestionDailyLimit;
   final bool suggestionAlertsOnly;
+  final bool suggestionAutoApply;
 
   factory AppSettings.defaults() {
     return const AppSettings(
@@ -70,6 +72,7 @@ class AppSettings {
       },
       suggestionDailyLimit: 3,
       suggestionAlertsOnly: false,
+      suggestionAutoApply: false,
     );
   }
 
@@ -92,6 +95,7 @@ class AppSettings {
     Map<String, bool>? suggestionCategoryToggles,
     int? suggestionDailyLimit,
     bool? suggestionAlertsOnly,
+    bool? suggestionAutoApply,
   }) {
     return AppSettings(
       mealReminders: mealReminders ?? this.mealReminders,
@@ -117,6 +121,7 @@ class AppSettings {
           suggestionCategoryToggles ?? this.suggestionCategoryToggles,
       suggestionDailyLimit: suggestionDailyLimit ?? this.suggestionDailyLimit,
       suggestionAlertsOnly: suggestionAlertsOnly ?? this.suggestionAlertsOnly,
+      suggestionAutoApply: suggestionAutoApply ?? this.suggestionAutoApply,
     );
   }
 
@@ -140,6 +145,7 @@ class AppSettings {
       'suggestionCategoryToggles': suggestionCategoryToggles,
       'suggestionDailyLimit': suggestionDailyLimit,
       'suggestionAlertsOnly': suggestionAlertsOnly,
+      'suggestionAutoApply': suggestionAutoApply,
     };
   }
 
@@ -197,6 +203,7 @@ class AppSettings {
       suggestionCategoryToggles: suggestionToggles,
       suggestionDailyLimit: (map['suggestionDailyLimit'] as int?) ?? 3,
       suggestionAlertsOnly: map['suggestionAlertsOnly'] as bool? ?? false,
+      suggestionAutoApply: map['suggestionAutoApply'] as bool? ?? false,
     );
   }
 }

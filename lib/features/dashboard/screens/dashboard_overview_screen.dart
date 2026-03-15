@@ -48,7 +48,7 @@ class DashboardOverviewScreen extends ConsumerWidget {
             SizedBox(height: 16),
             DashboardDailySummaryCard(summary: summary),
             SizedBox(height: 16),
-            DashboardMealTimelineSection(summary: summary),
+            DashboardMealTimelineSection(cat: cat),
           ],
         ),
       ),

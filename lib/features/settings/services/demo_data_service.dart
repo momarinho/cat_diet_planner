@@ -188,8 +188,11 @@ class DemoDataService {
         mealsPerDay: 4,
       ),
       startDate: now.subtract(const Duration(days: 2)),
+      planId: 'plan-${luna.id}-default',
     );
-    await HiveService.dietPlansBox.put(luna.id, lunaPlan);
+    await HiveService.dietPlansBox.put(lunaPlan.planId, lunaPlan);
+    luna.activePlanId = lunaPlan.planId;
+    await luna.save();
 
     final groupFood = foods[whiskasKey]!;
     const targetPerCat = 220.0;
@@ -388,7 +391,9 @@ class DemoDataService {
         startDate: now.subtract(const Duration(days: 1)),
         planId: 'plan-${cat.id}-default',
       );
-      await HiveService.dietPlansBox.put(cat.id, plan);
+      await HiveService.dietPlansBox.put(plan.planId, plan);
+      cat.activePlanId = plan.planId;
+      await cat.save();
       DailyMealScheduleService.ensureTodaySchedule(cat: cat, plan: plan);
     }
 

@@ -47,3 +47,7 @@ app.*.map.json
 # Arquivos .md
 PLAN.md
 UI_PLAN.md
+
+# Internal scratch folders
+internals/
+itnernals/
