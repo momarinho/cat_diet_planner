@@ -19,6 +19,9 @@ class AppSettings {
     required this.suggestionDailyLimit,
     required this.suggestionAlertsOnly,
     required this.suggestionAutoApply,
+    required this.backupReminderEnabled,
+    required this.backupReminderDays,
+    required this.lastBackupAtIso,
   });
 
   final bool mealReminders;
@@ -41,6 +44,9 @@ class AppSettings {
   final int suggestionDailyLimit;
   final bool suggestionAlertsOnly;
   final bool suggestionAutoApply;
+  final bool backupReminderEnabled;
+  final int backupReminderDays;
+  final String? lastBackupAtIso;
 
   factory AppSettings.defaults() {
     return const AppSettings(
@@ -73,6 +79,9 @@ class AppSettings {
       suggestionDailyLimit: 3,
       suggestionAlertsOnly: false,
       suggestionAutoApply: false,
+      backupReminderEnabled: true,
+      backupReminderDays: 7,
+      lastBackupAtIso: null,
     );
   }
 
@@ -96,6 +105,9 @@ class AppSettings {
     int? suggestionDailyLimit,
     bool? suggestionAlertsOnly,
     bool? suggestionAutoApply,
+    bool? backupReminderEnabled,
+    int? backupReminderDays,
+    String? lastBackupAtIso,
   }) {
     return AppSettings(
       mealReminders: mealReminders ?? this.mealReminders,
@@ -122,6 +134,10 @@ class AppSettings {
       suggestionDailyLimit: suggestionDailyLimit ?? this.suggestionDailyLimit,
       suggestionAlertsOnly: suggestionAlertsOnly ?? this.suggestionAlertsOnly,
       suggestionAutoApply: suggestionAutoApply ?? this.suggestionAutoApply,
+      backupReminderEnabled:
+          backupReminderEnabled ?? this.backupReminderEnabled,
+      backupReminderDays: backupReminderDays ?? this.backupReminderDays,
+      lastBackupAtIso: lastBackupAtIso ?? this.lastBackupAtIso,
     );
   }
 
@@ -146,6 +162,9 @@ class AppSettings {
       'suggestionDailyLimit': suggestionDailyLimit,
       'suggestionAlertsOnly': suggestionAlertsOnly,
       'suggestionAutoApply': suggestionAutoApply,
+      'backupReminderEnabled': backupReminderEnabled,
+      'backupReminderDays': backupReminderDays,
+      'lastBackupAtIso': lastBackupAtIso,
     };
   }
 
@@ -206,7 +225,20 @@ class AppSettings {
       suggestionDailyLimit: (map['suggestionDailyLimit'] as int?) ?? 3,
       suggestionAlertsOnly: map['suggestionAlertsOnly'] as bool? ?? false,
       suggestionAutoApply: map['suggestionAutoApply'] as bool? ?? false,
+      backupReminderEnabled: map['backupReminderEnabled'] as bool? ?? true,
+      backupReminderDays: _normalizeReminderDays(
+        map['backupReminderDays'] as int? ?? 7,
+      ),
+      lastBackupAtIso: map['lastBackupAtIso']?.toString(),
     );
+  }
+
+  static int _normalizeReminderDays(int value) {
+    const allowed = {3, 7, 14, 30};
+    if (allowed.contains(value)) {
+      return value;
+    }
+    return 7;
   }
 
   static String _normalizeLanguageCode(String value) {

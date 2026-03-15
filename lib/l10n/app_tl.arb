@@ -750,5 +750,49 @@
   "invalidImageFile": "Hindi wastong image file.",
   "languageEnglish": "Ingles",
   "languagePortugueseBrazil": "Portuges (Brazil)",
-  "languageTagalog": "Tagalog"
+  "languageTagalog": "Tagalog",
+  "dataManagementTitle": "Pamamahala ng data",
+  "backupDataTitle": "I-export ang backup",
+  "backupDataDescription": "Mag-export at magbahagi ng JSON backup ng lahat ng lokal na data ng app.",
+  "importBackupTitle": "Mag-import ng backup",
+  "importBackupDescription": "Ibalik sa device na ito ang dating na-export na JSON backup.",
+  "importBackupConfirmationDescription": "Papaltan ng pag-import ng backup ang kasalukuyang lokal na data sa device na ito. Magpatuloy lang kung pinagkakatiwalaan mo ang file.",
+  "importAction": "Import",
+  "backupReminderTitle": "Paalala sa backup",
+  "backupReminderDescription": "Magpakita ng babala sa Settings kapag oras nang gumawa ulit ng backup.",
+  "backupReminderFrequencyTitle": "Dalas ng paalala",
+  "backupReminderEveryDays": "Tuwing {days} araw",
+  "@backupReminderEveryDays": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "backupReminderDueTitle": "Lagpas na ang backup",
+  "backupReminderDueDescription": "Mag-export ng bagong backup bawat {days} araw para hindi mawala ang lokal na data ng browser.",
+  "@backupReminderDueDescription": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "backupNeverExportedLabel": "Wala pang na-export na backup",
+  "lastBackupAtLabel": "Huling backup: {date}",
+  "@lastBackupAtLabel": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "backupExportedMessage": "Matagumpay na na-export ang backup.",
+  "backupImportedMessage": "Naibalik ang backup: {groups} group, {cats} pusa, {foods} pagkain at {plans} plan.",
+  "@backupImportedMessage": {
+    "placeholders": {
+      "groups": {"type": "int"},
+      "cats": {"type": "int"},
+      "foods": {"type": "int"},
+      "plans": {"type": "int"}
+    }
+  },
+  "backupImportFailedMessage": "Hindi ma-import ang backup file na ito.",
+  "generateDemoDataListTileDescription": "Gumawa ng isang group, isang solo na pusa, mga pagkain, plans, meals at weight history.",
+  "generateStressDataListTileDescription": "Gumawa ng high-volume na scenario para masubukan ang UI ng maraming pusa at group.",
+  "clearDemoDataListTileDescription": "Tanggalin ang lokal na mga pusa, group, pagkain, plans, meals at history."
 }

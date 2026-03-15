@@ -1532,4 +1532,82 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get languageTagalog => 'Tagalog';
+
+  @override
+  String get dataManagementTitle => 'Data Management';
+
+  @override
+  String get backupDataTitle => 'Export Backup';
+
+  @override
+  String get backupDataDescription =>
+      'Export and share a JSON backup snapshot of all local app data.';
+
+  @override
+  String get importBackupTitle => 'Import Backup';
+
+  @override
+  String get importBackupDescription =>
+      'Restore a previously exported JSON backup on this device.';
+
+  @override
+  String get importBackupConfirmationDescription =>
+      'Importing a backup replaces the current local data on this device. Continue only if you trust the file.';
+
+  @override
+  String get importAction => 'Import';
+
+  @override
+  String get backupReminderTitle => 'Backup reminder';
+
+  @override
+  String get backupReminderDescription =>
+      'Show a warning in Settings when it is time to export a new backup.';
+
+  @override
+  String get backupReminderFrequencyTitle => 'Reminder frequency';
+
+  @override
+  String backupReminderEveryDays(int days) {
+    return 'Every $days days';
+  }
+
+  @override
+  String get backupReminderDueTitle => 'Backup overdue';
+
+  @override
+  String backupReminderDueDescription(int days) {
+    return 'Export a fresh backup every $days days to avoid losing local browser data.';
+  }
+
+  @override
+  String get backupNeverExportedLabel => 'No backup exported yet';
+
+  @override
+  String lastBackupAtLabel(String date) {
+    return 'Last backup: $date';
+  }
+
+  @override
+  String get backupExportedMessage => 'Backup exported successfully.';
+
+  @override
+  String backupImportedMessage(int groups, int cats, int foods, int plans) {
+    return 'Backup restored: $groups groups, $cats cats, $foods foods and $plans plans.';
+  }
+
+  @override
+  String get backupImportFailedMessage => 'Could not import this backup file.';
+
+  @override
+  String get generateDemoDataListTileDescription =>
+      'Create one group, one solo cat, foods, plans, meals and weight history.';
+
+  @override
+  String get generateStressDataListTileDescription =>
+      'Create a high-volume scenario to validate many cats and groups.';
+
+  @override
+  String get clearDemoDataListTileDescription =>
+      'Remove local cats, groups, foods, plans, meals and history.';
 }

@@ -1552,6 +1552,85 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get languageTagalog => 'Tagalog';
+
+  @override
+  String get dataManagementTitle => 'Gerenciamento de dados';
+
+  @override
+  String get backupDataTitle => 'Exportar backup';
+
+  @override
+  String get backupDataDescription =>
+      'Exporte e compartilhe um backup JSON com todos os dados locais do app.';
+
+  @override
+  String get importBackupTitle => 'Importar backup';
+
+  @override
+  String get importBackupDescription =>
+      'Restaure neste aparelho um backup JSON exportado anteriormente.';
+
+  @override
+  String get importBackupConfirmationDescription =>
+      'Importar um backup substitui os dados locais atuais deste aparelho. Continue apenas se confiar no arquivo.';
+
+  @override
+  String get importAction => 'Importar';
+
+  @override
+  String get backupReminderTitle => 'Lembrete de backup';
+
+  @override
+  String get backupReminderDescription =>
+      'Mostra um aviso nas Configuracoes quando chegar a hora de exportar um novo backup.';
+
+  @override
+  String get backupReminderFrequencyTitle => 'Frequencia do lembrete';
+
+  @override
+  String backupReminderEveryDays(int days) {
+    return 'A cada $days dias';
+  }
+
+  @override
+  String get backupReminderDueTitle => 'Backup vencido';
+
+  @override
+  String backupReminderDueDescription(int days) {
+    return 'Exporte um backup novo a cada $days dias para evitar perder os dados locais do navegador.';
+  }
+
+  @override
+  String get backupNeverExportedLabel => 'Nenhum backup exportado ainda';
+
+  @override
+  String lastBackupAtLabel(String date) {
+    return 'Ultimo backup: $date';
+  }
+
+  @override
+  String get backupExportedMessage => 'Backup exportado com sucesso.';
+
+  @override
+  String backupImportedMessage(int groups, int cats, int foods, int plans) {
+    return 'Backup restaurado: $groups grupos, $cats gatos, $foods alimentos e $plans planos.';
+  }
+
+  @override
+  String get backupImportFailedMessage =>
+      'Nao foi possivel importar este arquivo de backup.';
+
+  @override
+  String get generateDemoDataListTileDescription =>
+      'Cria um grupo, um gato solo, alimentos, planos, refeicoes e historico de peso.';
+
+  @override
+  String get generateStressDataListTileDescription =>
+      'Cria um cenario de alto volume para validar muitos gatos e grupos.';
+
+  @override
+  String get clearDemoDataListTileDescription =>
+      'Remove gatos, grupos, alimentos, planos, refeicoes e historico locais.';
 }
 
 /// The translations for Portuguese, as used in Brazil (`pt_BR`).
@@ -3102,4 +3181,83 @@ class AppLocalizationsPtBr extends AppLocalizationsPt {
 
   @override
   String get languageTagalog => 'Tagalog';
+
+  @override
+  String get dataManagementTitle => 'Gerenciamento de dados';
+
+  @override
+  String get backupDataTitle => 'Exportar backup';
+
+  @override
+  String get backupDataDescription =>
+      'Exporte e compartilhe um backup JSON com todos os dados locais do app.';
+
+  @override
+  String get importBackupTitle => 'Importar backup';
+
+  @override
+  String get importBackupDescription =>
+      'Restaure neste aparelho um backup JSON exportado anteriormente.';
+
+  @override
+  String get importBackupConfirmationDescription =>
+      'Importar um backup substitui os dados locais atuais deste aparelho. Continue apenas se confiar no arquivo.';
+
+  @override
+  String get importAction => 'Importar';
+
+  @override
+  String get backupReminderTitle => 'Lembrete de backup';
+
+  @override
+  String get backupReminderDescription =>
+      'Mostra um aviso nas Configuracoes quando chegar a hora de exportar um novo backup.';
+
+  @override
+  String get backupReminderFrequencyTitle => 'Frequencia do lembrete';
+
+  @override
+  String backupReminderEveryDays(int days) {
+    return 'A cada $days dias';
+  }
+
+  @override
+  String get backupReminderDueTitle => 'Backup vencido';
+
+  @override
+  String backupReminderDueDescription(int days) {
+    return 'Exporte um backup novo a cada $days dias para evitar perder os dados locais do navegador.';
+  }
+
+  @override
+  String get backupNeverExportedLabel => 'Nenhum backup exportado ainda';
+
+  @override
+  String lastBackupAtLabel(String date) {
+    return 'Ultimo backup: $date';
+  }
+
+  @override
+  String get backupExportedMessage => 'Backup exportado com sucesso.';
+
+  @override
+  String backupImportedMessage(int groups, int cats, int foods, int plans) {
+    return 'Backup restaurado: $groups grupos, $cats gatos, $foods alimentos e $plans planos.';
+  }
+
+  @override
+  String get backupImportFailedMessage =>
+      'Nao foi possivel importar este arquivo de backup.';
+
+  @override
+  String get generateDemoDataListTileDescription =>
+      'Cria um grupo, um gato solo, alimentos, planos, refeicoes e historico de peso.';
+
+  @override
+  String get generateStressDataListTileDescription =>
+      'Cria um cenario de alto volume para validar muitos gatos e grupos.';
+
+  @override
+  String get clearDemoDataListTileDescription =>
+      'Remove gatos, grupos, alimentos, planos, refeicoes e historico locais.';
 }

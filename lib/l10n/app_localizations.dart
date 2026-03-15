@@ -2777,6 +2777,132 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Tagalog'**
   String get languageTagalog;
+
+  /// No description provided for @dataManagementTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Data Management'**
+  String get dataManagementTitle;
+
+  /// No description provided for @backupDataTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Backup'**
+  String get backupDataTitle;
+
+  /// No description provided for @backupDataDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Export and share a JSON backup snapshot of all local app data.'**
+  String get backupDataDescription;
+
+  /// No description provided for @importBackupTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Import Backup'**
+  String get importBackupTitle;
+
+  /// No description provided for @importBackupDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Restore a previously exported JSON backup on this device.'**
+  String get importBackupDescription;
+
+  /// No description provided for @importBackupConfirmationDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Importing a backup replaces the current local data on this device. Continue only if you trust the file.'**
+  String get importBackupConfirmationDescription;
+
+  /// No description provided for @importAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Import'**
+  String get importAction;
+
+  /// No description provided for @backupReminderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup reminder'**
+  String get backupReminderTitle;
+
+  /// No description provided for @backupReminderDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Show a warning in Settings when it is time to export a new backup.'**
+  String get backupReminderDescription;
+
+  /// No description provided for @backupReminderFrequencyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder frequency'**
+  String get backupReminderFrequencyTitle;
+
+  /// Label for how often the user should export a backup.
+  ///
+  /// In en, this message translates to:
+  /// **'Every {days} days'**
+  String backupReminderEveryDays(int days);
+
+  /// No description provided for @backupReminderDueTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup overdue'**
+  String get backupReminderDueTitle;
+
+  /// No description provided for @backupReminderDueDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Export a fresh backup every {days} days to avoid losing local browser data.'**
+  String backupReminderDueDescription(int days);
+
+  /// No description provided for @backupNeverExportedLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'No backup exported yet'**
+  String get backupNeverExportedLabel;
+
+  /// No description provided for @lastBackupAtLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Last backup: {date}'**
+  String lastBackupAtLabel(String date);
+
+  /// No description provided for @backupExportedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup exported successfully.'**
+  String get backupExportedMessage;
+
+  /// No description provided for @backupImportedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Backup restored: {groups} groups, {cats} cats, {foods} foods and {plans} plans.'**
+  String backupImportedMessage(int groups, int cats, int foods, int plans);
+
+  /// No description provided for @backupImportFailedMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not import this backup file.'**
+  String get backupImportFailedMessage;
+
+  /// No description provided for @generateDemoDataListTileDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Create one group, one solo cat, foods, plans, meals and weight history.'**
+  String get generateDemoDataListTileDescription;
+
+  /// No description provided for @generateStressDataListTileDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Create a high-volume scenario to validate many cats and groups.'**
+  String get generateStressDataListTileDescription;
+
+  /// No description provided for @clearDemoDataListTileDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove local cats, groups, foods, plans, meals and history.'**
+  String get clearDemoDataListTileDescription;
 }
 
 class _AppLocalizationsDelegate

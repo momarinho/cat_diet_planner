@@ -122,4 +122,23 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
     state = state.copyWith(suggestionAutoApply: enabled);
     await _service.save(state);
   }
+
+  Future<void> setBackupReminderEnabled(bool enabled) async {
+    state = state.copyWith(backupReminderEnabled: enabled);
+    await _service.save(state);
+  }
+
+  Future<void> setBackupReminderDays(int days) async {
+    state = state.copyWith(backupReminderDays: days);
+    await _service.save(state);
+  }
+
+  Future<void> markBackupExportedNow() async {
+    state = state.copyWith(lastBackupAtIso: DateTime.now().toIso8601String());
+    await _service.save(state);
+  }
+
+  Future<void> reload() async {
+    state = _service.read();
+  }
 }

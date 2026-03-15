@@ -1554,4 +1554,83 @@ class AppLocalizationsTl extends AppLocalizations {
 
   @override
   String get languageTagalog => 'Tagalog';
+
+  @override
+  String get dataManagementTitle => 'Pamamahala ng data';
+
+  @override
+  String get backupDataTitle => 'I-export ang backup';
+
+  @override
+  String get backupDataDescription =>
+      'Mag-export at magbahagi ng JSON backup ng lahat ng lokal na data ng app.';
+
+  @override
+  String get importBackupTitle => 'Mag-import ng backup';
+
+  @override
+  String get importBackupDescription =>
+      'Ibalik sa device na ito ang dating na-export na JSON backup.';
+
+  @override
+  String get importBackupConfirmationDescription =>
+      'Papaltan ng pag-import ng backup ang kasalukuyang lokal na data sa device na ito. Magpatuloy lang kung pinagkakatiwalaan mo ang file.';
+
+  @override
+  String get importAction => 'Import';
+
+  @override
+  String get backupReminderTitle => 'Paalala sa backup';
+
+  @override
+  String get backupReminderDescription =>
+      'Magpakita ng babala sa Settings kapag oras nang gumawa ulit ng backup.';
+
+  @override
+  String get backupReminderFrequencyTitle => 'Dalas ng paalala';
+
+  @override
+  String backupReminderEveryDays(int days) {
+    return 'Tuwing $days araw';
+  }
+
+  @override
+  String get backupReminderDueTitle => 'Lagpas na ang backup';
+
+  @override
+  String backupReminderDueDescription(int days) {
+    return 'Mag-export ng bagong backup bawat $days araw para hindi mawala ang lokal na data ng browser.';
+  }
+
+  @override
+  String get backupNeverExportedLabel => 'Wala pang na-export na backup';
+
+  @override
+  String lastBackupAtLabel(String date) {
+    return 'Huling backup: $date';
+  }
+
+  @override
+  String get backupExportedMessage => 'Matagumpay na na-export ang backup.';
+
+  @override
+  String backupImportedMessage(int groups, int cats, int foods, int plans) {
+    return 'Naibalik ang backup: $groups group, $cats pusa, $foods pagkain at $plans plan.';
+  }
+
+  @override
+  String get backupImportFailedMessage =>
+      'Hindi ma-import ang backup file na ito.';
+
+  @override
+  String get generateDemoDataListTileDescription =>
+      'Gumawa ng isang group, isang solo na pusa, mga pagkain, plans, meals at weight history.';
+
+  @override
+  String get generateStressDataListTileDescription =>
+      'Gumawa ng high-volume na scenario para masubukan ang UI ng maraming pusa at group.';
+
+  @override
+  String get clearDemoDataListTileDescription =>
+      'Tanggalin ang lokal na mga pusa, group, pagkain, plans, meals at history.';
 }

@@ -1,9 +1,13 @@
 import 'package:cat_diet_planner/data/local/hive_service.dart';
+import 'package:cat_diet_planner/data/models/cat_group.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/data/models/diet_plan.dart';
+import 'package:cat_diet_planner/data/models/food_item.dart';
+import 'package:cat_diet_planner/data/models/weight_record.dart';
 import 'package:cat_diet_planner/features/cat_profile/repositories/cat_profile_repository.dart';
 import 'package:cat_diet_planner/features/settings/models/app_settings.dart';
 import 'package:cat_diet_planner/features/settings/services/app_settings_service.dart';
+import 'package:cat_diet_planner/features/settings/services/data_export_service.dart';
 import 'package:cat_diet_planner/features/suggestions/models/plan_change_audit_entry.dart';
 import 'package:cat_diet_planner/features/suggestions/models/smart_suggestion.dart';
 import 'package:cat_diet_planner/features/suggestions/providers/suggestion_decision_provider.dart';
@@ -80,6 +84,9 @@ void main() {
       suggestionDailyLimit: 2,
       suggestionAlertsOnly: true,
       suggestionAutoApply: false,
+      backupReminderEnabled: true,
+      backupReminderDays: 14,
+      lastBackupAtIso: '2026-03-10T09:00:00.000',
     );
 
     await service.save(settings);
@@ -93,6 +100,109 @@ void main() {
     expect(restored.suggestionDailyLimit, 2);
     expect(restored.suggestionAlertsOnly, isTrue);
     expect(restored.suggestionAutoApply, isFalse);
+    expect(restored.backupReminderEnabled, isTrue);
+    expect(restored.backupReminderDays, 14);
+    expect(restored.lastBackupAtIso, '2026-03-10T09:00:00.000');
+  });
+
+  test('backup export payload can restore complete local state', () async {
+    final settings = AppSettings.defaults().copyWith(
+      languageCode: 'tl',
+      backupReminderDays: 30,
+      lastBackupAtIso: '2026-03-12T08:30:00.000',
+    );
+    await AppSettingsService().save(settings);
+    await HiveService.appSettingsBox.put('theme_mode', 'dark');
+
+    final cat = CatProfile(
+      id: 'cat-backup',
+      name: 'Luna',
+      weight: 4.1,
+      age: 30,
+      neutered: true,
+      activityLevel: 'moderate',
+      goal: 'maintenance',
+      createdAt: DateTime(2026, 3, 1),
+      activePlanId: 'plan-backup',
+    );
+    final group = CatGroup(
+      id: 'group-backup',
+      name: 'Ward A',
+      catCount: 1,
+      colorValue: 0xFFAA3377,
+      createdAt: DateTime(2026, 3, 1),
+      catIds: const ['cat-backup'],
+    );
+    final food = FoodItem(
+      barcode: '123456',
+      name: 'Clinic Wet Food',
+      kcalPer100g: 92,
+      brand: 'Hill',
+    );
+    final plan = DietPlan(
+      catId: cat.id,
+      foodKey: food.barcode,
+      foodName: food.name,
+      targetKcalPerDay: 210,
+      portionGramsPerDay: 72,
+      mealsPerDay: 4,
+      portionGramsPerMeal: 18,
+      createdAt: DateTime(2026, 3, 2),
+      goal: cat.goal,
+      mealTimes: const ['07:30', '12:30', '15:30', '19:00'],
+      mealLabels: const ['Breakfast', 'Lunch', 'Snack', 'Dinner'],
+      mealPortionGrams: const [18, 18, 18, 18],
+      startDate: DateTime(2026, 3, 2),
+      planId: 'plan-backup',
+      foodKeys: const ['123456'],
+      foodNames: const ['Clinic Wet Food'],
+    );
+    final weight = WeightRecord(
+      catId: cat.id,
+      date: DateTime(2026, 3, 3),
+      weight: 4.0,
+      notes: 'stable',
+    );
+
+    await HiveService.catsBox.put(cat.id, cat);
+    await HiveService.catGroupsBox.put(group.id, group);
+    await HiveService.foodsBox.put(food.barcode, food);
+    await HiveService.dietPlansBox.put(plan.planId, plan);
+    await HiveService.weightsBox.put('weight-1', weight);
+    await HiveService.mealsBox.put('cat-backup:2026-03-03', {
+      'breakfast': {'status': 'done'},
+    });
+
+    final payload = DataExportService.createBackupPayload();
+
+    await HiveService.appSettingsBox.clear();
+    await HiveService.catGroupsBox.clear();
+    await HiveService.catsBox.clear();
+    await HiveService.dietPlansBox.clear();
+    await HiveService.foodsBox.clear();
+    await HiveService.groupDietPlansBox.clear();
+    await HiveService.weightsBox.clear();
+    await HiveService.mealsBox.clear();
+
+    final summary = await DataExportService.importBackupPayload(payload);
+    final restoredSettings = AppSettingsService().read();
+
+    expect(summary.cats, 1);
+    expect(summary.groups, 1);
+    expect(summary.foods, 1);
+    expect(summary.plans, 1);
+    expect(HiveService.catsBox.get('cat-backup')?.name, 'Luna');
+    expect(HiveService.catGroupsBox.get('group-backup')?.name, 'Ward A');
+    expect(HiveService.foodsBox.get('123456')?.name, 'Clinic Wet Food');
+    expect(HiveService.dietPlansBox.get('plan-backup')?.targetKcalPerDay, 210);
+    expect(HiveService.weightsBox.get('weight-1')?.weight, 4.0);
+    expect(
+      HiveService.mealsBox.get('cat-backup:2026-03-03')?['breakfast']['status'],
+      'done',
+    );
+    expect(restoredSettings.languageCode, 'tl');
+    expect(restoredSettings.backupReminderDays, 30);
+    expect(HiveService.appSettingsBox.get('theme_mode'), 'dark');
   });
 
   test('plan change audit trail persists who, when and what changed', () async {

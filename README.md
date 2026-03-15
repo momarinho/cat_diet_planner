@@ -1,85 +1,191 @@
 # CatDiet Planner
 
-CatDiet Planner e um app Flutter para gerenciar dieta, rotina diaria e peso de multiplos gatos.
+CatDiet Planner is a Flutter app for managing feeding plans, daily routines, weight tracking, and operational decisions for individual cats and groups of cats.
 
-O projeto esta sendo construido com foco em:
+The project is built as an `offline-first` application with local persistence, localized UI, and a growing quality/process layer for testing, localization, and future delivery automation.
+
+## Status
+
+Current project focus:
+- core product flows implemented
+- localization working for `en`, `pt_BR`, and `tl`
+- smart suggestions with audit trail, history, and revert flow
+- responsive UI being refined for mobile and web
+- CI/DevOps planned as the next delivery track
+
+## Core Features
+
+- cat profile creation and editing
+- group management
+- food database and barcode scanner
+- meal plan creation for individual cats and groups
+- live plan preview and saved-plan inspector
+- daily schedule with logging flow
+- weight check-in with clinical context
+- smart suggestions with:
+  - confirmation before applying
+  - safety limits
+  - audit trail
+  - before/after impact history
+  - revert latest suggested change
+- local demo and stress scenarios for validation
+
+## Stack
+
 - Flutter
 - Riverpod
 - Hive
-- arquitetura `offline-first`
+- `intl` + Flutter `l10n`
+- `mobile_scanner`
+- `flutter_local_notifications`
+- `pdf` / `printing`
 
-## Produto
+## Supported Locales
 
-Especificacao publica do produto:
-- [docs/PRODUCT_SPEC.md](docs/PRODUCT_SPEC.md)
+- `en`
+- `pt_BR`
+- `tl`
 
-Esse documento resume:
-- visao do app
-- telas alvo
-- funcionalidades principais
-- decisao atual sobre banco local e backend
-- roadmap em alto nivel
+Localization uses Flutter `.arb` files and generated `AppLocalizations`.
 
-## Estrutura de documentacao
+Useful internal references:
+- [LOCALIZATION_CHECKLIST.md](docs/internal/LOCALIZATION_CHECKLIST.md)
+- [LOCALIZATION_GUIDELINES.md](docs/internal/LOCALIZATION_GUIDELINES.md)
+- [LOCALIZATION_REVIEW.md](docs/internal/LOCALIZATION_REVIEW.md)
+- [LOCALIZATION_VALIDATION.md](docs/internal/LOCALIZATION_VALIDATION.md)
 
-Documentacao publica:
-- [docs/PRODUCT_SPEC.md](docs/PRODUCT_SPEC.md)
+## Getting Started
 
-Documentacao interna de execucao:
-- `docs/internal/`
+Prerequisites:
+- Flutter SDK compatible with `sdk: ^3.11.0`
+- Dart SDK bundled with Flutter
+- Android Studio, VS Code, or another Flutter-capable IDE
 
-## Estrutura de pastas
+Install dependencies:
 
-Padrao atual: `feature-first` com `core` compartilhado e `data` central de persistencia.
+```bash
+flutter pub get
+```
+
+Generate localization files:
+
+```bash
+flutter gen-l10n
+```
+
+Run the app:
+
+```bash
+flutter run
+```
+
+Run on web:
+
+```bash
+flutter run -d chrome
+```
+
+## Quality Commands
+
+Static analysis:
+
+```bash
+flutter analyze
+```
+
+Run all tests:
+
+```bash
+flutter test
+```
+
+Run localization-focused tests:
+
+```bash
+flutter test test/localization_test.dart
+```
+
+Run targeted app quality checks:
+
+```bash
+./tool/quality_check.sh
+```
+
+## Project Structure
+
+The codebase follows a `feature-first` structure with shared `core` utilities and central `data` persistence.
 
 ```text
 lib/
 ├── core/
+│   ├── constants/
+│   ├── errors/
+│   ├── localization/
 │   ├── navigation/
 │   ├── theme/
+│   ├── utils/
 │   └── widgets/
 ├── data/
 │   ├── local/
-│   └── models/
+│   ├── models/
+│   └── repositories/
 ├── features/
+│   ├── cat_group/
 │   ├── cat_profile/
 │   ├── daily/
 │   ├── dashboard/
 │   ├── food_database/
+│   ├── history/
 │   ├── home/
+│   ├── plans/
 │   ├── scanner/
 │   ├── settings/
 │   ├── shell/
+│   ├── splash/
+│   ├── suggestions/
 │   └── weight/
+├── l10n/
 └── main.dart
 ```
 
-Convencao por feature:
-- `screens/` para telas
-- `widgets/` para componentes da feature
-- `providers/` quando houver estado da feature
-- `repositories/` quando houver acesso a dados da feature
+Feature conventions:
+- `screens/` for pages
+- `widgets/` for feature-specific UI
+- `providers/` for state access
+- `services/` for domain logic
+- `repositories/` for data access
+- `models/` for feature-specific models
 
-## Desenvolvimento
+## Documentation
 
-Comandos uteis:
+Public product reference:
+- [PRODUCT_SPEC.md](docs/PRODUCT_SPEC.md)
 
-```bash
-flutter pub get
-flutter run
-flutter analyze
-./tool/quality_check.sh
-```
+Internal execution and planning docs:
+- [SMART_ASSISTANT_CHECKLIST.md](docs/internal/SMART_ASSISTANT_CHECKLIST.md)
+- [CHECKLIST_FINAL.md](docs/internal/CHECKLIST_FINAL.md)
+- [DEVOPS_MLOPS_CHECKLIST.md](docs/internal/DEVOPS_MLOPS_CHECKLIST.md)
+- [LOCALIZATION_CHECKLIST.md](docs/internal/LOCALIZATION_CHECKLIST.md)
 
-Para emuladores Android:
+## Demo and Stress Validation
 
-```bash
-flutter emulators
-flutter emulators --launch <emulator_id>
-```
+The app includes local scenarios for validation and manual QA:
+- demo data generation
+- stress data generation
 
-## Referencias Flutter
+These flows are exposed from `Settings` and are useful for:
+- validating navigation and persistence
+- testing plans and suggestions quickly
+- checking high-volume UI behavior
 
-- [Learn Flutter](https://docs.flutter.dev/get-started/learn-flutter)
-- [Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Flutter learning resources](https://docs.flutter.dev/reference/learning-resources)
+## Current Priorities
+
+- finish responsive review on remaining screens
+- introduce pragmatic CI/DevOps
+- prepare Firebase Hosting / web delivery flow
+
+## Notes
+
+- This repository is private and not intended for `pub.dev` publication.
+- The app is currently designed around local storage, not a live backend.
+- Localization and generated files should be kept in sync with `flutter gen-l10n`.

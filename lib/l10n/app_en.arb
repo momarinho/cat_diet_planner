@@ -830,5 +830,50 @@
   "invalidImageFile": "Invalid image file.",
   "languageEnglish": "English",
   "languagePortugueseBrazil": "Portuguese (Brazil)",
-  "languageTagalog": "Tagalog"
+  "languageTagalog": "Tagalog",
+  "dataManagementTitle": "Data Management",
+  "backupDataTitle": "Export Backup",
+  "backupDataDescription": "Export and share a JSON backup snapshot of all local app data.",
+  "importBackupTitle": "Import Backup",
+  "importBackupDescription": "Restore a previously exported JSON backup on this device.",
+  "importBackupConfirmationDescription": "Importing a backup replaces the current local data on this device. Continue only if you trust the file.",
+  "importAction": "Import",
+  "backupReminderTitle": "Backup reminder",
+  "backupReminderDescription": "Show a warning in Settings when it is time to export a new backup.",
+  "backupReminderFrequencyTitle": "Reminder frequency",
+  "backupReminderEveryDays": "Every {days} days",
+  "@backupReminderEveryDays": {
+    "description": "Label for how often the user should export a backup.",
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "backupReminderDueTitle": "Backup overdue",
+  "backupReminderDueDescription": "Export a fresh backup every {days} days to avoid losing local browser data.",
+  "@backupReminderDueDescription": {
+    "placeholders": {
+      "days": {"type": "int"}
+    }
+  },
+  "backupNeverExportedLabel": "No backup exported yet",
+  "lastBackupAtLabel": "Last backup: {date}",
+  "@lastBackupAtLabel": {
+    "placeholders": {
+      "date": {"type": "String"}
+    }
+  },
+  "backupExportedMessage": "Backup exported successfully.",
+  "backupImportedMessage": "Backup restored: {groups} groups, {cats} cats, {foods} foods and {plans} plans.",
+  "@backupImportedMessage": {
+    "placeholders": {
+      "groups": {"type": "int"},
+      "cats": {"type": "int"},
+      "foods": {"type": "int"},
+      "plans": {"type": "int"}
+    }
+  },
+  "backupImportFailedMessage": "Could not import this backup file.",
+  "generateDemoDataListTileDescription": "Create one group, one solo cat, foods, plans, meals and weight history.",
+  "generateStressDataListTileDescription": "Create a high-volume scenario to validate many cats and groups.",
+  "clearDemoDataListTileDescription": "Remove local cats, groups, foods, plans, meals and history."
 }

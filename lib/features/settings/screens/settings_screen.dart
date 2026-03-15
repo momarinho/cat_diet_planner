@@ -42,6 +42,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _isGeneratingStressData = false;
   bool _isClearingDemoData = false;
   bool _isRevertingSuggestionChange = false;
+  bool _isExportingBackup = false;
+  bool _isImportingBackup = false;
 
   String _formatAuditTimestamp(DateTime value) {
     return AppFormatters.formatDateTime(context, value);
@@ -137,6 +139,28 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     return lines
         .map((line) => localizeChangeSummaryLine(l10n, line))
         .join(' • ');
+  }
+
+  DateTime? _parseLastBackupAt(String? value) {
+    if (value == null || value.isEmpty) return null;
+    return DateTime.tryParse(value);
+  }
+
+  bool _isBackupOverdue(AppSettings settings) {
+    if (!settings.backupReminderEnabled) return false;
+    final lastBackupAt = _parseLastBackupAt(settings.lastBackupAtIso);
+    if (lastBackupAt == null) return true;
+    return DateTime.now().isAfter(
+      lastBackupAt.add(Duration(days: settings.backupReminderDays)),
+    );
+  }
+
+  String _lastBackupLabel(AppLocalizations l10n, AppSettings settings) {
+    final lastBackupAt = _parseLastBackupAt(settings.lastBackupAtIso);
+    if (lastBackupAt == null) {
+      return l10n.backupNeverExportedLabel;
+    }
+    return l10n.lastBackupAtLabel(_formatAuditTimestamp(lastBackupAt));
   }
 
   Future<void> _setNotificationProfile({
@@ -429,6 +453,84 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
+  Future<void> _exportBackup() async {
+    final l10n = AppLocalizations.of(context);
+    setState(() => _isExportingBackup = true);
+    try {
+      await DataExportService.exportJsonBackup();
+      await ref.read(appSettingsProvider.notifier).markBackupExportedNow();
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.backupExportedMessage)));
+    } finally {
+      if (mounted) {
+        setState(() => _isExportingBackup = false);
+      }
+    }
+  }
+
+  Future<void> _importBackup() async {
+    final l10n = AppLocalizations.of(context);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.importBackupTitle),
+        content: Text(l10n.importBackupConfirmationDescription),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(l10n.cancelAction),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(l10n.importAction),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    setState(() => _isImportingBackup = true);
+    try {
+      final summary = await DataExportService.importJsonBackup();
+      if (summary == null || !mounted) return;
+
+      await ref.read(appSettingsProvider.notifier).reload();
+      ref.invalidate(themeProvider);
+      ref.invalidate(catProfilesProvider);
+      ref.invalidate(planChangeAuditProvider);
+      ref.invalidate(suggestionImpactHistoryProvider);
+      ref.read(selectedCatProvider.notifier).state = null;
+      ref.read(selectedGroupProvider.notifier).state = null;
+      await NotificationService.syncWithSettings(ref.read(appSettingsProvider));
+
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            l10n.backupImportedMessage(
+              summary.groups,
+              summary.cats,
+              summary.foods,
+              summary.plans,
+            ),
+          ),
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.backupImportFailedMessage)));
+    } finally {
+      if (mounted) {
+        setState(() => _isImportingBackup = false);
+      }
+    }
+  }
+
   Future<void> _clearDemoData() async {
     final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
@@ -548,6 +650,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final appSettings = ref.watch(appSettingsProvider);
     final planAuditEntries = ref.watch(planChangeAuditProvider);
     final impactEntries = ref.watch(suggestionImpactHistoryProvider);
+    final backupOverdue = _isBackupOverdue(appSettings);
     final isDarkMode = themeMode == ThemeMode.dark;
     final secondaryText =
         theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.65) ??
@@ -1103,19 +1206,116 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           const SizedBox(height: 16),
           _SectionCard(
-            title: 'Data Management',
+            title: l10n.dataManagementTitle,
             children: [
+              if (backupOverdue)
+                Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.only(bottom: 8),
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.errorContainer,
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l10n.backupReminderDueTitle,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: theme.colorScheme.onErrorContainer,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        l10n.backupReminderDueDescription(
+                          appSettings.backupReminderDays,
+                        ),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: Icon(Icons.backup_rounded, color: primary),
-                title: const Text('Backup Data'),
-                subtitle: const Text(
-                  'Export and share a JSON backup snapshot of local app data',
+                leading: _isExportingBackup
+                    ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          valueColor: AlwaysStoppedAnimation(primary),
+                        ),
+                      )
+                    : Icon(Icons.backup_rounded, color: primary),
+                title: Text(l10n.backupDataTitle),
+                subtitle: Text(
+                  '${l10n.backupDataDescription}\n${_lastBackupLabel(l10n, appSettings)}',
                 ),
                 trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () async {
-                  await DataExportService.exportJsonBackup();
+                onTap: _isExportingBackup ? null : _exportBackup,
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: _isImportingBackup
+                    ? SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2.2,
+                          valueColor: AlwaysStoppedAnimation(primary),
+                        ),
+                      )
+                    : Icon(Icons.download_rounded, color: primary),
+                title: Text(l10n.importBackupTitle),
+                subtitle: Text(l10n.importBackupDescription),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: _isImportingBackup ? null : _importBackup,
+              ),
+              SwitchListTile.adaptive(
+                contentPadding: EdgeInsets.zero,
+                secondary: Icon(
+                  Icons.history_toggle_off_rounded,
+                  color: primary,
+                ),
+                title: Text(l10n.backupReminderTitle),
+                subtitle: Text(l10n.backupReminderDescription),
+                value: appSettings.backupReminderEnabled,
+                onChanged: (value) async {
+                  await ref
+                      .read(appSettingsProvider.notifier)
+                      .setBackupReminderEnabled(value);
                 },
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.event_repeat_rounded, color: primary),
+                title: Text(l10n.backupReminderFrequencyTitle),
+                subtitle: Text(
+                  l10n.backupReminderEveryDays(appSettings.backupReminderDays),
+                ),
+                trailing: DropdownButton<int>(
+                  value: appSettings.backupReminderDays,
+                  items: const [3, 7, 14, 30]
+                      .map(
+                        (days) => DropdownMenuItem<int>(
+                          value: days,
+                          child: Text(l10n.backupReminderEveryDays(days)),
+                        ),
+                      )
+                      .toList(growable: false),
+                  onChanged: appSettings.backupReminderEnabled
+                      ? (value) async {
+                          if (value == null) return;
+                          await ref
+                              .read(appSettingsProvider.notifier)
+                              .setBackupReminderDays(value);
+                        }
+                      : null,
+                ),
               ),
               ListTile(
                 contentPadding: EdgeInsets.zero,
@@ -1129,10 +1329,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       )
                     : Icon(Icons.auto_awesome_rounded, color: primary),
-                title: const Text('Generate Demo Data'),
-                subtitle: const Text(
-                  'Create one group, one solo cat, foods, plans, meals and weight history',
-                ),
+                title: Text(l10n.generateDemoDataTitle),
+                subtitle: Text(l10n.generateDemoDataListTileDescription),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: _isGeneratingDemoData ? null : _generateDemoData,
               ),
@@ -1148,10 +1346,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       )
                     : Icon(Icons.groups_3_rounded, color: primary),
-                title: const Text('Generate Stress Test Data'),
-                subtitle: const Text(
-                  'Create a high-volume scenario to validate many cats/groups UX',
-                ),
+                title: Text(l10n.generateStressDataTitle),
+                subtitle: Text(l10n.generateStressDataListTileDescription),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: _isGeneratingStressData ? null : _generateStressData,
               ),
@@ -1167,10 +1363,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         ),
                       )
                     : Icon(Icons.delete_sweep_rounded, color: primary),
-                title: const Text('Clear Demo Data'),
-                subtitle: const Text(
-                  'Remove local cats, groups, foods, plans, meals and history',
-                ),
+                title: Text(l10n.clearDemoDataTitle),
+                subtitle: Text(l10n.clearDemoDataListTileDescription),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: _isClearingDemoData ? null : _clearDemoData,
               ),
