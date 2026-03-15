@@ -1,11 +1,14 @@
-import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/data/models/cat_group.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/data/models/diet_plan.dart';
 import 'package:cat_diet_planner/data/models/group_diet_plan.dart';
+import 'package:cat_diet_planner/data/repositories/daily_schedule_repository.dart';
 import 'package:cat_diet_planner/features/plans/services/portion/portion_unit_service.dart';
 
 class DailyMealScheduleService {
+  static final DailyScheduleRepository _scheduleRepository =
+      DailyScheduleRepository();
+
   static const List<String> _defaultTimes = [
     '07:30 AM',
     '12:30 PM',
@@ -94,30 +97,22 @@ class DailyMealScheduleService {
   }
 
   static String todayKeyForCat(String catId, [DateTime? date]) {
-    final target = date ?? DateTime.now();
-    final day = target.toIso8601String().split('T').first;
-    return '$catId:$day';
+    return _scheduleRepository.catDayKey(catId, date);
   }
 
   static String todayKeyForGroup(String groupId, [DateTime? date]) {
-    final target = date ?? DateTime.now();
-    final day = target.toIso8601String().split('T').first;
-    return 'group:$groupId:$day';
+    return _scheduleRepository.groupDayKey(groupId, date);
   }
 
   static Map<String, dynamic>? loadTodayForCat(String catId, [DateTime? date]) {
-    final raw = HiveService.mealsBox.get(todayKeyForCat(catId, date));
-    if (raw == null) return null;
-    return Map<String, dynamic>.from(raw);
+    return _scheduleRepository.readSchedule(todayKeyForCat(catId, date));
   }
 
   static Map<String, dynamic>? loadTodayForGroup(
     String groupId, [
     DateTime? date,
   ]) {
-    final raw = HiveService.mealsBox.get(todayKeyForGroup(groupId, date));
-    if (raw == null) return null;
-    return Map<String, dynamic>.from(raw);
+    return _scheduleRepository.readSchedule(todayKeyForGroup(groupId, date));
   }
 
   static Map<String, dynamic> ensureTodaySchedule({
@@ -126,7 +121,7 @@ class DailyMealScheduleService {
     DateTime? date,
   }) {
     final key = todayKeyForCat(cat.id, date);
-    final existing = HiveService.mealsBox.get(key);
+    final existing = _scheduleRepository.readSchedule(key);
     final currentPlanTimestamp = plan.createdAt.toIso8601String();
     if (existing != null) {
       final existingMap = Map<String, dynamic>.from(existing);
@@ -215,7 +210,7 @@ class DailyMealScheduleService {
       'items': items,
     };
 
-    HiveService.mealsBox.put(key, schedule);
+    _scheduleRepository.saveSchedule(key, schedule);
     return schedule;
   }
 
@@ -225,7 +220,7 @@ class DailyMealScheduleService {
     DateTime? date,
   }) {
     final key = todayKeyForGroup(group.id, date);
-    final existing = HiveService.mealsBox.get(key);
+    final existing = _scheduleRepository.readSchedule(key);
     final currentPlanTimestamp = plan.createdAt.toIso8601String();
     if (existing != null) {
       final existingMap = Map<String, dynamic>.from(existing);
@@ -285,7 +280,7 @@ class DailyMealScheduleService {
       'items': items,
     };
 
-    HiveService.mealsBox.put(key, schedule);
+    _scheduleRepository.saveSchedule(key, schedule);
     return schedule;
   }
 
@@ -296,7 +291,7 @@ class DailyMealScheduleService {
     DateTime? date,
   }) async {
     final key = todayKeyForCat(catId, date);
-    final current = HiveService.mealsBox.get(key);
+    final current = _scheduleRepository.readSchedule(key);
     if (current == null) return;
 
     final schedule = Map<String, dynamic>.from(current);
@@ -311,7 +306,7 @@ class DailyMealScheduleService {
     }
 
     schedule['items'] = items;
-    await HiveService.mealsBox.put(key, schedule);
+    await _scheduleRepository.saveSchedule(key, schedule);
   }
 
   static Future<void> updateMealEntry({
@@ -326,7 +321,7 @@ class DailyMealScheduleService {
     DateTime? date,
   }) async {
     final key = todayKeyForCat(catId, date);
-    final current = HiveService.mealsBox.get(key);
+    final current = _scheduleRepository.readSchedule(key);
     if (current == null) return;
 
     final schedule = Map<String, dynamic>.from(current);
@@ -354,7 +349,7 @@ class DailyMealScheduleService {
     }
 
     schedule['items'] = items;
-    await HiveService.mealsBox.put(key, schedule);
+    await _scheduleRepository.saveSchedule(key, schedule);
   }
 
   static Future<void> markGroupMealCompleted({
@@ -364,7 +359,7 @@ class DailyMealScheduleService {
     DateTime? date,
   }) async {
     final key = todayKeyForGroup(groupId, date);
-    final current = HiveService.mealsBox.get(key);
+    final current = _scheduleRepository.readSchedule(key);
     if (current == null) return;
 
     final schedule = Map<String, dynamic>.from(current);
@@ -379,7 +374,7 @@ class DailyMealScheduleService {
     }
 
     schedule['items'] = items;
-    await HiveService.mealsBox.put(key, schedule);
+    await _scheduleRepository.saveSchedule(key, schedule);
   }
 
   static Future<void> updateGroupMealEntry({
@@ -394,7 +389,7 @@ class DailyMealScheduleService {
     DateTime? date,
   }) async {
     final key = todayKeyForGroup(groupId, date);
-    final current = HiveService.mealsBox.get(key);
+    final current = _scheduleRepository.readSchedule(key);
     if (current == null) return;
 
     final schedule = Map<String, dynamic>.from(current);
@@ -422,7 +417,7 @@ class DailyMealScheduleService {
     }
 
     schedule['items'] = items;
-    await HiveService.mealsBox.put(key, schedule);
+    await _scheduleRepository.saveSchedule(key, schedule);
   }
 
   static int completedMealsCount(Map<String, dynamic> schedule) {
@@ -558,7 +553,10 @@ class DailyMealScheduleService {
       'items': items,
       'duplicatedFrom': yesterday.toIso8601String(),
     };
-    await HiveService.mealsBox.put(todayKeyForCat(catId, today), schedule);
+    await _scheduleRepository.saveSchedule(
+      todayKeyForCat(catId, today),
+      schedule,
+    );
   }
 
   static Future<void> duplicateYesterdayForGroup(String groupId) async {
@@ -587,7 +585,10 @@ class DailyMealScheduleService {
       'items': items,
       'duplicatedFrom': yesterday.toIso8601String(),
     };
-    await HiveService.mealsBox.put(todayKeyForGroup(groupId, today), schedule);
+    await _scheduleRepository.saveSchedule(
+      todayKeyForGroup(groupId, today),
+      schedule,
+    );
   }
 
   static List<Map<String, dynamic>> _defaultOperationalItems({

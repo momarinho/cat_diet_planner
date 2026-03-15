@@ -1,7 +1,7 @@
 import 'package:cat_diet_planner/core/theme/theme_provider.dart';
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
-import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/features/cat_group/providers/selected_group_provider.dart';
+import 'package:cat_diet_planner/features/cat_profile/providers/cat_profiles_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
 import 'package:cat_diet_planner/features/settings/models/app_settings.dart';
 import 'package:cat_diet_planner/features/settings/providers/app_settings_provider.dart';
@@ -281,16 +281,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final summary = await DemoDataService.seedReadyToTestScenario();
       ref.invalidate(appSettingsProvider);
       ref.invalidate(themeProvider);
+      ref.invalidate(catProfilesProvider);
 
-      final seededCat = HiveService.catsBox.values.isNotEmpty
-          ? HiveService.catsBox.values.first
-          : null;
+      final cats = ref.read(catProfilesProvider);
+      final seededCat = cats.isNotEmpty ? cats.first : null;
       ref.read(selectedCatProvider.notifier).state = seededCat;
       ref.read(selectedGroupProvider.notifier).state = null;
 
-      final settings = AppSettings.fromMap(
-        HiveService.appSettingsBox.get('settings') as Map<dynamic, dynamic>?,
-      );
+      final settings = ref.read(appSettingsProvider);
       await NotificationService.syncWithSettings(settings);
       if (seededCat != null) {
         await NotificationService.setActiveCatContext(
@@ -389,16 +387,14 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       final summary = await DemoDataService.seedOperationalStressScenario();
       ref.invalidate(appSettingsProvider);
       ref.invalidate(themeProvider);
+      ref.invalidate(catProfilesProvider);
 
-      final seededCat = HiveService.catsBox.values.isNotEmpty
-          ? HiveService.catsBox.values.first
-          : null;
+      final cats = ref.read(catProfilesProvider);
+      final seededCat = cats.isNotEmpty ? cats.first : null;
       ref.read(selectedCatProvider.notifier).state = seededCat;
       ref.read(selectedGroupProvider.notifier).state = null;
 
-      final settings = AppSettings.fromMap(
-        HiveService.appSettingsBox.get('settings') as Map<dynamic, dynamic>?,
-      );
+      final settings = ref.read(appSettingsProvider);
       await NotificationService.syncWithSettings(settings);
       if (seededCat != null) {
         await NotificationService.setActiveCatContext(
@@ -778,20 +774,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             children: [
               ListTile(
                 contentPadding: EdgeInsets.zero,
-                leading: Icon(Icons.upload_file_rounded, color: primary),
-                title: const Text('Export to JSON'),
-                subtitle: const Text('Create a portable backup file'),
-                trailing: const Icon(Icons.chevron_right_rounded),
-                onTap: () async {
-                  await DataExportService.exportJsonBackup();
-                },
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
                 leading: Icon(Icons.backup_rounded, color: primary),
                 title: const Text('Backup Data'),
                 subtitle: const Text(
-                  'Share a backup snapshot of local app data',
+                  'Export and share a JSON backup snapshot of local app data',
                 ),
                 trailing: const Icon(Icons.chevron_right_rounded),
                 onTap: () async {

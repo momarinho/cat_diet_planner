@@ -1,78 +1,28 @@
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/core/widgets/app_empty_state.dart';
-import 'package:cat_diet_planner/data/local/hive_service.dart';
-import 'package:cat_diet_planner/data/models/diet_plan.dart';
 import 'package:cat_diet_planner/data/models/food_item.dart';
-import 'package:cat_diet_planner/data/models/group_diet_plan.dart';
+import 'package:cat_diet_planner/features/food_database/providers/food_repository_provider.dart';
 import 'package:cat_diet_planner/features/food_database/screens/add_food_screen.dart';
 import 'package:cat_diet_planner/features/food_database/widgets/food_card.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
-class FoodDatabaseScreen extends StatefulWidget {
+class FoodDatabaseScreen extends ConsumerStatefulWidget {
   const FoodDatabaseScreen({super.key});
 
   @override
-  State<FoodDatabaseScreen> createState() => _FoodDatabaseScreenState();
+  ConsumerState<FoodDatabaseScreen> createState() => _FoodDatabaseScreenState();
 }
 
-class _FoodDatabaseScreenState extends State<FoodDatabaseScreen> {
+class _FoodDatabaseScreenState extends ConsumerState<FoodDatabaseScreen> {
   final TextEditingController _searchController = TextEditingController();
   String _query = '';
 
   @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  bool _matchesQuery(FoodItem food, String query) {
-    if (query.isEmpty) return true;
-
-    final q = query.toLowerCase().trim();
-    return food.name.toLowerCase().contains(q) ||
-        (food.brand?.toLowerCase().contains(q) ?? false) ||
-        (food.barcode?.toLowerCase().contains(q) ?? false) ||
-        (food.category?.toLowerCase().contains(q) ?? false) ||
-        (food.manufacturer?.toLowerCase().contains(q) ?? false) ||
-        (food.productLine?.toLowerCase().contains(q) ?? false) ||
-        (food.flavor?.toLowerCase().contains(q) ?? false) ||
-        (food.texture?.toLowerCase().contains(q) ?? false) ||
-        (food.packageSize?.toLowerCase().contains(q) ?? false) ||
-        (food.servingUnit?.toLowerCase().contains(q) ?? false) ||
-        food.userTags.any((tag) => tag.toLowerCase().contains(q));
-  }
-
-  List<FoodItem> _buildRecentFoods(Box<FoodItem> box) {
-    final recentKeys = box.keys.toList().reversed.take(4).toList();
-    return recentKeys.map((key) => box.get(key)).whereType<FoodItem>().toList();
-  }
-
-  List<FoodItem> _buildPopularFoods(List<FoodItem> foods) {
-    final usage = <dynamic, int>{};
-
-    for (final DietPlan plan in HiveService.dietPlansBox.values) {
-      usage.update(plan.foodKey, (count) => count + 1, ifAbsent: () => 1);
-    }
-
-    for (final GroupDietPlan plan in HiveService.groupDietPlansBox.values) {
-      usage.update(plan.foodKey, (count) => count + 1, ifAbsent: () => 1);
-    }
-
-    final ranked = [...foods]
-      ..sort((a, b) {
-        final bCount = usage[b.key] ?? 0;
-        final aCount = usage[a.key] ?? 0;
-        if (bCount != aCount) return bCount.compareTo(aCount);
-        return a.name.toLowerCase().compareTo(b.name.toLowerCase());
-      });
-
-    return ranked.where((food) => (usage[food.key] ?? 0) > 0).take(4).toList();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final repository = ref.read(foodRepositoryProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -139,14 +89,14 @@ class _FoodDatabaseScreenState extends State<FoodDatabaseScreen> {
           ),
           const SizedBox(height: 20),
           ValueListenableBuilder(
-            valueListenable: HiveService.foodsBox.listenable(),
+            valueListenable: repository.foodsListenable(),
             builder: (context, Box<FoodItem> box, _) {
-              final foods = box.values.toList();
+              final foods = repository.getFoodsFromBox(box);
               final filteredFoods = foods
-                  .where((food) => _matchesQuery(food, _query))
+                  .where((food) => repository.matchesQuery(food, _query))
                   .toList();
-              final recentFoods = _buildRecentFoods(box);
-              final popularFoods = _buildPopularFoods(foods);
+              final recentFoods = repository.buildRecentFoods(box);
+              final popularFoods = repository.buildPopularFoods(foods);
 
               if (foods.isEmpty) {
                 return const AppEmptyState(
@@ -216,6 +166,12 @@ class _FoodDatabaseScreenState extends State<FoodDatabaseScreen> {
         ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 }
 

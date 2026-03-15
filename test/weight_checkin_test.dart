@@ -39,6 +39,7 @@ void main() {
     await HiveService.catsBox.put(cat.id, cat);
 
     final record = WeightRecord(
+      catId: cat.id,
       date: DateTime(2026, 3, 13, 10),
       weight: 4.4,
       notes: 'Energetic',

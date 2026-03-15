@@ -68,6 +68,7 @@ Comandos uteis:
 flutter pub get
 flutter run
 flutter analyze
+./tool/quality_check.sh
 ```
 
 Para emuladores Android:

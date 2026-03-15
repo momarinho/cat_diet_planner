@@ -1,17 +1,14 @@
-import 'package:cat_diet_planner/data/local/hive_service.dart';
-import 'package:cat_diet_planner/data/models/diet_plan.dart';
-import 'package:cat_diet_planner/data/models/group_diet_plan.dart';
 import 'package:cat_diet_planner/core/widgets/app_empty_state.dart';
 import 'package:cat_diet_planner/features/cat_group/providers/selected_group_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
+import 'package:cat_diet_planner/features/daily/providers/daily_schedule_repository_provider.dart';
 import 'package:cat_diet_planner/features/daily/services/daily_meal_schedule_service.dart';
 import 'package:cat_diet_planner/features/daily/widgets/daily_header_app_bar.dart';
 import 'package:cat_diet_planner/features/daily/widgets/daily_metrics_row.dart';
 import 'package:cat_diet_planner/features/daily/widgets/daily_schedule_section.dart';
-import 'package:cat_diet_planner/features/plans/repositories/plan_repository.dart';
+import 'package:cat_diet_planner/features/plans/providers/plan_repository_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 class DailyOverviewScreen extends ConsumerWidget {
   const DailyOverviewScreen({super.key});
@@ -36,6 +33,8 @@ class DailyOverviewScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedGroup = ref.watch(selectedGroupProvider);
     final selectedCat = ref.watch(selectedCatProvider);
+    final planRepository = ref.read(planRepositoryProvider);
+    final scheduleRepository = ref.read(dailyScheduleRepositoryProvider);
 
     if (selectedGroup == null && selectedCat == null) {
       return const SafeArea(
@@ -55,11 +54,9 @@ class DailyOverviewScreen extends ConsumerWidget {
 
     if (selectedGroup != null) {
       return ValueListenableBuilder(
-        valueListenable: HiveService.groupDietPlansBox.listenable(
-          keys: [selectedGroup.id],
-        ),
-        builder: (context, Box<GroupDietPlan> box, _) {
-          final plan = box.get(selectedGroup.id);
+        valueListenable: planRepository.groupPlanListenable(selectedGroup.id),
+        builder: (context, _, _) {
+          final plan = planRepository.getPlanForGroup(selectedGroup.id);
 
           if (plan == null) {
             return SafeArea(
@@ -104,7 +101,7 @@ class DailyOverviewScreen extends ConsumerWidget {
           );
 
           return ValueListenableBuilder(
-            valueListenable: HiveService.mealsBox.listenable(
+            valueListenable: scheduleRepository.mealsListenable(
               keys: [scheduleKey],
             ),
             builder: (context, _, _) {
@@ -210,9 +207,9 @@ class DailyOverviewScreen extends ConsumerWidget {
     }
 
     return ValueListenableBuilder(
-      valueListenable: HiveService.dietPlansBox.listenable(),
-      builder: (context, Box<DietPlan> box, _) {
-        final plan = PlanRepository().getPlanForCat(selectedCat.id);
+      valueListenable: planRepository.individualPlanListenable(),
+      builder: (context, _, _) {
+        final plan = planRepository.getPlanForCat(selectedCat.id);
 
         if (plan == null) {
           return SafeArea(
@@ -257,7 +254,9 @@ class DailyOverviewScreen extends ConsumerWidget {
         );
 
         return ValueListenableBuilder(
-          valueListenable: HiveService.mealsBox.listenable(keys: [scheduleKey]),
+          valueListenable: scheduleRepository.mealsListenable(
+            keys: [scheduleKey],
+          ),
           builder: (context, _, _) {
             final schedule =
                 DailyMealScheduleService.loadTodayForCat(selectedCat.id) ??

@@ -1,194 +1,114 @@
 # CatDiet Planner Product Spec
 
 ## Visao do produto
-CatDiet Planner e um app Flutter para gerenciar a alimentacao de multiplos gatos com foco em rotina diaria, controle de peso e planejamento alimentar.
+CatDiet Planner e um app Flutter para gerenciar alimentacao, rotina diaria e acompanhamento de peso de multiplos gatos.
 
 Direcao atual:
 - `offline-first`
 - persistencia local com `Hive`
-- arquitetura preparada para sync futuro, sem depender de backend agora
+- arquitetura preparada para evolucao futura de sync
 
 ## Objetivo principal
 Permitir que a pessoa:
-- cadastre e acompanhe gatos
+- cadastre e acompanhe gatos individuais e grupos
 - registre e reutilize alimentos
-- monte um plano alimentar
-- acompanhe peso e rotina diaria
-- gere um historico semanal com tendencia e relatorio
+- monte e mantenha planos alimentares personalizados
+- execute rotina operacional diaria
+- acompanhe peso e indicadores clinicos
+- gere relatorios em PDF e compartilhe
 
 ## Stack atual
 - Flutter
 - Riverpod
 - Hive
-- `fl_chart`
-- rotas nomeadas para fluxos internos
+- `mobile_scanner`
+- `pdf` + `printing` + `share_plus`
+- notificacoes locais (`flutter_local_notifications`)
 
-## Telas alvo
+## Estado atual por modulo
+
 ### 1. Home
-Funcao:
-- visao geral do app
-- seletor de gatos
-- proxima refeicao
-- insights rapidos
-- cards de saude
-
-Status:
-- layout principal existe
-- ainda usa dados mockados em partes
+Status: **concluido**
+- seletor de gato/grupo ativo
+- proximas refeicoes e insights conectados a dados reais
+- cards e estatisticas sem placeholder
 
 ### 2. Cat Profile
-Funcao:
-- criar, editar e excluir perfil do gato
-- definir peso, idade, atividade, objetivo e foto
+Status: **concluido**
+- CRUD completo de perfil
+- dados clinicos estruturados
+- foto, metas e alertas de peso
 
-Status:
-- existe base de componentes
-- fluxo final de formulario ainda nao esta fechado
+### 3. Groups
+Status: **concluido**
+- grupo operacional com vinculo a gatos reais
+- categorias/subgrupos e notas por turno/ambiente
+- plano aplicado em nivel de grupo
 
-### 3. Scanner
-Funcao:
-- capturar barcode
-- permitir entrada manual
-- confirmar alimento escaneado
-- persistir apenas metadados do produto escaneado
+### 4. Scanner
+Status: **concluido**
+- leitura de barcode multiplataforma
+- confirmacao de produto existente
+- fallback para cadastro manual
+- persistencia apenas de dados estruturados do alimento
 
-Decisao de persistencia:
-- nao salvar frame, screenshot ou foto do scanner no `Hive`
-- salvar apenas dados estruturados como `barcode`, nome, marca e macros
-- manter o scanner leve para uso em `web` e `iPhone` via navegador
+### 5. Daily
+Status: **concluido**
+- agenda real de refeicoes por gato/grupo
+- log operacional (atraso, recusa, reduzido, agua, petiscos, suplementos)
+- duplicar rotina de ontem para hoje
 
-Status:
-- tela inicial e navegacao prontas
-- camera, barcode e persistencia ainda pendentes
+### 6. Plans
+Status: **concluido**
+- calculo real de dieta (`RER/MER`)
+- nomes/horarios/porcoes por refeicao
+- multiplos planos por gato com selecao de plano ativo
+- plano por dia da semana e alternativa de fim de semana
+- suporte a mais de um alimento no mesmo plano
 
-### 4. Daily Dashboard
-Funcao:
-- mostrar agenda do dia
-- acompanhar refeicoes
-- acessar scanner e check-in de peso
+### 7. Food Database
+Status: **concluido (arquitetura consolidada)**
+- cadastro manual completo
+- busca por nome, marca, tags e barcode
+- recentes/populares
+- reuso direto em scanner e plans
+- fluxo padronizado com repositorio/provider
 
-Status:
-- layout principal existe
-- ainda precisa refletir dados reais
+### 8. Weight Check-in
+Status: **concluido**
+- check-in com data/hora manual
+- contexto do peso e sinais clinicos (apetite/fezes/vomito/energia)
+- nota clinica estruturada
+- alertas customizaveis
 
-### 5. Health Dashboard
-Funcao:
-- mostrar o gato ativo
-- resumo diario
-- timeline de refeicoes
-- atalhos para scanner e peso
+### 9. History e Weekly Diet Report
+Status: **concluido**
+- historico de peso por gato
+- rastreabilidade explicita por `catId` em `WeightRecord`
+- relatorio semanal com range customizado, PDF configuravel e compartilhamento
 
-Status:
-- visual principal pronto
-- dados reais e fluxos finais ainda pendentes
+### 10. Settings
+Status: **concluido**
+- tema, idioma, notificacoes, quiet hours, perfis de notificacao
+- export/backup JSON
+- pagina `How the app works`
+- geracao de cenarios demo e stress
 
-### 6. Weekly Diet Report
-Funcao:
-- mostrar tendencia de peso
-- mostrar ingestao por dia
-- gerar relatorio compartilhavel
+## Qualidade atual
+- `flutter analyze` sem issues
+- suite de testes passando em execucao completa
+- comando unico de qualidade: `./tool/quality_check.sh`
+- smoke test de rotas internas principais
+- teste de stress UX para Home + Daily com carga alta de gatos/grupos
 
-Status:
-- pendente
-
-### 7. Settings
-Funcao:
-- tema
-- lembretes
-- idioma
-- exportacao e backup
-
-Status:
-- tela e navegacao prontas
-- persistencia completa ainda pendente
-
-### 8. Food Database
-Funcao:
-- listar alimentos
-- buscar por nome, marca ou barcode
-- cadastrar manualmente
-- reaproveitar alimentos no scanner e no plano
-
-Status:
-- pendente
-
-### 9. Weight Check-in
-Funcao:
-- registrar peso atual
-- adicionar observacoes
-- alimentar historico de peso
-
-Status:
-- tela inicial e navegacao prontas
-- persistencia ainda pendente
-
-## Funcionalidades principais
-### Ja implementado em boa parte
-- shell principal com abas
-- Home
-- Daily
-- Health Dashboard
-- Settings
-- Scanner inicial
-- Weight Check-in inicial
-- tema claro/escuro
-- rotas nomeadas para fluxos internos
-
-### Em andamento
-- eliminacao de placeholders restantes
-- fechamento dos fluxos reais de scanner e peso
-- preparacao da base de alimentos
-
-### Proximas features criticas
-- Food Database local com Hive
-- Cat Profile real com CRUD
-- Plans com calculo alimentar
-- History / Weekly Report
-
-## Dados locais
-Modelos base ja definidos:
-- `CatProfile`
-- `FoodItem`
-- `WeightRecord`
-
-Fonte de verdade atual:
-- `Hive`
-
-Decisao:
-- manter local-first
-- considerar sync remoto apenas depois dos fluxos centrais estarem fechados localmente
+## Pendencias prioritarias atuais
+1. ampliar cobertura de testes para cenarios de rotina diaria e relatorios semanais
+2. evoluir telemetria de uso local para apoiar ajustes finos de UX
+3. priorizar evolucoes operacionais da Fase 5 (auditoria diaria e alertas inteligentes)
 
 ## Backend
-Nao entra agora.
+Nao e prioridade nesta fase.
 
-Backend so passa a fazer sentido quando o app ja tiver:
-- perfis reais
-- base de alimentos funcional
-- historico de peso persistido
-- plano alimentar funcional
-
-Se houver sync futuro:
-- preferencia atual: `Supabase`
-- motivo: encaixe melhor para backup e sincronizacao relacional
-
-## Roadmap resumido
-### Fase 1
-- fechar navegacao real
-- remover placeholders principais
-- fechar Scanner, Settings e Weight Check-in como fluxos iniciais
-
-### Fase 2
-- implementar Food Database local
-- implementar Cat Profile real
-- conectar Home aos dados persistidos
-
-### Fase 3
-- implementar Plans e regras de negocio
-- conectar Daily e Dashboard aos dados reais
-
-### Fase 4
-- implementar History e Weekly Report
-- exportacao, backup, notificacoes e acabamento
-
-## Documentacao interna
-O planejamento operacional detalhado foi movido para `docs/internal/`.
+Direcao:
+- finalizar produto local-first em Flutter
+- considerar sync remoto apenas apos fechamento total do fluxo operacional

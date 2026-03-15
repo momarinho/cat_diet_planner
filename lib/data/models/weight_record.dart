@@ -4,6 +4,9 @@ part 'weight_record.g.dart';
 
 @HiveType(typeId: 2)
 class WeightRecord extends HiveObject {
+  @HiveField(12)
+  final String catId;
+
   @HiveField(0)
   final DateTime date;
 
@@ -41,6 +44,7 @@ class WeightRecord extends HiveObject {
   final bool alertTriggered;
 
   WeightRecord({
+    required this.catId,
     required this.date,
     required this.weight,
     this.notes,

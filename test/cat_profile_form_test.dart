@@ -38,9 +38,14 @@ void main() {
       expect(find.text('Date of birth (optional)'), findsOneWidget);
       expect(find.text('Veterinary notes (optional)'), findsOneWidget);
 
-      final saveButton = find.text('Save Profile', skipOffstage: false).last;
+      final saveButton = find.widgetWithText(FilledButton, 'Save Profile');
+      await tester.scrollUntilVisible(
+        saveButton,
+        400,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.tap(saveButton);
-      await tester.pump();
+      await tester.pumpAndSettle();
 
       // Validation still applies for required fields
       expect(find.text('Enter the cat name'), findsOneWidget);

@@ -95,21 +95,25 @@ class DemoDataService {
 
     final lunaWeights = [
       WeightRecord(
+        catId: 'cat-luna-solo',
         date: now.subtract(const Duration(days: 14)),
         weight: 4.8,
         notes: 'Initial check-in',
       ),
       WeightRecord(
+        catId: 'cat-luna-solo',
         date: now.subtract(const Duration(days: 7)),
         weight: 4.7,
         notes: 'Stable appetite',
       ),
       WeightRecord(
+        catId: 'cat-luna-solo',
         date: now.subtract(const Duration(days: 3)),
         weight: 4.6,
         notes: 'More active this week',
       ),
       WeightRecord(
+        catId: 'cat-luna-solo',
         date: now.subtract(const Duration(hours: 6)),
         weight: 4.6,
         notes: 'Good energy today',
@@ -311,11 +315,13 @@ class DemoDataService {
       final ageMonths = 12 + (i * 4);
       final weights = <WeightRecord>[
         WeightRecord(
+          catId: id,
           date: now.subtract(Duration(days: 14 - (i % 4))),
           weight: weight + 0.1,
           notes: 'Initial baseline',
         ),
         WeightRecord(
+          catId: id,
           date: now.subtract(Duration(days: 7 - (i % 3))),
           weight: weight,
           notes: 'Follow-up',

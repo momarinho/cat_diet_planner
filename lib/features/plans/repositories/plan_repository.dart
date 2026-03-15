@@ -2,10 +2,13 @@ import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/data/models/diet_plan.dart';
 import 'package:cat_diet_planner/data/models/food_item.dart';
 import 'package:cat_diet_planner/data/models/group_diet_plan.dart';
+import 'package:cat_diet_planner/data/repositories/food_repository.dart';
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class PlanRepository {
+  final FoodRepository _foodRepository = FoodRepository();
+
   /// Returns an active plan for the given catId.
   /// Priority:
   /// 1) cat.activePlanId when present and found
@@ -38,17 +41,11 @@ class PlanRepository {
   }
 
   List<FoodItem> getAllFoods() {
-    return HiveService.foodsBox.values.toList();
+    return _foodRepository.getAllFoods();
   }
 
   FoodItem? findFoodByKey(dynamic key) {
-    if (key == null) return null;
-
-    for (final food in HiveService.foodsBox.values) {
-      if (food.key == key) return food;
-    }
-
-    return null;
+    return _foodRepository.findByKey(key);
   }
 
   String? getActivePlanIdForCat(String catId) {
@@ -78,7 +75,7 @@ class PlanRepository {
   }
 
   ValueListenable<Box<FoodItem>> foodsListenable() {
-    return HiveService.foodsBox.listenable();
+    return _foodRepository.foodsListenable();
   }
 
   /// Save a plan for a cat. Supports storing multiple plans per cat by using

@@ -1,17 +1,18 @@
-import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/data/models/food_item.dart';
+import 'package:cat_diet_planner/features/food_database/providers/food_repository_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class AddFoodScreen extends StatefulWidget {
+class AddFoodScreen extends ConsumerStatefulWidget {
   final String? initialBarcode;
 
   const AddFoodScreen({super.key, this.initialBarcode});
 
   @override
-  State<AddFoodScreen> createState() => _AddFoodScreenState();
+  ConsumerState<AddFoodScreen> createState() => _AddFoodScreenState();
 }
 
-class _AddFoodScreenState extends State<AddFoodScreen> {
+class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
   final _formKey = GlobalKey<FormState>();
   static const _categories = [
     'seca',
@@ -121,7 +122,7 @@ class _AddFoodScreenState extends State<AddFoodScreen> {
           .toList(growable: false),
     );
 
-    await HiveService.foodsBox.add(food);
+    await ref.read(foodRepositoryProvider).addFood(food);
 
     if (!mounted) return;
     Navigator.of(context).pop();

@@ -1,5 +1,5 @@
-import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/data/models/food_item.dart';
+import 'package:cat_diet_planner/data/repositories/food_repository.dart';
 
 class ScannerLookupResult {
   final bool exists;
@@ -16,16 +16,13 @@ class ScannerLookupResult {
 class ScannerProductService {
   static Future<ScannerLookupResult> lookupByBarcode(String barcode) async {
     final normalizedBarcode = barcode.trim();
-    final foods = HiveService.foodsBox.values.toList();
-
-    for (final food in foods) {
-      if (food.barcode == normalizedBarcode) {
-        return ScannerLookupResult(
-          exists: true,
-          barcode: normalizedBarcode,
-          food: food,
-        );
-      }
+    final food = FoodRepository().findByBarcode(normalizedBarcode);
+    if (food != null) {
+      return ScannerLookupResult(
+        exists: true,
+        barcode: normalizedBarcode,
+        food: food,
+      );
     }
 
     return ScannerLookupResult(exists: false, barcode: normalizedBarcode);

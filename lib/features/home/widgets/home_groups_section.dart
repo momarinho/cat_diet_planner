@@ -1,16 +1,14 @@
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
-import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/data/models/cat_group.dart';
-import 'package:cat_diet_planner/data/models/group_diet_plan.dart';
 import 'package:cat_diet_planner/features/cat_group/providers/selected_group_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/cat_groups_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/cat_profiles_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
 import 'package:cat_diet_planner/features/daily/services/daily_meal_schedule_service.dart';
+import 'package:cat_diet_planner/features/plans/providers/plan_repository_provider.dart';
 import 'package:cat_diet_planner/features/settings/services/notification_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 class HomeGroupsSection extends ConsumerWidget {
   const HomeGroupsSection({super.key});
@@ -97,6 +95,7 @@ class _GroupCard extends StatelessWidget {
             .where((cat) => group.catIds.contains(cat.id))
             .map((cat) => cat.name)
             .toList(growable: false);
+        final planRepository = ref.read(planRepositoryProvider);
         final icon = _groupIcon(group.iconName);
         final accent = group.secondaryColorValue == null
             ? Color(group.colorValue)
@@ -246,11 +245,11 @@ class _GroupCard extends StatelessWidget {
                   ],
                   const SizedBox(height: 8),
                   ValueListenableBuilder(
-                    valueListenable: HiveService.groupDietPlansBox.listenable(
-                      keys: [group.id],
+                    valueListenable: planRepository.groupPlanListenable(
+                      group.id,
                     ),
-                    builder: (context, Box<GroupDietPlan> box, _) {
-                      final plan = box.get(group.id);
+                    builder: (context, _, _) {
+                      final plan = planRepository.getPlanForGroup(group.id);
                       if (plan == null) {
                         return Text(
                           'No group plan yet',

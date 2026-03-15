@@ -17,6 +17,7 @@ class WeightRecordAdapter extends TypeAdapter<WeightRecord> {
       for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
     };
     return WeightRecord(
+      catId: fields[12] as String? ?? '',
       date: fields[0] as DateTime,
       weight: fields[1] as double,
       notes: fields[2] as String?,
@@ -35,7 +36,7 @@ class WeightRecordAdapter extends TypeAdapter<WeightRecord> {
   @override
   void write(BinaryWriter writer, WeightRecord obj) {
     writer
-      ..writeByte(12)
+      ..writeByte(13)
       ..writeByte(0)
       ..write(obj.date)
       ..writeByte(1)
@@ -59,7 +60,9 @@ class WeightRecordAdapter extends TypeAdapter<WeightRecord> {
       ..writeByte(10)
       ..write(obj.clinicalAlertLevel)
       ..writeByte(11)
-      ..write(obj.alertTriggered);
+      ..write(obj.alertTriggered)
+      ..writeByte(12)
+      ..write(obj.catId);
   }
 
   @override

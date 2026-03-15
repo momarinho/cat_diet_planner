@@ -1,12 +1,15 @@
 import 'dart:math' as math;
 
+import 'package:cat_diet_planner/core/widgets/app_empty_state.dart';
 import 'package:cat_diet_planner/core/utils/cat_photo.dart';
-import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/data/models/diet_plan.dart';
 import 'package:cat_diet_planner/data/models/weight_record.dart';
+import 'package:cat_diet_planner/data/repositories/daily_schedule_repository.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
+import 'package:cat_diet_planner/features/daily/providers/daily_schedule_repository_provider.dart';
+import 'package:cat_diet_planner/features/history/providers/weight_repository_provider.dart';
 import 'package:cat_diet_planner/features/history/services/weekly_report_export_service.dart';
-import 'package:cat_diet_planner/features/plans/repositories/plan_repository.dart';
+import 'package:cat_diet_planner/features/plans/providers/plan_repository_provider.dart';
 import 'package:cat_diet_planner/features/settings/providers/app_settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,12 +33,10 @@ class WeeklyDietReportScreen extends ConsumerWidget {
     'Dec',
   ];
 
-  List<WeightRecord> _resolveRecords(
-    List<WeightRecord> globalRecords,
-    List<WeightRecord> catRecords,
-    int rangeDays,
-  ) {
-    final source = catRecords.isNotEmpty ? catRecords : globalRecords;
+  List<WeightRecord> _resolveRecords({
+    required List<WeightRecord> source,
+    required int rangeDays,
+  }) {
     final sorted = [...source]..sort((a, b) => a.date.compareTo(b.date));
     if (sorted.isEmpty) return sorted;
     final cutoff = DateTime.now().subtract(Duration(days: rangeDays - 1));
@@ -53,6 +54,7 @@ class WeeklyDietReportScreen extends ConsumerWidget {
     required String catId,
     required DietPlan? plan,
     required int rangeDays,
+    required DailyScheduleRepository scheduleRepository,
   }) {
     final now = DateTime.now();
     final rows = <_DailyIntakeRow>[];
@@ -63,9 +65,8 @@ class WeeklyDietReportScreen extends ConsumerWidget {
         now.month,
         now.day,
       ).subtract(Duration(days: offset));
-      final key = DailyKeyHelper.catKey(catId, date);
-      final raw = HiveService.mealsBox.get(key);
-      final schedule = raw == null ? null : Map<String, dynamic>.from(raw);
+      final key = scheduleRepository.catDayKey(catId, date);
+      final schedule = scheduleRepository.readSchedule(key);
       final items = ((schedule?['items'] as List?) ?? const [])
           .map((item) => Map<String, dynamic>.from(item as Map))
           .where((item) => item['type'] == 'meal')
@@ -138,6 +139,8 @@ class WeeklyDietReportScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedCat = ref.watch(selectedCatProvider);
     final settings = ref.watch(appSettingsProvider);
+    final planRepository = ref.read(planRepositoryProvider);
+    final scheduleRepository = ref.read(dailyScheduleRepositoryProvider);
     final rangeDays = settings.reportRangeDays == -1
         ? settings.customReportRangeDays
         : settings.reportRangeDays;
@@ -147,36 +150,60 @@ class WeeklyDietReportScreen extends ConsumerWidget {
         theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.70) ??
         const Color(0xFF7A7678);
 
+    if (selectedCat == null) {
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Weekly Diet Report'),
+          centerTitle: true,
+        ),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: AppEmptyState(
+              icon: Icons.pets_rounded,
+              title: 'No active cat',
+              description:
+                  'Select a cat from Home before opening weekly report.',
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Weekly Diet Report'),
         centerTitle: true,
       ),
       body: ValueListenableBuilder(
-        valueListenable: HiveService.weightsBox.listenable(),
+        valueListenable: ref.read(weightRepositoryProvider).weightsListenable(),
         builder: (context, Box<WeightRecord> box, _) {
-          final globalRecords = box.values.toList()
-            ..sort((a, b) => a.date.compareTo(b.date));
-          final catRecords =
-              selectedCat?.weightHistory ?? const <WeightRecord>[];
-          final records = _resolveRecords(globalRecords, catRecords, rangeDays);
+          final sourceRecords = ref
+              .read(weightRepositoryProvider)
+              .recordsForCatFromBox(
+                box,
+                selectedCat.id,
+                fallbackHistory: selectedCat.weightHistory,
+                newestFirst: false,
+              );
+          final records = _resolveRecords(
+            source: sourceRecords,
+            rangeDays: rangeDays,
+          );
           final latest = records.isNotEmpty ? records.last : null;
           final first = records.isNotEmpty ? records.first : null;
           final rangeLabel = records.isEmpty
               ? 'No period selected'
               : _formatRange(first!.date, latest!.date);
-          final plan = selectedCat == null
-              ? null
-              : PlanRepository().getPlanForCat(selectedCat.id);
-          final intakeRows = selectedCat == null
-              ? const <_DailyIntakeRow>[]
-              : _buildIntakeRows(
-                  catId: selectedCat.id,
-                  plan: plan,
-                  rangeDays: rangeDays,
-                );
+          final plan = planRepository.getPlanForCat(selectedCat.id);
+          final intakeRows = _buildIntakeRows(
+            catId: selectedCat.id,
+            plan: plan,
+            rangeDays: rangeDays,
+            scheduleRepository: scheduleRepository,
+          );
           final note = _buildNote(
-            catName: selectedCat?.name ?? 'Your cat',
+            catName: selectedCat.name,
             records: records,
             rows: intakeRows,
           );
@@ -213,8 +240,8 @@ class WeeklyDietReportScreen extends ConsumerWidget {
                                 ),
                                 child: CircleAvatar(
                                   backgroundImage: catPhotoProvider(
-                                    photoPath: selectedCat?.photoPath,
-                                    photoBase64: selectedCat?.photoBase64,
+                                    photoPath: selectedCat.photoPath,
+                                    photoBase64: selectedCat.photoBase64,
                                   ),
                                 ),
                               ),
@@ -224,7 +251,7 @@ class WeeklyDietReportScreen extends ConsumerWidget {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Text(
-                                      selectedCat?.name ?? 'Active Cat',
+                                      selectedCat.name,
                                       style: theme.textTheme.headlineSmall
                                           ?.copyWith(
                                             fontWeight: FontWeight.w900,
@@ -1043,10 +1070,3 @@ class _DailyIntakeRow {
 }
 
 enum _DailyIntakeStatus { onTrack, above, below, none }
-
-abstract final class DailyKeyHelper {
-  static String catKey(String catId, DateTime date) {
-    final day = date.toIso8601String().split('T').first;
-    return '$catId:$day';
-  }
-}

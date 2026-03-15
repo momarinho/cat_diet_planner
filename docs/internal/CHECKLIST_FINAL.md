@@ -40,9 +40,9 @@ Este passa a ser o checklist final de produto e execução.
 - [x] providers base para perfis e gato ativo
 - [x] repositório de perfil conectado ao `Hive`
 - [x] shell principal com `IndexedStack`
-- [-] rotas internas principais ligadas
+- [x] rotas internas principais ligadas
 - [x] persistência completa de preferências do app
-- [-] padronização final de repositories/providers para todos os fluxos reais
+- [x] padronização final de repositories/providers para todos os fluxos reais
 
 ## 3. Design system e componentes reutilizáveis
 - [x] `AppCardContainer`
@@ -83,7 +83,7 @@ Este passa a ser o checklist final de produto e execução.
 - [x] remover dados estáticos restantes
 
 ## 6. Cat Profile
-- [-] tela final aderente ao mock
+- [x] tela final aderente ao mock
 - [x] formulário completo: nome, peso, idade
 - [x] campos para castrado, atividade e objetivo
 - [x] objetivos expandidos, refeições preferidas, meta manual e notas clínicas
@@ -92,8 +92,8 @@ Este passa a ser o checklist final de produto e execução.
 - [x] salvar perfil no `Hive`
 - [x] editar perfil existente
 - [x] excluir perfil
-- [x] `ProfileListScreen` existente como base
-- [ ] refinamento visual final contra o mock aprovado
+- [x] `ProfileListScreen` removida (legado de showcase descontinuado)
+- [x] refinamento visual final contra o mock aprovado
 
 ## 6.1 Gestão em lote: grupos e operação para múltiplos gatos
 - [x] criar entidade `CatGroup`
@@ -109,7 +109,7 @@ Este passa a ser o checklist final de produto e execução.
 - [x] suportar plano aplicado diretamente ao grupo
 - [x] adaptar `Daily` para fluxo de grupo sem peso/check-in individual
 - [x] exibir resumo operacional básico por grupo
-- [-] validar UX para cenário real de muitos gatos
+- [x] validar UX para cenário real de muitos gatos
 - [x] definir limites iniciais recomendados:
 - [x] até `10` gatos
 - [x] até `5` grupos
@@ -137,7 +137,7 @@ Este passa a ser o checklist final de produto e execução.
 - [x] marcar refeições como concluídas
 - [x] registrar `weight check-in` pelo fluxo diário
 - [x] persistir schedule/refeições do dia
-- [-] ligar navegação real para scanner e peso em todos os pontos
+- [x] ligar navegação real para scanner e peso em todos os pontos
 
 ## 9. Health Dashboard
 - [x] app bar visual no estilo do mock
@@ -178,7 +178,7 @@ Este passa a ser o checklist final de produto e execução.
 - [x] atualização da lista local validada parcialmente
 - [x] lista de recentes/populares
 - [x] persistir alimento escolhido no plano
-- [-] consolidar decisão arquitetural no código, não só na documentação
+- [x] consolidar decisão arquitetural no código, não só na documentação
 
 ## 12. Weight Check-in
 - [x] tela dedicada de check-in
@@ -189,7 +189,7 @@ Este passa a ser o checklist final de produto e execução.
 - [x] CTA `Record Weight`
 - [x] persistir histórico de peso no `Hive`
 - [x] atualizar resumos após salvar
-- [ ] revisar acabamento visual final
+- [x] revisar acabamento visual final
 
 ## 13. History e Weekly Diet Report
 - [x] criar tela real de `History`
@@ -352,38 +352,81 @@ Este passa a ser o checklist final de produto e execução.
 - [x] notificações locais
 - [x] export/backup
 
-## 18. Prioridade de entrega
+## 18. Prioridade de entrega (ordem de implementação atualizada)
 
-### Essencial para entregar
-1. validar UX real para cenário de muitos gatos/grupos
-2. revisar todos os pontos de entrada secundários para eliminar ações mortas restantes
+### Fase 0: estabilidade imediata (prioridade máxima)
+- [x] suíte `flutter test` 100% verde em execução completa
+- [x] corrigir instabilidade do teste de formulário de perfil
+- [x] consolidar rotina local de validação (`flutter analyze` + `flutter test`)
 
-### Importante, mas não bloqueante
-1. `Food Database`
-   - consolidar decisão arquitetural no código
-2. refinamento visual final
-   - `Cat Profile`
-   - `Weight Check-in`
-   - revisão visual final contra o mock
-3. revisão visual final contra o mock
+### Fase 1: integridade de dados clínicos e histórico
+- [x] adicionar `catId` em `WeightRecord` para rastreabilidade explícita por gato
+- [x] ajustar `History` e `Weekly Diet Report` para leitura/filtro por `catId`
+- [x] revisar fallback atual de pesos globais para evitar mistura entre gatos
 
-### Polimento técnico
-1. `loading/skeleton states` consistentes
-2. padronização final de repositories/providers para todos os fluxos reais
-3. persistência completa de preferências do app
-4. testes críticos
-   - navegação principal
-   - formulário de perfil
-   - registro de peso
-   - persistência `Hive`
+### Fase 2: fechar pendências funcionais parciais já mapeadas
+- [x] padronização final de `repositories/providers` para todos os fluxos reais
+- [x] ligar navegação real para scanner e peso em todos os pontos secundários
+- [x] consolidar decisão arquitetural do `Food Database` no código
+- [x] validar UX real para cenário de muitos gatos/grupos usando stress data
 
-## 19. Próxima ordem sugerida
-1. `Testes`: fluxo crítico e persistência
+### Fase 3: limpeza técnica e redução de dívida
+- [x] remover tela legado de showcase (`ProfileListScreen`) se não fizer parte do produto
+- [x] remover diretórios vazios/legados não utilizados em `lib/`
+- [x] auditar dependências e remover pacotes sem uso ou descontinuados
+- [x] eliminar duplicidade funcional em `Settings` (`Export to JSON` x `Backup Data`)
+
+### Fase 4: polimento final de produto
+- [x] refinamento visual final de `Cat Profile` contra mock aprovado
+- [x] revisar acabamento visual final de `Weight Check-in`
+- [x] revisão visual final global contra o mock
+- [x] atualizar `docs/PRODUCT_SPEC.md` para refletir o estado atual do código
+
+### Fase 5: evoluções recomendadas pós-fechamento
+- [ ] modo operacional com foco em rotina de abrigo/clínica
+- [ ] auditoria diária consolidada (pendências e alertas do dia)
+- [ ] alertas inteligentes por tendência de peso + aderência alimentar
+- [ ] templates reutilizáveis de plano/protocolo por condição clínica
+
+## 19. Concluído (ordem de implementação já executada)
+
+### Bloco 1: base técnica e navegação
+- [x] bootstrap completo com `HiveService` + `ProviderScope`
+- [x] shell com `IndexedStack` e abas reais
+- [x] tema, estados de loading/empty/error e componentes base
+
+### Bloco 2: fluxo central de operação
+- [x] `Home`, `Daily` e `Dashboard` conectados a dados reais
+- [x] `Scanner` com leitura de barcode e confirmação real
+- [x] `Food Database` com cadastro, busca e reuso no plano
+
+### Bloco 3: planejamento e rotina alimentar
+- [x] `Plans` com regras reais, múltiplos planos e plano ativo por gato
+- [x] personalização de refeições (nomes, horários, porções e unidades)
+- [x] rotina diária com contexto operacional por refeição e duplicação do dia anterior
+
+### Bloco 4: saúde, histórico e relatórios
+- [x] `Weight Check-in` com contexto clínico estruturado e alertas customizáveis
+- [x] `History` + `Weekly Diet Report` com exportação real em PDF e compartilhamento
+- [x] ajustes avançados de relatório (range customizado e conteúdo do PDF)
+
+### Bloco 5: settings e personalização avançada
+- [x] notificações locais com quiet hours e perfis por tipo
+- [x] idioma aplicado no conteúdo operacional (não só seletor salvo)
+- [x] geração de dados demo e stress data para validação de carga
+- [x] página de ajuda (`How the app works`) integrada em `Settings`
+
+### Bloco 6: checklist de personalização (18.2 a 18.9)
+- [x] dados clínicos completos no perfil do gato
+- [x] regras alimentares avançadas em plano individual e de grupo
+- [x] operação multi-gato com vínculos reais entre grupos e gatos
+- [x] customização avançada de notificações e relatórios
+
 ## 20. Diagnóstico objetivo do estado atual
 - O projeto já passou da fase de mock puro.
 - A maior parte do valor pendente está em fluxo real, não em layout.
 - `Home`, `Daily`, `Dashboard`, `Settings`, `Food Database`, `Weight Check-in`, `Plans` e `History` já têm base concreta.
 - O fluxo principal do produto já existe de ponta a ponta.
-- O maior volume pendente agora está em polimento, rotina de notificações e robustez.
+- O maior volume pendente agora está em evoluções pós-fechamento e ganhos operacionais avançados.
 - Para este app, `Rust puro` deixaria de ser pragmático por causa do alvo `web + iPhone`.
 - A decisão mais consistente é: terminar o produto em `Flutter` e, se ainda fizer sentido depois, extrair um `Rust core` pequeno e bem delimitado.

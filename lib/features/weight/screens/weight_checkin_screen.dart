@@ -1,9 +1,9 @@
 import 'package:cat_diet_planner/core/utils/cat_photo.dart';
 import 'package:cat_diet_planner/core/widgets/app_empty_state.dart';
 import 'package:cat_diet_planner/core/widgets/app_loading_state.dart';
-import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/data/models/weight_record.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
+import 'package:cat_diet_planner/features/history/providers/weight_repository_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -44,11 +44,14 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
 
   void _loadLatestWeight() {
     final selectedCat = ref.read(selectedCatProvider);
-    final records =
-        (selectedCat?.weightHistory.isNotEmpty ?? false)
-              ? [...selectedCat!.weightHistory]
-              : HiveService.weightsBox.values.toList()
-          ..sort((a, b) => b.date.compareTo(a.date));
+    if (selectedCat == null) return;
+    final records = ref
+        .read(weightRepositoryProvider)
+        .recordsForCat(
+          selectedCat.id,
+          fallbackHistory: selectedCat.weightHistory,
+          newestFirst: true,
+        );
 
     if (records.isEmpty) return;
 
@@ -78,6 +81,12 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
     return '${months[date.month - 1]} ${date.day}, ${date.year}';
   }
 
+  String _formatTime(DateTime date) {
+    final hour = date.hour.toString().padLeft(2, '0');
+    final minute = date.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
+  }
+
   void _appendSuggestion(String suggestion) {
     final current = _notesController.text.trim();
     final next = current.isEmpty ? suggestion : '$current, $suggestion';
@@ -97,8 +106,8 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
     try {
       final notes = _notesController.text.trim();
       final selectedCat = ref.read(selectedCatProvider);
-      final previousWeight =
-          selectedCat != null && selectedCat.weightHistory.isNotEmpty
+      if (selectedCat == null) return;
+      final previousWeight = selectedCat.weightHistory.isNotEmpty
           ? (selectedCat.weightHistory
                   ..sort((a, b) => a.date.compareTo(b.date)))
                 .last
@@ -110,10 +119,10 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
       final deltaPercent = previousWeight == null || previousWeight == 0
           ? 0.0
           : (deltaAbs / previousWeight) * 100;
-      final thresholdByKg = selectedCat?.weightAlertDeltaKg;
-      final thresholdByPercent = selectedCat?.weightAlertDeltaPercent;
-      final goalMin = selectedCat?.weightGoalMinKg;
-      final goalMax = selectedCat?.weightGoalMaxKg;
+      final thresholdByKg = selectedCat.weightAlertDeltaKg;
+      final thresholdByPercent = selectedCat.weightAlertDeltaPercent;
+      final goalMin = selectedCat.weightGoalMinKg;
+      final goalMax = selectedCat.weightGoalMaxKg;
       final outOfGoalRange =
           (goalMin != null && _weight < goalMin) ||
           (goalMax != null && _weight > goalMax);
@@ -128,6 +137,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
           : 'none';
 
       final record = WeightRecord(
+        catId: selectedCat.id,
         date: _checkInDateTime,
         weight: _weight,
         notes: notes.isEmpty ? null : notes,
@@ -146,14 +156,12 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
         alertTriggered: alertTriggered,
       );
 
-      await HiveService.weightsBox.add(record);
-      if (selectedCat != null) {
-        selectedCat.weight = _weight;
-        selectedCat.weightHistory = [...selectedCat.weightHistory, record]
-          ..sort((a, b) => a.date.compareTo(b.date));
-        await selectedCat.save();
-        ref.read(selectedCatProvider.notifier).state = selectedCat;
-      }
+      await ref.read(weightRepositoryProvider).addRecord(record);
+      selectedCat.weight = _weight;
+      selectedCat.weightHistory = [...selectedCat.weightHistory, record]
+        ..sort((a, b) => a.date.compareTo(b.date));
+      await selectedCat.save();
+      ref.read(selectedCatProvider.notifier).state = selectedCat;
 
       if (!mounted) return;
 
@@ -183,6 +191,9 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
     final selectedCat = ref.watch(selectedCatProvider);
     final theme = Theme.of(context);
     final primary = theme.colorScheme.primary;
+    final secondary =
+        theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.70) ??
+        const Color(0xFF7A7678);
 
     if (selectedCat == null) {
       return Scaffold(
@@ -251,7 +262,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                           ),
                         ),
                         child: const Icon(
-                          Icons.photo_camera_outlined,
+                          Icons.monitor_heart_rounded,
                           size: 12,
                           color: Colors.white,
                         ),
@@ -276,6 +287,14 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                           : 'Last check-in: ${_formatDate(_latestRecord!.date)}',
                       style: theme.textTheme.titleMedium?.copyWith(
                         color: const Color(0xFF7B8DA8),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Recording now: ${_formatDate(_checkInDateTime)} at ${_formatTime(_checkInDateTime)}',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: secondary,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -355,11 +374,17 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Check-in Date & Time',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                Row(
+                  children: [
+                    Icon(Icons.event_note_rounded, color: primary),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Check-in Date & Time',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 10),
                 Wrap(
@@ -413,9 +438,7 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                         });
                       },
                       icon: const Icon(Icons.schedule_rounded),
-                      label: Text(
-                        '${_checkInDateTime.hour.toString().padLeft(2, '0')}:${_checkInDateTime.minute.toString().padLeft(2, '0')}',
-                      ),
+                      label: Text(_formatTime(_checkInDateTime)),
                     ),
                   ],
                 ),
@@ -469,10 +492,24 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Row(
+                  children: [
+                    Icon(Icons.medical_information_outlined, color: primary),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Check-in Context',
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
                 Text(
-                  'Check-in Context',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
+                  'Use this context to improve trend interpretation in reports.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: secondary,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -588,66 +625,46 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                     const SizedBox(width: 8),
                     Text(
                       'Check-in Notes',
-                      style: theme.textTheme.headlineSmall?.copyWith(
+                      style: theme.textTheme.titleLarge?.copyWith(
                         fontWeight: FontWeight.w900,
                       ),
                     ),
                   ],
                 ),
+                const SizedBox(height: 6),
+                Text(
+                  'Record behavior and clinical follow-up for this weight entry.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: secondary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 18),
                 TextField(
                   controller: _notesController,
                   maxLines: 4,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     hintText:
                         'How is your cat\'s appetite today? Any changes in mood or energy levels?',
-                    hintStyle: theme.textTheme.titleMedium?.copyWith(
-                      color: const Color(0xFF9AA8BE),
-                      fontWeight: FontWeight.w500,
-                    ),
-                    filled: true,
-                    fillColor: theme.brightness == Brightness.dark
-                        ? const Color(0xFF2B2426)
-                        : const Color(0xFFFFF0F4),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.all(20),
+                    border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 16),
                 TextField(
                   controller: _clinicalAssessmentController,
                   maxLines: 3,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Clinical assessment (structured)',
-                    filled: true,
-                    fillColor: theme.brightness == Brightness.dark
-                        ? const Color(0xFF2B2426)
-                        : const Color(0xFFFFF0F4),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.all(20),
+                    border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 12),
                 TextField(
                   controller: _clinicalPlanController,
                   maxLines: 3,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: 'Clinical plan / follow-up',
-                    filled: true,
-                    fillColor: theme.brightness == Brightness.dark
-                        ? const Color(0xFF2B2426)
-                        : const Color(0xFFFFF0F4),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(24),
-                      borderSide: BorderSide.none,
-                    ),
-                    contentPadding: const EdgeInsets.all(20),
+                    border: OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -655,18 +672,8 @@ class _WeightCheckInScreenState extends ConsumerState<WeightCheckInScreen> {
                   spacing: 12,
                   runSpacing: 12,
                   children: _noteSuggestions.map((suggestion) {
-                    return OutlinedButton(
+                    return FilledButton.tonal(
                       onPressed: () => _appendSuggestion(suggestion),
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: primary,
-                        side: BorderSide(
-                          color: primary.withValues(alpha: 0.28),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 18,
-                          vertical: 14,
-                        ),
-                      ),
                       child: Text(
                         suggestion,
                         style: const TextStyle(fontWeight: FontWeight.w800),
@@ -722,14 +729,14 @@ class _SectionCard extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(26),
         border: Border.all(color: primary.withValues(alpha: 0.10)),
         boxShadow: [
           if (theme.brightness == Brightness.light)
             BoxShadow(
-              color: primary.withValues(alpha: 0.08),
-              blurRadius: 24,
-              offset: const Offset(0, 12),
+              color: primary.withValues(alpha: 0.06),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
             ),
         ],
       ),

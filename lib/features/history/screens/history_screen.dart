@@ -1,8 +1,8 @@
 import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/core/widgets/app_empty_state.dart';
-import 'package:cat_diet_planner/data/local/hive_service.dart';
 import 'package:cat_diet_planner/data/models/weight_record.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
+import 'package:cat_diet_planner/features/history/providers/weight_repository_provider.dart';
 import 'package:cat_diet_planner/features/history/widgets/history_summary_card.dart';
 import 'package:cat_diet_planner/features/history/widgets/weight_record_card.dart';
 
@@ -16,6 +16,22 @@ class HistoryScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedCat = ref.watch(selectedCatProvider);
+    if (selectedCat == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('History')),
+        body: const Center(
+          child: Padding(
+            padding: EdgeInsets.all(24),
+            child: AppEmptyState(
+              icon: Icons.pets_rounded,
+              title: 'No active cat',
+              description: 'Select a cat from Home to view weight history.',
+            ),
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(title: const Text('History')),
       body: ListView(
@@ -29,13 +45,18 @@ class HistoryScreen extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           ValueListenableBuilder(
-            valueListenable: HiveService.weightsBox.listenable(),
+            valueListenable: ref
+                .read(weightRepositoryProvider)
+                .weightsListenable(),
             builder: (context, Box<WeightRecord> box, _) {
-              final records =
-                  (selectedCat?.weightHistory.isNotEmpty ?? false)
-                        ? [...selectedCat!.weightHistory]
-                        : box.values.toList()
-                    ..sort((a, b) => b.date.compareTo(a.date));
+              final records = ref
+                  .read(weightRepositoryProvider)
+                  .recordsForCatFromBox(
+                    box,
+                    selectedCat.id,
+                    fallbackHistory: selectedCat.weightHistory,
+                    newestFirst: true,
+                  );
               final latest = records.isNotEmpty ? records.first : null;
               final previous = records.length > 1 ? records[1] : null;
               final delta = latest != null && previous != null

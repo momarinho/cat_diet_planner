@@ -375,6 +375,14 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                       fontWeight: FontWeight.w800,
                     ),
                   ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Personal data, clinical context and feeding targets in one place.',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: secondary,
+                    ),
+                  ),
                   const SizedBox(height: 14),
                   OutlinedButton.icon(
                     onPressed: _pickPhoto,
@@ -418,7 +426,15 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
             const SizedBox(height: 16),
             _ProfileCard(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const _ProfileSectionHeader(
+                    icon: Icons.badge_outlined,
+                    title: 'Core Profile',
+                    subtitle:
+                        'Identity and baseline metabolic data used across the app.',
+                  ),
+                  const SizedBox(height: 12),
                   TextFormField(
                     controller: _nameController,
                     decoration: const InputDecoration(
@@ -584,8 +600,21 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                       return null;
                     },
                   ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            _ProfileCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _ProfileSectionHeader(
+                    icon: Icons.health_and_safety_outlined,
+                    title: 'Clinical Context',
+                    subtitle:
+                        'Optional fields that refine recommendations and clinical tracking.',
+                  ),
                   const SizedBox(height: 14),
-                  // Ideal weight
                   TextFormField(
                     controller: _idealWeightController,
                     keyboardType: const TextInputType.numberWithOptions(
@@ -606,7 +635,6 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     },
                   ),
                   const SizedBox(height: 14),
-                  // BCS slider (1-9)
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -625,7 +653,6 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     ],
                   ),
                   const SizedBox(height: 8),
-                  // Sex dropdown
                   DropdownButtonFormField<String>(
                     initialValue: _sex,
                     decoration: const InputDecoration(
@@ -645,7 +672,6 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     },
                   ),
                   const SizedBox(height: 14),
-                  // Breed
                   TextFormField(
                     controller: _breedController,
                     decoration: const InputDecoration(
@@ -654,7 +680,6 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  // Birthdate picker (read-only field)
                   TextFormField(
                     controller: _birthDateController,
                     readOnly: true,
@@ -681,7 +706,6 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     },
                   ),
                   const SizedBox(height: 14),
-                  // Custom activity level (optional)
                   TextFormField(
                     controller: _customActivityController,
                     decoration: const InputDecoration(
@@ -692,7 +716,6 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  // Structured lists (comma separated)
                   TextFormField(
                     controller: _clinicalConditionsController,
                     decoration: const InputDecoration(
@@ -720,7 +743,6 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  // Vet notes (separate from free-form notes)
                   TextFormField(
                     controller: _vetNotesController,
                     minLines: 2,
@@ -729,6 +751,20 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                       labelText: 'Veterinary notes (optional)',
                       border: OutlineInputBorder(),
                     ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            _ProfileCard(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _ProfileSectionHeader(
+                    icon: Icons.track_changes_outlined,
+                    title: 'Targets & Alerts',
+                    subtitle:
+                        'Set safe weight range and threshold alerts for each check-in.',
                   ),
                   const SizedBox(height: 14),
                   Text(
@@ -782,7 +818,6 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                     ),
                   ),
                   const SizedBox(height: 14),
-                  // Freeform clinical notes (existing)
                   TextFormField(
                     controller: _notesController,
                     minLines: 3,
@@ -853,10 +888,68 @@ class _ProfileCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(26),
         border: Border.all(color: primary.withValues(alpha: 0.10)),
+        boxShadow: [
+          if (theme.brightness == Brightness.light)
+            BoxShadow(
+              color: primary.withValues(alpha: 0.06),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+        ],
       ),
       child: child,
+    );
+  }
+}
+
+class _ProfileSectionHeader extends StatelessWidget {
+  const _ProfileSectionHeader({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final primary = theme.colorScheme.primary;
+    final secondary =
+        theme.textTheme.bodyMedium?.color?.withValues(alpha: 0.70) ??
+        const Color(0xFF7A7678);
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, color: primary),
+        const SizedBox(width: 10),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                subtitle,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: secondary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -87,6 +87,7 @@ class DataExportService {
 
   static Map<String, dynamic> _weightToMap(WeightRecord record) {
     return {
+      'catId': record.catId,
       'date': record.date.toIso8601String(),
       'weight': record.weight,
       'notes': record.notes,
