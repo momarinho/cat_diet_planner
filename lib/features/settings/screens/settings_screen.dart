@@ -24,6 +24,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     'pt': 'Portuguese',
     'tl': 'Tagalog',
   };
+  static const _suggestionInterventionLabels = {
+    'conservative': 'conservative',
+    'balanced': 'balanced',
+    'proactive': 'proactive',
+  };
+  static const _suggestionCategoryLabels = {
+    'kcalAdjustment': 'Daily kcal adjustments',
+    'scheduleAdjustment': 'Schedule adjustments',
+    'portionSplitAdjustment': 'Portion split adjustments',
+    'preventiveTrendAlert': 'Preventive trend alerts',
+    'clinicalWatch': 'Clinical watch alerts',
+  };
   bool _isGeneratingDemoData = false;
   bool _isGeneratingStressData = false;
   bool _isClearingDemoData = false;
@@ -98,6 +110,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ],
     );
+  }
+
+  bool _suggestionCategoryEnabled(AppSettings settings, String category) {
+    final defaults = AppSettings.defaults().suggestionCategoryToggles;
+    return settings.suggestionCategoryToggles[category] ??
+        defaults[category] ??
+        true;
   }
 
   Future<String?> _pickTimeString(String current) async {
@@ -563,6 +582,97 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 label: 'Health',
                 primary: primary,
               ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _SectionCard(
+            title: 'Smart Suggestions',
+            children: [
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.tune_rounded, color: primary),
+                title: const Text('Intervention Level'),
+                subtitle: Text(
+                  _suggestionInterventionLabels[appSettings
+                          .suggestionInterventionLevel] ??
+                      'balanced',
+                ),
+                trailing: DropdownButton<String>(
+                  value: appSettings.suggestionInterventionLevel,
+                  items: _suggestionInterventionLabels.entries
+                      .map((entry) {
+                        return DropdownMenuItem(
+                          value: entry.key,
+                          child: Text(entry.value),
+                        );
+                      })
+                      .toList(growable: false),
+                  onChanged: (value) async {
+                    if (value == null) return;
+                    await ref
+                        .read(appSettingsProvider.notifier)
+                        .setSuggestionInterventionLevel(value);
+                  },
+                ),
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.filter_list_rounded, color: primary),
+                title: const Text('Daily suggestion limit'),
+                subtitle: Text(
+                  '${appSettings.suggestionDailyLimit} active suggestions per day',
+                ),
+                trailing: DropdownButton<int>(
+                  value: appSettings.suggestionDailyLimit,
+                  items: const [
+                    DropdownMenuItem(value: 1, child: Text('1')),
+                    DropdownMenuItem(value: 2, child: Text('2')),
+                    DropdownMenuItem(value: 3, child: Text('3')),
+                    DropdownMenuItem(value: 4, child: Text('4')),
+                    DropdownMenuItem(value: 5, child: Text('5')),
+                  ],
+                  onChanged: (value) async {
+                    if (value == null) return;
+                    await ref
+                        .read(appSettingsProvider.notifier)
+                        .setSuggestionDailyLimit(value);
+                  },
+                ),
+              ),
+              SwitchListTile(
+                value: appSettings.suggestionAlertsOnly,
+                onChanged: (value) async {
+                  await ref
+                      .read(appSettingsProvider.notifier)
+                      .setSuggestionAlertsOnly(value);
+                },
+                title: const Text('Alerts Only Mode'),
+                subtitle: const Text(
+                  'Show only preventive and clinical alerts, without plan-adjustment suggestions.',
+                ),
+                contentPadding: EdgeInsets.zero,
+              ),
+              ..._suggestionCategoryLabels.entries.map((entry) {
+                return SwitchListTile(
+                  value: _suggestionCategoryEnabled(appSettings, entry.key),
+                  onChanged: (value) async {
+                    await ref
+                        .read(appSettingsProvider.notifier)
+                        .setSuggestionCategoryEnabled(
+                          category: entry.key,
+                          enabled: value,
+                        );
+                  },
+                  title: Text(entry.value),
+                  subtitle: Text(
+                    entry.key == 'preventiveTrendAlert' ||
+                            entry.key == 'clinicalWatch'
+                        ? 'Alert category'
+                        : 'Plan suggestion category',
+                  ),
+                  contentPadding: EdgeInsets.zero,
+                );
+              }),
             ],
           ),
           const SizedBox(height: 16),

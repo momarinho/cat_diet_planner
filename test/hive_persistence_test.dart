@@ -59,6 +59,16 @@ void main() {
       mealReminders: false,
       languageCode: 'pt',
       reminderTimes: ['08:00', '18:00'],
+      suggestionInterventionLevel: 'proactive',
+      suggestionCategoryToggles: {
+        'kcalAdjustment': true,
+        'scheduleAdjustment': false,
+        'portionSplitAdjustment': true,
+        'preventiveTrendAlert': true,
+        'clinicalWatch': true,
+      },
+      suggestionDailyLimit: 2,
+      suggestionAlertsOnly: true,
     );
 
     await service.save(settings);
@@ -67,5 +77,9 @@ void main() {
     expect(restored.mealReminders, isFalse);
     expect(restored.languageCode, 'pt');
     expect(restored.reminderTimes, ['08:00', '18:00']);
+    expect(restored.suggestionInterventionLevel, 'proactive');
+    expect(restored.suggestionCategoryToggles['scheduleAdjustment'], isFalse);
+    expect(restored.suggestionDailyLimit, 2);
+    expect(restored.suggestionAlertsOnly, isTrue);
   });
 }

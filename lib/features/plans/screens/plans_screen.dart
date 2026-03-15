@@ -13,6 +13,7 @@ import 'package:cat_diet_planner/features/daily/services/daily_meal_schedule_ser
 import 'package:cat_diet_planner/features/plans/providers/plan_repository_provider.dart';
 import 'package:cat_diet_planner/features/plans/services/diet_calculator_service.dart';
 import 'package:cat_diet_planner/features/plans/services/portion/portion_unit_service.dart';
+import 'package:cat_diet_planner/features/suggestions/widgets/cat_suggestions_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -1182,6 +1183,14 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
               ],
             ),
           ),
+          if (!_planningForGroup && selectedCat != null) ...[
+            const SizedBox(height: 16),
+            CatSuggestionsSection(
+              cat: selectedCat,
+              title: 'Suggestions',
+              maxItems: 3,
+            ),
+          ],
           if (showIndividualEmpty) ...[
             const SizedBox(height: 16),
             _EmptyPlanState(

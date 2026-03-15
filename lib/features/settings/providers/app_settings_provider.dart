@@ -89,4 +89,29 @@ class AppSettingsNotifier extends StateNotifier<AppSettings> {
     state = state.copyWith(shareMessageTemplate: template);
     await _service.save(state);
   }
+
+  Future<void> setSuggestionInterventionLevel(String level) async {
+    state = state.copyWith(suggestionInterventionLevel: level);
+    await _service.save(state);
+  }
+
+  Future<void> setSuggestionCategoryEnabled({
+    required String category,
+    required bool enabled,
+  }) async {
+    final toggles = Map<String, bool>.from(state.suggestionCategoryToggles);
+    toggles[category] = enabled;
+    state = state.copyWith(suggestionCategoryToggles: toggles);
+    await _service.save(state);
+  }
+
+  Future<void> setSuggestionDailyLimit(int limit) async {
+    state = state.copyWith(suggestionDailyLimit: limit);
+    await _service.save(state);
+  }
+
+  Future<void> setSuggestionAlertsOnly(bool enabled) async {
+    state = state.copyWith(suggestionAlertsOnly: enabled);
+    await _service.save(state);
+  }
 }

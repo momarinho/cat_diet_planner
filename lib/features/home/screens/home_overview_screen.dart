@@ -2,6 +2,7 @@ import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/cat_profiles_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
 import 'package:cat_diet_planner/features/home/providers/home_summary_provider.dart';
+import 'package:cat_diet_planner/features/suggestions/widgets/cat_suggestions_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -250,6 +251,12 @@ class HomeOverviewScreen extends ConsumerWidget {
                     },
                   ),
                 ),
+              ),
+              const SizedBox(height: 16),
+              CatSuggestionsSection(
+                cat: selectedCat,
+                title: 'Smart Suggestions',
+                maxItems: 1,
               ),
             ],
             const SizedBox(height: 16),

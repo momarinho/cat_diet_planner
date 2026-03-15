@@ -14,6 +14,10 @@ class AppSettings {
     required this.pdfIncludeCalorieTable,
     required this.pdfIncludeVetNotes,
     required this.shareMessageTemplate,
+    required this.suggestionInterventionLevel,
+    required this.suggestionCategoryToggles,
+    required this.suggestionDailyLimit,
+    required this.suggestionAlertsOnly,
   });
 
   final bool mealReminders;
@@ -30,6 +34,11 @@ class AppSettings {
   final bool pdfIncludeCalorieTable;
   final bool pdfIncludeVetNotes;
   final String shareMessageTemplate;
+  final String
+  suggestionInterventionLevel; // conservative | balanced | proactive
+  final Map<String, bool> suggestionCategoryToggles;
+  final int suggestionDailyLimit;
+  final bool suggestionAlertsOnly;
 
   factory AppSettings.defaults() {
     return const AppSettings(
@@ -51,6 +60,16 @@ class AppSettings {
       pdfIncludeCalorieTable: true,
       pdfIncludeVetNotes: true,
       shareMessageTemplate: 'Weekly diet report from CatDiet Planner',
+      suggestionInterventionLevel: 'balanced',
+      suggestionCategoryToggles: {
+        'kcalAdjustment': true,
+        'scheduleAdjustment': true,
+        'portionSplitAdjustment': true,
+        'preventiveTrendAlert': true,
+        'clinicalWatch': true,
+      },
+      suggestionDailyLimit: 3,
+      suggestionAlertsOnly: false,
     );
   }
 
@@ -69,6 +88,10 @@ class AppSettings {
     bool? pdfIncludeCalorieTable,
     bool? pdfIncludeVetNotes,
     String? shareMessageTemplate,
+    String? suggestionInterventionLevel,
+    Map<String, bool>? suggestionCategoryToggles,
+    int? suggestionDailyLimit,
+    bool? suggestionAlertsOnly,
   }) {
     return AppSettings(
       mealReminders: mealReminders ?? this.mealReminders,
@@ -88,6 +111,12 @@ class AppSettings {
           pdfIncludeCalorieTable ?? this.pdfIncludeCalorieTable,
       pdfIncludeVetNotes: pdfIncludeVetNotes ?? this.pdfIncludeVetNotes,
       shareMessageTemplate: shareMessageTemplate ?? this.shareMessageTemplate,
+      suggestionInterventionLevel:
+          suggestionInterventionLevel ?? this.suggestionInterventionLevel,
+      suggestionCategoryToggles:
+          suggestionCategoryToggles ?? this.suggestionCategoryToggles,
+      suggestionDailyLimit: suggestionDailyLimit ?? this.suggestionDailyLimit,
+      suggestionAlertsOnly: suggestionAlertsOnly ?? this.suggestionAlertsOnly,
     );
   }
 
@@ -107,6 +136,10 @@ class AppSettings {
       'pdfIncludeCalorieTable': pdfIncludeCalorieTable,
       'pdfIncludeVetNotes': pdfIncludeVetNotes,
       'shareMessageTemplate': shareMessageTemplate,
+      'suggestionInterventionLevel': suggestionInterventionLevel,
+      'suggestionCategoryToggles': suggestionCategoryToggles,
+      'suggestionDailyLimit': suggestionDailyLimit,
+      'suggestionAlertsOnly': suggestionAlertsOnly,
     };
   }
 
@@ -116,8 +149,13 @@ class AppSettings {
         ?.map((value) => value.toString())
         .toList();
     final profileDefaults = AppSettings.defaults().notificationProfiles;
+    final suggestionToggleDefaults =
+        AppSettings.defaults().suggestionCategoryToggles;
     final rawProfiles = (map['notificationProfiles'] as Map?) ?? const {};
+    final rawSuggestionToggles =
+        (map['suggestionCategoryToggles'] as Map?) ?? const {};
     final profiles = <String, Map<String, String>>{};
+    final suggestionToggles = <String, bool>{};
     for (final entry in profileDefaults.entries) {
       final raw = rawProfiles[entry.key];
       if (raw is Map) {
@@ -129,6 +167,10 @@ class AppSettings {
       } else {
         profiles[entry.key] = Map<String, String>.from(entry.value);
       }
+    }
+    for (final entry in suggestionToggleDefaults.entries) {
+      suggestionToggles[entry.key] =
+          rawSuggestionToggles[entry.key] as bool? ?? entry.value;
     }
 
     return AppSettings(
@@ -150,6 +192,11 @@ class AppSettings {
       shareMessageTemplate:
           map['shareMessageTemplate']?.toString() ??
           'Weekly diet report from CatDiet Planner',
+      suggestionInterventionLevel:
+          map['suggestionInterventionLevel']?.toString() ?? 'balanced',
+      suggestionCategoryToggles: suggestionToggles,
+      suggestionDailyLimit: (map['suggestionDailyLimit'] as int?) ?? 3,
+      suggestionAlertsOnly: map['suggestionAlertsOnly'] as bool? ?? false,
     );
   }
 }
