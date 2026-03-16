@@ -127,7 +127,10 @@ class _FoodDatabaseScreenState extends ConsumerState<FoodDatabaseScreen> {
                     ...recentFoods.map((food) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: FoodCard(food: food),
+                        child: FoodCard(
+                          food: food,
+                          onEdit: () => _openFoodEditor(food),
+                        ),
                       );
                     }),
                     const SizedBox(height: 8),
@@ -141,7 +144,10 @@ class _FoodDatabaseScreenState extends ConsumerState<FoodDatabaseScreen> {
                     ...popularFoods.map((food) {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 12),
-                        child: FoodCard(food: food),
+                        child: FoodCard(
+                          food: food,
+                          onEdit: () => _openFoodEditor(food),
+                        ),
                       );
                     }),
                     const SizedBox(height: 8),
@@ -156,7 +162,10 @@ class _FoodDatabaseScreenState extends ConsumerState<FoodDatabaseScreen> {
                   ...filteredFoods.map((food) {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12),
-                      child: FoodCard(food: food),
+                      child: FoodCard(
+                        food: food,
+                        onEdit: () => _openFoodEditor(food),
+                      ),
                     );
                   }),
                 ],
@@ -172,6 +181,12 @@ class _FoodDatabaseScreenState extends ConsumerState<FoodDatabaseScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  void _openFoodEditor(FoodItem food) {
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (_) => AddFoodScreen(initialFood: food)));
   }
 }
 

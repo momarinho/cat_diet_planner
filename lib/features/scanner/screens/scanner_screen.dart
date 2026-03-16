@@ -106,7 +106,10 @@ class _ScannerScreenState extends State<ScannerScreen> {
 
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => AddFoodScreen(initialBarcode: result.barcode),
+        builder: (_) => AddFoodScreen(
+          initialBarcode: result.barcode,
+          initialFood: result.food,
+        ),
       ),
     );
   }
@@ -362,6 +365,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                                                 ? null
                                                 : _barcodeController.text
                                                       .trim(),
+                                            initialFood: result?.food,
                                           ),
                                         ),
                                       );
@@ -408,6 +412,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
                                                 ? null
                                                 : _barcodeController.text
                                                       .trim(),
+                                            initialFood: result?.food,
                                           ),
                                         ),
                                       );

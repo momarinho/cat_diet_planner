@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 
 class FoodCard extends StatelessWidget {
   final FoodItem food;
+  final VoidCallback? onEdit;
 
-  const FoodCard({super.key, required this.food});
+  const FoodCard({super.key, required this.food, this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -122,12 +123,26 @@ class FoodCard extends StatelessWidget {
               ],
             ),
           ),
-          Text(
-            '${food.kcalPer100g.toStringAsFixed(0)} kcal',
-            style: theme.textTheme.labelLarge?.copyWith(
-              color: primary,
-              fontWeight: FontWeight.w800,
-            ),
+          const SizedBox(width: 12),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${food.kcalPer100g.toStringAsFixed(0)} kcal',
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: primary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              if (onEdit != null) ...[
+                const SizedBox(height: 10),
+                OutlinedButton.icon(
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_rounded, size: 16),
+                  label: const Text('Edit'),
+                ),
+              ],
+            ],
           ),
         ],
       ),

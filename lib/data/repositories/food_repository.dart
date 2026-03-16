@@ -22,6 +22,15 @@ class FoodRepository {
     await HiveService.foodsBox.add(food);
   }
 
+  Future<void> saveFood(FoodItem food, {dynamic existingKey}) async {
+    if (existingKey == null) {
+      await HiveService.foodsBox.add(food);
+      return;
+    }
+
+    await HiveService.foodsBox.put(existingKey, food);
+  }
+
   FoodItem? findByBarcode(String barcode) {
     final normalized = barcode.trim();
     if (normalized.isEmpty) return null;

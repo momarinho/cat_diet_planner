@@ -5,8 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class AddFoodScreen extends ConsumerStatefulWidget {
   final String? initialBarcode;
+  final FoodItem? initialFood;
 
-  const AddFoodScreen({super.key, this.initialBarcode});
+  const AddFoodScreen({super.key, this.initialBarcode, this.initialFood});
 
   @override
   ConsumerState<AddFoodScreen> createState() => _AddFoodScreenState();
@@ -46,6 +47,31 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
   @override
   void initState() {
     super.initState();
+    final initialFood = widget.initialFood;
+    if (initialFood != null) {
+      _nameController.text = initialFood.name;
+      _brandController.text = initialFood.brand ?? '';
+      _barcodeController.text =
+          initialFood.barcode ?? widget.initialBarcode ?? '';
+      _manufacturerController.text = initialFood.manufacturer ?? '';
+      _lineController.text = initialFood.productLine ?? '';
+      _flavorController.text = initialFood.flavor ?? '';
+      _textureController.text = initialFood.texture ?? '';
+      _packageSizeController.text = initialFood.packageSize ?? '';
+      _kcalController.text = initialFood.kcalPer100g.toStringAsFixed(0);
+      _proteinController.text = initialFood.protein?.toString() ?? '';
+      _fatController.text = initialFood.fat?.toString() ?? '';
+      _fiberController.text = initialFood.fiber?.toString() ?? '';
+      _moistureController.text = initialFood.moisture?.toString() ?? '';
+      _carbohydrateController.text = initialFood.carbohydrate?.toString() ?? '';
+      _sodiumController.text = initialFood.sodium?.toString() ?? '';
+      _palatabilityController.text = initialFood.palatabilityNotes ?? '';
+      _tagsController.text = initialFood.userTags.join(', ');
+      _selectedCategory = initialFood.category;
+      _selectedServingUnit = initialFood.servingUnit ?? 'g';
+      return;
+    }
+
     _barcodeController.text = widget.initialBarcode ?? '';
   }
 
@@ -122,7 +148,9 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
           .toList(growable: false),
     );
 
-    await ref.read(foodRepositoryProvider).addFood(food);
+    await ref
+        .read(foodRepositoryProvider)
+        .saveFood(food, existingKey: widget.initialFood?.key);
 
     if (!mounted) return;
     Navigator.of(context).pop();
@@ -134,7 +162,7 @@ class _AddFoodScreenState extends ConsumerState<AddFoodScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Food'),
+        title: Text(widget.initialFood == null ? 'Add Food' : 'Edit Food'),
         centerTitle: true,
         backgroundColor: theme.scaffoldBackgroundColor,
         surfaceTintColor: Colors.transparent,

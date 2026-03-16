@@ -12,13 +12,17 @@ import 'package:cat_diet_planner/features/cat_profile/providers/cat_groups_provi
 import 'package:cat_diet_planner/features/cat_profile/providers/cat_profiles_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
 import 'package:cat_diet_planner/features/daily/services/daily_meal_schedule_service.dart';
+import 'package:cat_diet_planner/features/plans/models/group_totals_summary_data.dart';
 import 'package:cat_diet_planner/features/plans/models/plan_preview_data.dart';
 import 'package:cat_diet_planner/features/plans/providers/plan_repository_provider.dart';
 import 'package:cat_diet_planner/features/plans/repositories/plan_repository.dart';
+import 'package:cat_diet_planner/features/plans/services/group_totals_summary_builder.dart';
 import 'package:cat_diet_planner/features/plans/services/plan_preview_builder.dart';
 import 'package:cat_diet_planner/features/plans/services/diet_calculator_service.dart';
 import 'package:cat_diet_planner/features/plans/services/portion/portion_unit_service.dart';
+import 'package:cat_diet_planner/features/plans/widgets/group_totals_summary_card.dart';
 import 'package:cat_diet_planner/features/plans/widgets/plan_inspector_sheet.dart';
+import 'package:cat_diet_planner/features/plans/widgets/plan_quick_summary_card.dart';
 import 'package:cat_diet_planner/features/suggestions/widgets/cat_suggestions_section.dart';
 import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
@@ -41,6 +45,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
   int _mealsPerDay = 4;
   bool _planningForGroup = false;
   bool _isSaving = false;
+  String _groupGoalFilter = 'all';
   // Allow selecting multiple foods in the UI (basic toggle)
   bool _allowMultipleFoods = false;
   // When multiple foods are selected we store the selected keys here
@@ -316,6 +321,28 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
       operationalNotes: _operationalNotesController.text.trim().isEmpty
           ? null
           : _operationalNotesController.text.trim(),
+    );
+  }
+
+  GroupTotalsSummaryData? _buildGroupTotalsSummary({
+    required CatGroup group,
+    required List<CatProfile> cats,
+    required PlanRepository repository,
+  }) {
+    final selectedFoods = _selectedFoods(repository);
+    final targetKcalPerCat = double.tryParse(_groupKcalController.text.trim());
+    if (selectedFoods.isEmpty ||
+        targetKcalPerCat == null ||
+        targetKcalPerCat <= 0) {
+      return null;
+    }
+
+    return GroupTotalsSummaryBuilder.build(
+      group: group,
+      allCats: cats,
+      selectedFoods: selectedFoods,
+      targetKcalPerCat: targetKcalPerCat,
+      mealsPerDay: _mealsPerDay,
     );
   }
 
@@ -875,6 +902,13 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
     final groupPreview = _planningForGroup && selectedGroup != null
         ? _buildGroupPreview(group: selectedGroup, repository: repository)
         : null;
+    final groupTotalsSummary = _planningForGroup && selectedGroup != null
+        ? _buildGroupTotalsSummary(
+            group: selectedGroup,
+            cats: cats,
+            repository: repository,
+          )
+        : null;
 
     return Scaffold(
       appBar: AppBar(
@@ -922,6 +956,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                       onSelected: (_) {
                         setState(() {
                           _planningForGroup = false;
+                          _groupGoalFilter = 'all';
                           _hydratedCatId = null;
                           _mealTimes =
                               DailyMealScheduleService.normalizeMealTimes(
@@ -946,6 +981,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                       onSelected: (_) {
                         setState(() {
                           _planningForGroup = true;
+                          _groupGoalFilter = 'all';
                           _hydratedGroupId = null;
                           _mealTimes =
                               DailyMealScheduleService.normalizeMealTimes(
@@ -1536,6 +1572,53 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
               );
             },
           ),
+          if (_planningForGroup &&
+              selectedGroup != null &&
+              groupTotalsSummary != null) ...[
+            const SizedBox(height: 18),
+            Text(
+              l10n.groupPlanPreviewTitle,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.previewCoreTargetsSubtitle,
+              style: theme.textTheme.bodyMedium?.copyWith(color: secondary),
+            ),
+            const SizedBox(height: 12),
+            GroupTotalsSummaryCard(
+              summary: groupTotalsSummary,
+              primary: primary,
+              selectedGoalFilter: _groupGoalFilter,
+              onGoalFilterChanged: (value) {
+                setState(() => _groupGoalFilter = value);
+              },
+            ),
+          ],
+          if (!_planningForGroup &&
+              selectedCat != null &&
+              individualPreview != null) ...[
+            const SizedBox(height: 18),
+            Text(
+              l10n.dailySummaryTitle,
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              l10n.previewCoreTargetsSubtitle,
+              style: theme.textTheme.bodyMedium?.copyWith(color: secondary),
+            ),
+            const SizedBox(height: 12),
+            PlanQuickSummaryCard(
+              cat: selectedCat,
+              preview: individualPreview,
+              primary: primary,
+            ),
+          ],
           const SizedBox(height: 18),
           FilledButton.icon(
             onPressed: _isSaving
