@@ -46,6 +46,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
   bool _planningForGroup = false;
   bool _isSaving = false;
   String _groupGoalFilter = 'all';
+  double _primaryFoodKcalSharePercent = 50;
   // Allow selecting multiple foods in the UI (basic toggle)
   bool _allowMultipleFoods = false;
   // When multiple foods are selected we store the selected keys here
@@ -251,12 +252,47 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         .toList(growable: false);
   }
 
+  Map<dynamic, double> _selectedFoodSplitByKcal(PlanRepository repository) {
+    final selectedFoods = _selectedFoods(repository);
+    if (selectedFoods.isEmpty) return const {};
+    if (selectedFoods.length == 1) {
+      return {selectedFoods.first.key: 100.0};
+    }
+
+    final firstFood = selectedFoods.first;
+    final secondFood = selectedFoods[1];
+    return {
+      firstFood.key: _primaryFoodKcalSharePercent,
+      secondFood.key: 100 - _primaryFoodKcalSharePercent,
+    };
+  }
+
+  void _hydrateFoodSplitPercent({
+    required List<dynamic> foodKeys,
+    required Map<dynamic, double> savedSplits,
+  }) {
+    if (foodKeys.length < 2) {
+      _primaryFoodKcalSharePercent = 50;
+      return;
+    }
+
+    final firstKey = foodKeys.first;
+    final savedPercent = savedSplits[firstKey];
+    if (savedPercent == null || savedPercent <= 0 || savedPercent >= 100) {
+      _primaryFoodKcalSharePercent = 50;
+      return;
+    }
+
+    _primaryFoodKcalSharePercent = savedPercent;
+  }
+
   PlanPreviewData? _buildIndividualPreview({
     required CatProfile cat,
     required PlanRepository repository,
   }) {
     final selectedFoods = _selectedFoods(repository);
     if (selectedFoods.isEmpty) return null;
+    final foodSplitPercentByKcal = _selectedFoodSplitByKcal(repository);
     final targetKcalPerDay =
         cat.manualTargetKcal ??
         DietCalculatorService.suggestTargetKcal(
@@ -268,10 +304,14 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
           goal: cat.goal,
           bcs: cat.bcs,
         );
-    final portionGramsPerDay = DietCalculatorService.calculateDailyPortionGrams(
-      targetKcal: targetKcalPerDay,
-      kcalPer100g: selectedFoods.first.kcalPer100g,
-    );
+    final portionGramsPerDay =
+        PlanPreviewBuilder.calculateTotalPortionGramsPerDay(
+          selectedFoods: selectedFoods,
+          targetKcalPerDay: targetKcalPerDay,
+          mealsPerDay: _mealsPerDay,
+          normalizedMealShares: _normalizedMealShares(),
+          foodSplitPercentByKcal: foodSplitPercentByKcal,
+        );
     final dailyOverrides = _buildDailyOverrides(
       targetKcalPerDay: targetKcalPerDay,
       portionGramsPerDay: portionGramsPerDay,
@@ -288,6 +328,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
       portionUnit: _portionUnit,
       portionUnitGrams: _portionUnitGramsValue(),
       dailyOverrides: dailyOverrides,
+      foodSplitPercentByKcal: foodSplitPercentByKcal,
       operationalNotes: _operationalNotesController.text.trim().isEmpty
           ? null
           : _operationalNotesController.text.trim(),
@@ -299,6 +340,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
     required PlanRepository repository,
   }) {
     final selectedFoods = _selectedFoods(repository);
+    final foodSplitPercentByKcal = _selectedFoodSplitByKcal(repository);
     final targetKcalPerCat = double.tryParse(_groupKcalController.text.trim());
     if (selectedFoods.isEmpty ||
         targetKcalPerCat == null ||
@@ -306,9 +348,23 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
       return null;
     }
 
+    final linkedCatCount = group.catIds.length;
+    final hasUnevenDistribution =
+        group.feedingShareByCat.isNotEmpty && linkedCatCount > 0;
+    final effectiveCatCount = linkedCatCount > 0
+        ? linkedCatCount
+        : group.catCount;
+    final feedingUnits = hasUnevenDistribution
+        ? group.catIds.fold<double>(
+            0.0,
+            (sum, catId) => sum + (group.feedingShareByCat[catId] ?? 1.0),
+          )
+        : effectiveCatCount.toDouble();
+
     return PlanPreviewBuilder.buildGroup(
       groupName: group.name,
-      catCount: group.catCount,
+      catCount: effectiveCatCount,
+      feedingUnits: feedingUnits,
       targetKcalPerCat: targetKcalPerCat,
       selectedFoods: selectedFoods,
       mealsPerDay: _mealsPerDay,
@@ -318,6 +374,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
       startDate: _planStartDate,
       portionUnit: _portionUnit,
       portionUnitGrams: _portionUnitGramsValue(),
+      foodSplitPercentByKcal: foodSplitPercentByKcal,
       operationalNotes: _operationalNotesController.text.trim().isEmpty
           ? null
           : _operationalNotesController.text.trim(),
@@ -330,6 +387,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
     required PlanRepository repository,
   }) {
     final selectedFoods = _selectedFoods(repository);
+    final foodSplitPercentByKcal = _selectedFoodSplitByKcal(repository);
     final targetKcalPerCat = double.tryParse(_groupKcalController.text.trim());
     if (selectedFoods.isEmpty ||
         targetKcalPerCat == null ||
@@ -343,6 +401,8 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
       selectedFoods: selectedFoods,
       targetKcalPerCat: targetKcalPerCat,
       mealsPerDay: _mealsPerDay,
+      normalizedMealShares: _normalizedMealShares(),
+      foodSplitPercentByKcal: foodSplitPercentByKcal,
     );
   }
 
@@ -360,6 +420,10 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         hydratedKeys.isNotEmpty ? hydratedKeys : [existingPlan?.foodKey],
       );
     _allowMultipleFoods = _selectedFoodKeys.length > 1;
+    _hydrateFoodSplitPercent(
+      foodKeys: _selectedFoodKeys.toList(growable: false),
+      savedSplits: existingPlan?.foodSplitPercentByKcal ?? const {},
+    );
     _mealsPerDay = existingPlan?.mealsPerDay ?? cat.preferredMealsPerDay;
     _mealTimes = DailyMealScheduleService.normalizeMealTimes(
       existingPlan?.mealTimes,
@@ -415,6 +479,10 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         hydratedKeys.isNotEmpty ? hydratedKeys : [existingPlan?.foodKey],
       );
     _allowMultipleFoods = _selectedFoodKeys.length > 1;
+    _hydrateFoodSplitPercent(
+      foodKeys: _selectedFoodKeys.toList(growable: false),
+      savedSplits: existingPlan?.foodSplitPercentByKcal ?? const {},
+    );
     _mealsPerDay = existingPlan?.mealsPerDay ?? 4;
     _mealTimes = DailyMealScheduleService.normalizeMealTimes(
       existingPlan?.mealTimes,
@@ -636,6 +704,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
     final repository = ref.read(planRepositoryProvider);
     final preview = _buildIndividualPreview(cat: cat, repository: repository);
     final selectedFoods = _selectedFoods(repository);
+    final foodSplitPercentByKcal = _selectedFoodSplitByKcal(repository);
     if (preview == null || selectedFoods.isEmpty) return;
     final food = selectedFoods.first;
     setState(() => _isSaving = true);
@@ -668,6 +737,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         portionUnitGrams: preview.portionUnitGrams,
         dailyOverrides: preview.dailyOverrides,
         operationalNotes: preview.operationalNotes,
+        foodSplitPercentByKcal: foodSplitPercentByKcal,
       );
 
       final savedPlanId = await repository.savePlanForCat(plan);
@@ -704,6 +774,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
     final repository = ref.read(planRepositoryProvider);
     final preview = _buildGroupPreview(group: group, repository: repository);
     final selectedFoods = _selectedFoods(repository);
+    final foodSplitPercentByKcal = _selectedFoodSplitByKcal(repository);
     if (preview == null || selectedFoods.isEmpty) return;
     final food = selectedFoods.first;
 
@@ -733,9 +804,12 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
               (sum, catId) => sum + (group.feedingShareByCat[catId] ?? 1.0),
             )
           : effectiveCatCount.toDouble();
-      final portionPerCat = DietCalculatorService.calculateDailyPortionGrams(
-        targetKcal: targetPerCat,
-        kcalPer100g: food.kcalPer100g,
+      final portionPerCat = PlanPreviewBuilder.calculateTotalPortionGramsPerDay(
+        selectedFoods: selectedFoods,
+        targetKcalPerDay: targetPerCat,
+        mealsPerDay: _mealsPerDay,
+        normalizedMealShares: _normalizedMealShares(),
+        foodSplitPercentByKcal: foodSplitPercentByKcal,
       );
       final totalKcal = targetPerCat * weightedCats;
       final plan = GroupDietPlan(
@@ -765,6 +839,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                   catId: group.feedingShareByCat[catId] ?? 1.0,
               }
             : const {},
+        foodSplitPercentByKcal: foodSplitPercentByKcal,
       );
 
       await repository.savePlanForGroup(plan);
@@ -1402,8 +1477,119 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                     contentPadding: EdgeInsets.zero,
                     title: Text(l10n.multipleFoodsTitle),
                     subtitle: Text(l10n.multipleFoodsDescription),
-                    onChanged: (v) => setState(() => _allowMultipleFoods = v),
+                    onChanged: (value) {
+                      setState(() {
+                        _allowMultipleFoods = value;
+                        if (!_allowMultipleFoods &&
+                            _selectedFoodKeys.isNotEmpty) {
+                          final firstKey = _selectedFoodKeys.first;
+                          _selectedFoodKeys
+                            ..clear()
+                            ..add(firstKey);
+                          _selectedFood = repository.findFoodByKey(firstKey);
+                        }
+                        if (_selectedFoodKeys.length <= 1) {
+                          _primaryFoodKcalSharePercent = 50;
+                        }
+                      });
+                    },
                   ),
+                  if (_allowMultipleFoods && _selectedFoodKeys.length == 2) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.surface,
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: primary.withValues(alpha: 0.10),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Mixed feeding split',
+                            style: theme.textTheme.titleSmall?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'V1 uses a kcal-based split between two foods.',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: secondary,
+                            ),
+                          ),
+                          const SizedBox(height: 14),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  _selectedFoods(repository).first.name,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                '${_primaryFoodKcalSharePercent.toStringAsFixed(0)}%',
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  color: primary,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Slider(
+                            value: _primaryFoodKcalSharePercent,
+                            min: 10,
+                            max: 90,
+                            divisions: 16,
+                            label:
+                                '${_primaryFoodKcalSharePercent.toStringAsFixed(0)}%',
+                            onChanged: (value) {
+                              setState(() {
+                                _primaryFoodKcalSharePercent = value;
+                              });
+                            },
+                          ),
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  _selectedFoods(repository)[1].name,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                              Text(
+                                '${(100 - _primaryFoodKcalSharePercent).toStringAsFixed(0)}%',
+                                style: theme.textTheme.labelLarge?.copyWith(
+                                  color: primary,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: ActionChip(
+                              label: Text(l10n.equalSplitLabel),
+                              onPressed: () {
+                                setState(() {
+                                  _primaryFoodKcalSharePercent = 50;
+                                });
+                              },
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                   ...List<Widget>.generate(foods.length, (index) {
                     final food = foods[index];
                     final selected = _allowMultipleFoods
@@ -1420,8 +1606,24 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                             final key = food.key;
                             if (_selectedFoodKeys.contains(key)) {
                               _selectedFoodKeys.remove(key);
+                              if (_selectedFoodKeys.length <= 1) {
+                                _primaryFoodKcalSharePercent = 50;
+                              }
                             } else {
+                              if (_selectedFoodKeys.length >= 2) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Mixed feeding v1 supports up to 2 foods.',
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
                               _selectedFoodKeys.add(key);
+                              if (_selectedFoodKeys.length == 2) {
+                                _primaryFoodKcalSharePercent = 50;
+                              }
                             }
                             // Keep `_selectedFood` in sync with a single representative when needed
                             _selectedFood = _selectedFoodKeys.isNotEmpty

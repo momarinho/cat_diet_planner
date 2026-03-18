@@ -487,6 +487,7 @@ class PlanAdjustmentService {
       portionUnitGrams: source.portionUnitGrams,
       dailyOverrides: source.dailyOverrides,
       operationalNotes: source.operationalNotes,
+      foodSplitPercentByKcal: source.foodSplitPercentByKcal,
     );
   }
 }

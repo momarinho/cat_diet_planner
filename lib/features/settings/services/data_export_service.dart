@@ -32,7 +32,7 @@ class BackupImportSummary {
 }
 
 class DataExportService {
-  static const int _schemaVersion = 2;
+  static const int _schemaVersion = 3;
 
   static Future<void> exportJsonBackup() async {
     final payload = createBackupPayload();
@@ -447,6 +447,7 @@ class DataExportService {
       'portionUnitGrams': plan.portionUnitGrams,
       'dailyOverrides': _normalize(plan.dailyOverrides),
       'operationalNotes': plan.operationalNotes,
+      'foodSplitPercentByKcal': _normalize(plan.foodSplitPercentByKcal),
     };
   }
 
@@ -472,6 +473,9 @@ class DataExportService {
       portionUnitGrams: _asDouble(map['portionUnitGrams'], fallback: 1.0),
       dailyOverrides: _asDayOverrideMap(map['dailyOverrides']),
       operationalNotes: map['operationalNotes']?.toString(),
+      foodSplitPercentByKcal: _asDynamicDoubleMap(
+        map['foodSplitPercentByKcal'],
+      ),
     );
   }
 
@@ -498,6 +502,7 @@ class DataExportService {
       'portionUnitGrams': plan.portionUnitGrams,
       'operationalNotes': plan.operationalNotes,
       'perCatShareWeights': plan.perCatShareWeights,
+      'foodSplitPercentByKcal': _normalize(plan.foodSplitPercentByKcal),
     };
   }
 
@@ -526,6 +531,9 @@ class DataExportService {
       portionUnitGrams: _asDouble(map['portionUnitGrams'], fallback: 1.0),
       operationalNotes: map['operationalNotes']?.toString(),
       perCatShareWeights: _asStringDoubleMap(map['perCatShareWeights']),
+      foodSplitPercentByKcal: _asDynamicDoubleMap(
+        map['foodSplitPercentByKcal'],
+      ),
     );
   }
 
@@ -560,6 +568,12 @@ class DataExportService {
     final map = raw as Map?;
     if (map == null) return const {};
     return map.map((key, value) => MapEntry(key.toString(), _asDouble(value)));
+  }
+
+  static Map<dynamic, double> _asDynamicDoubleMap(dynamic raw) {
+    final map = raw as Map?;
+    if (map == null) return const {};
+    return map.map((key, value) => MapEntry(_normalize(key), _asDouble(value)));
   }
 
   static Map<int, Map<dynamic, dynamic>> _asDayOverrideMap(dynamic raw) {

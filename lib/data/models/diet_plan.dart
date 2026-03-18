@@ -79,6 +79,10 @@ class DietPlan extends HiveObject {
   @HiveField(19)
   final String? operationalNotes;
 
+  /// Kcal-based food split used by mixed feeding plans.
+  @HiveField(20)
+  final Map<dynamic, double> foodSplitPercentByKcal;
+
   DietPlan({
     required this.catId,
     required this.foodKey,
@@ -101,5 +105,6 @@ class DietPlan extends HiveObject {
     this.portionUnitGrams = 1.0,
     this.dailyOverrides = const {},
     this.operationalNotes,
+    this.foodSplitPercentByKcal = const {},
   });
 }

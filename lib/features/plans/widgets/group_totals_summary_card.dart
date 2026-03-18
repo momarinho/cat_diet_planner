@@ -1,5 +1,7 @@
 import 'package:cat_diet_planner/core/localization/app_formatters.dart';
 import 'package:cat_diet_planner/features/plans/models/group_totals_summary_data.dart';
+import 'package:cat_diet_planner/features/plans/models/plan_preview_data.dart';
+import 'package:cat_diet_planner/features/plans/services/portion/portion_unit_service.dart';
 import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -31,6 +33,13 @@ class GroupTotalsSummaryCard extends StatelessWidget {
 
     String formatGrams(double value) {
       return '${AppFormatters.formatDecimal(context, value, decimalDigits: 1)} g';
+    }
+
+    String? formatServingUnitsPerDay(FoodPortionSplitData split) {
+      if (split.servingUnit == null || split.servingUnitsPerDay == null) {
+        return null;
+      }
+      return '${PortionUnitService.formatPortion(amount: split.servingUnitsPerDay!, unit: split.servingUnit!, decimalsForNonGram: 1)}/day';
     }
 
     final visibleRows = selectedGoalFilter == 'all'
@@ -145,6 +154,82 @@ class GroupTotalsSummaryCard extends StatelessWidget {
               );
             },
           ),
+          if (summary.foodBreakdown.length > 1) ...[
+            const SizedBox(height: 18),
+            Text(
+              'Food split',
+              style: theme.textTheme.titleSmall?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(height: 8),
+            ...summary.foodBreakdown.map(
+              (split) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: primary.withValues(alpha: 0.06),
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              split.foodName,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${AppFormatters.formatDecimal(context, split.sharePercent, decimalDigits: 0)}% kcal share',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: softText,
+                              ),
+                            ),
+                            if (formatServingUnitsPerDay(split)
+                                case final units?)
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: Text(
+                                  units,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: softText,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text(
+                            formatGrams(split.portionGramsPerDay),
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: primary,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${formatGrams(split.portionGramsPerMeal)} avg/meal',
+                            style: theme.textTheme.bodySmall?.copyWith(
+                              color: softText,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
           if (summary.rows.isNotEmpty) ...[
             const SizedBox(height: 18),
             Wrap(

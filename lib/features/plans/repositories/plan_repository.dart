@@ -109,6 +109,7 @@ class PlanRepository {
             portionUnitGrams: plan.portionUnitGrams,
             dailyOverrides: plan.dailyOverrides,
             operationalNotes: plan.operationalNotes,
+            foodSplitPercentByKcal: plan.foodSplitPercentByKcal,
           )
         : plan;
 

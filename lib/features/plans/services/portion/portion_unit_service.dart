@@ -31,13 +31,50 @@ class PortionUnitService {
     'g': 1.0, // gram
     'gram': 1.0,
     'can': 85.0, // typical small wet-food can for cats (approx. 85 g)
+    'lata': 85.0,
     'sachet': 100.0, // wet pouch
+    'sache': 100.0,
+    'saqueta': 100.0,
     'pouch': 100.0,
     'scoop': 10.0, // approximate scoop size in grams (user can override)
     'cup': 240.0, // kitchen cup in grams — approximate and depends on food
+    'xicara': 240.0,
     'tbsp': 15.0, // tablespoon
+    'colher': 15.0,
     'tsp': 5.0, // teaspoon
   };
+
+  static String? canonicalServingUnit(String? unit) {
+    final normalized = unit?.trim().toLowerCase();
+    if (normalized == null || normalized.isEmpty) return null;
+    switch (normalized) {
+      case 'lata':
+        return 'can';
+      case 'sache':
+      case 'saqueta':
+        return 'sachet';
+      case 'xicara':
+        return 'cup';
+      case 'colher':
+        return 'tbsp';
+      default:
+        return normalized;
+    }
+  }
+
+  static double? extractGramsFromPackageSize(String? packageSize) {
+    final raw = packageSize?.trim().toLowerCase();
+    if (raw == null || raw.isEmpty) return null;
+
+    final match = RegExp(r'(\d+(?:[.,]\d+)?)\s*(kg|g)\b').firstMatch(raw);
+    if (match == null) return null;
+
+    final parsed = double.tryParse(match.group(1)!.replaceAll(',', '.'));
+    final unit = match.group(2);
+    if (parsed == null || unit == null) return null;
+    if (unit == 'kg') return parsed * 1000;
+    return parsed;
+  }
 
   /// Returns the merged unit -> grams mapping using defaults plus optional overrides.
   /// Overrides' keys are treated case-insensitively.

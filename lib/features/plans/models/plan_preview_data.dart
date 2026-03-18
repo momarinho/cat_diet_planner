@@ -13,6 +13,7 @@ class PlanPreviewData {
     required this.portionUnit,
     required this.portionUnitGrams,
     required this.dailyOverrides,
+    this.foodBreakdown = const [],
     this.operationalNotes,
     this.goalLabel,
     this.catCount,
@@ -20,6 +21,7 @@ class PlanPreviewData {
 
   final String title;
   final List<String> foodNames;
+  final List<FoodPortionSplitData> foodBreakdown;
   final double targetKcalPerDay;
   final double portionGramsPerDay;
   final double portionGramsPerMeal;
@@ -34,4 +36,32 @@ class PlanPreviewData {
   final String? operationalNotes;
   final String? goalLabel;
   final int? catCount;
+}
+
+class FoodPortionSplitData {
+  const FoodPortionSplitData({
+    required this.foodKey,
+    required this.foodName,
+    required this.sharePercent,
+    required this.targetKcalPerDay,
+    required this.portionGramsPerDay,
+    required this.portionGramsPerMeal,
+    required this.mealPortionGrams,
+    this.servingUnit,
+    this.gramsPerServingUnit,
+    this.servingUnitsPerDay,
+    this.servingUnitsPerMeal,
+  });
+
+  final dynamic foodKey;
+  final String foodName;
+  final double sharePercent;
+  final double targetKcalPerDay;
+  final double portionGramsPerDay;
+  final double portionGramsPerMeal;
+  final List<double> mealPortionGrams;
+  final String? servingUnit;
+  final double? gramsPerServingUnit;
+  final double? servingUnitsPerDay;
+  final double? servingUnitsPerMeal;
 }

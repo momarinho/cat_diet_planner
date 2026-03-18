@@ -39,13 +39,18 @@ class DietPlanAdapter extends TypeAdapter<DietPlan> {
       dailyOverrides:
           (fields[18] as Map?)?.cast<int, Map<dynamic, dynamic>>() ?? const {},
       operationalNotes: fields[19] as String?,
+      foodSplitPercentByKcal:
+          (fields[20] as Map?)?.map(
+            (key, value) => MapEntry(key, (value as num).toDouble()),
+          ) ??
+          const {},
     );
   }
 
   @override
   void write(BinaryWriter writer, DietPlan obj) {
     writer
-      ..writeByte(20)
+      ..writeByte(21)
       ..writeByte(0)
       ..write(obj.catId)
       ..writeByte(1)
@@ -86,7 +91,9 @@ class DietPlanAdapter extends TypeAdapter<DietPlan> {
       ..writeByte(18)
       ..write(obj.dailyOverrides)
       ..writeByte(19)
-      ..write(obj.operationalNotes);
+      ..write(obj.operationalNotes)
+      ..writeByte(20)
+      ..write(obj.foodSplitPercentByKcal);
   }
 
   @override

@@ -69,6 +69,9 @@ class GroupDietPlan extends HiveObject {
   @HiveField(20)
   final Map<String, double> perCatShareWeights; // uneven distribution by cat
 
+  @HiveField(21)
+  final Map<dynamic, double> foodSplitPercentByKcal; // kcal-based split for mixed feeding
+
   GroupDietPlan({
     required this.groupId,
     required this.foodKey,
@@ -92,5 +95,6 @@ class GroupDietPlan extends HiveObject {
     this.portionUnitGrams = 1.0,
     this.operationalNotes,
     this.perCatShareWeights = const {},
+    this.foodSplitPercentByKcal = const {},
   });
 }

@@ -3,6 +3,7 @@ import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/data/models/food_item.dart';
 import 'package:cat_diet_planner/features/plans/models/group_totals_summary_data.dart';
 import 'package:cat_diet_planner/features/plans/services/diet_calculator_service.dart';
+import 'package:cat_diet_planner/features/plans/services/plan_preview_builder.dart';
 
 class GroupTotalsSummaryBuilder {
   const GroupTotalsSummaryBuilder._();
@@ -13,8 +14,9 @@ class GroupTotalsSummaryBuilder {
     required List<FoodItem> selectedFoods,
     required double targetKcalPerCat,
     required int mealsPerDay,
+    required List<double> normalizedMealShares,
+    Map<dynamic, double> foodSplitPercentByKcal = const {},
   }) {
-    final representativeFood = selectedFoods.first;
     final linkedCats = allCats
         .where((cat) => group.catIds.contains(cat.id))
         .toList(growable: false);
@@ -30,9 +32,16 @@ class GroupTotalsSummaryBuilder {
           )
         : group.catCount.toDouble();
     final totalKcalPerDay = targetKcalPerCat * totalWeightUnits;
-    final totalGramsPerDay = DietCalculatorService.calculateDailyPortionGrams(
-      targetKcal: totalKcalPerDay,
-      kcalPer100g: representativeFood.kcalPer100g,
+    final foodBreakdown = PlanPreviewBuilder.buildFoodBreakdown(
+      selectedFoods: selectedFoods,
+      targetKcalPerDay: totalKcalPerDay,
+      mealsPerDay: mealsPerDay,
+      normalizedMealShares: normalizedMealShares,
+      foodSplitPercentByKcal: foodSplitPercentByKcal,
+    );
+    final totalGramsPerDay = foodBreakdown.fold<double>(
+      0.0,
+      (sum, split) => sum + split.portionGramsPerDay,
     );
     final totalGramsPerMeal =
         DietCalculatorService.calculatePortionPerMealGrams(
@@ -40,9 +49,12 @@ class GroupTotalsSummaryBuilder {
           mealsPerDay: mealsPerDay,
         );
     final baselineGramsPerCat =
-        DietCalculatorService.calculateDailyPortionGrams(
-          targetKcal: targetKcalPerCat,
-          kcalPer100g: representativeFood.kcalPer100g,
+        PlanPreviewBuilder.calculateTotalPortionGramsPerDay(
+          selectedFoods: selectedFoods,
+          targetKcalPerDay: targetKcalPerCat,
+          mealsPerDay: mealsPerDay,
+          normalizedMealShares: normalizedMealShares,
+          foodSplitPercentByKcal: foodSplitPercentByKcal,
         );
 
     final rows = linkedCats
@@ -73,6 +85,7 @@ class GroupTotalsSummaryBuilder {
     return GroupTotalsSummaryData(
       groupName: group.name,
       foodNames: selectedFoods.map((food) => food.name).toList(growable: false),
+      foodBreakdown: foodBreakdown,
       totalKcalPerDay: totalKcalPerDay,
       totalGramsPerDay: totalGramsPerDay,
       totalGramsPerMeal: totalGramsPerMeal,

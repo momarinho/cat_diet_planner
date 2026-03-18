@@ -43,13 +43,18 @@ class GroupDietPlanAdapter extends TypeAdapter<GroupDietPlan> {
             (key, value) => MapEntry(key.toString(), (value as num).toDouble()),
           ) ??
           const {},
+      foodSplitPercentByKcal:
+          (fields[21] as Map?)?.map(
+            (key, value) => MapEntry(key, (value as num).toDouble()),
+          ) ??
+          const {},
     );
   }
 
   @override
   void write(BinaryWriter writer, GroupDietPlan obj) {
     writer
-      ..writeByte(21)
+      ..writeByte(22)
       ..writeByte(0)
       ..write(obj.groupId)
       ..writeByte(1)
@@ -92,7 +97,9 @@ class GroupDietPlanAdapter extends TypeAdapter<GroupDietPlan> {
       ..writeByte(19)
       ..write(obj.operationalNotes)
       ..writeByte(20)
-      ..write(obj.perCatShareWeights);
+      ..write(obj.perCatShareWeights)
+      ..writeByte(21)
+      ..write(obj.foodSplitPercentByKcal);
   }
 
   @override

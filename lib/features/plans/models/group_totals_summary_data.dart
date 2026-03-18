@@ -1,7 +1,10 @@
+import 'package:cat_diet_planner/features/plans/models/plan_preview_data.dart';
+
 class GroupTotalsSummaryData {
   const GroupTotalsSummaryData({
     required this.groupName,
     required this.foodNames,
+    this.foodBreakdown = const [],
     required this.totalKcalPerDay,
     required this.totalGramsPerDay,
     required this.totalGramsPerMeal,
@@ -15,6 +18,7 @@ class GroupTotalsSummaryData {
 
   final String groupName;
   final List<String> foodNames;
+  final List<FoodPortionSplitData> foodBreakdown;
   final double totalKcalPerDay;
   final double totalGramsPerDay;
   final double totalGramsPerMeal;

@@ -110,6 +110,7 @@ class SuggestionImpactHistoryEntry {
       'foodNames': plan.foodNames,
       'portionUnit': plan.portionUnit,
       'portionUnitGrams': plan.portionUnitGrams,
+      'foodSplitPercentByKcal': plan.foodSplitPercentByKcal,
       'dailyOverrides': plan.dailyOverrides.map(
         (key, value) => MapEntry(key.toString(), value),
       ),
@@ -123,6 +124,7 @@ class SuggestionImpactHistoryEntry {
     final rawMealPortions = map['mealPortionGrams'] as List?;
     final rawFoodKeys = map['foodKeys'] as List?;
     final rawFoodNames = map['foodNames'] as List?;
+    final rawFoodSplits = map['foodSplitPercentByKcal'] as Map?;
     final rawOverrides = map['dailyOverrides'] as Map?;
     return DietPlan(
       catId: map['catId']?.toString() ?? '',
@@ -165,6 +167,10 @@ class SuggestionImpactHistoryEntry {
           const [],
       portionUnit: map['portionUnit']?.toString() ?? 'g',
       portionUnitGrams: (map['portionUnitGrams'] as num?)?.toDouble() ?? 1.0,
+      foodSplitPercentByKcal: {
+        for (final entry in (rawFoodSplits ?? const {}).entries)
+          entry.key: (entry.value as num?)?.toDouble() ?? 0.0,
+      },
       dailyOverrides: {
         for (final entry in (rawOverrides ?? const {}).entries)
           int.tryParse(entry.key.toString()) ?? 0: Map<dynamic, dynamic>.from(

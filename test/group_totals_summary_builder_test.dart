@@ -43,6 +43,7 @@ void main() {
       selectedFoods: foods,
       targetKcalPerCat: 200,
       mealsPerDay: 4,
+      normalizedMealShares: const [25, 25, 25, 25],
     );
 
     expect(summary.catCount, 2);
