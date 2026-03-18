@@ -6,6 +6,7 @@ import 'package:cat_diet_planner/core/widgets/app_loading_state.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/features/cat_profile/services/cat_photo_service.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/cat_profiles_provider.dart';
+import 'package:cat_diet_planner/features/cat_profile/widgets/guided_bcs_assistant_sheet.dart';
 import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -371,6 +372,15 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
     }
   }
 
+  Future<void> _openGuidedBcsAssistant() async {
+    final selectedBcs = await showGuidedBcsAssistantSheet(
+      context,
+      initialBcs: _bcs,
+    );
+    if (!mounted || selectedBcs == null) return;
+    setState(() => _bcs = selectedBcs);
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -719,10 +729,52 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        l10n.bodyConditionScoreLabel,
-                        style: Theme.of(context).textTheme.bodyMedium,
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              l10n.bodyConditionScoreLabel,
+                              style: Theme.of(context).textTheme.bodyMedium,
+                            ),
+                          ),
+                          FilledButton.tonalIcon(
+                            onPressed: _openGuidedBcsAssistant,
+                            icon: const Icon(Icons.assistant_outlined),
+                            label: const Text('Guided assistant'),
+                          ),
+                        ],
                       ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.surfaceContainerHighest
+                              .withValues(alpha: 0.40),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _bcs == null
+                                  ? 'No BCS selected yet'
+                                  : 'Current BCS: $_bcs/9',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'The guided assistant compares ribs, waist, belly line, and lower-back fat cover before you save a final score.',
+                              style: theme.textTheme.bodySmall?.copyWith(
+                                color: secondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       Slider(
                         value: (_bcs ?? 5).toDouble(),
                         min: 1,
