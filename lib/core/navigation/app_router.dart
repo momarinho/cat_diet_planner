@@ -3,6 +3,7 @@ import 'package:cat_diet_planner/data/models/cat_group.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/features/dashboard/screens/dashboard_overview_screen.dart';
 import 'package:cat_diet_planner/features/cat_group/screens/cat_group_screen.dart';
+import 'package:cat_diet_planner/features/cat_group/screens/group_feeding_dashboard_screen.dart';
 import 'package:cat_diet_planner/features/cat_profile/screens/cat_profile_screen.dart';
 import 'package:cat_diet_planner/features/food_database/screens/food_database_screen.dart';
 import 'package:cat_diet_planner/features/history/screens/weekly_diet_report_screen.dart';
@@ -72,6 +73,19 @@ class AppRouter {
         final group = settings.arguments as CatGroup?;
         return MaterialPageRoute(
           builder: (_) => CatGroupScreen(initialGroup: group),
+          settings: settings,
+        );
+      case AppRoutes.groupFeedingDashboard:
+        final group = settings.arguments as CatGroup?;
+        if (group == null) {
+          return _errorRoute(
+            settings,
+            'Missing `CatGroup` argument for ${settings.name}.',
+          );
+        }
+
+        return MaterialPageRoute(
+          builder: (_) => GroupFeedingDashboardScreen(initialGroup: group),
           settings: settings,
         );
       case AppRoutes.settings:

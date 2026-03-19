@@ -29,6 +29,9 @@ class _GuidedBcsAssistantSheetState extends State<_GuidedBcsAssistantSheet> {
   bool _manuallyAdjustedScore = false;
 
   GuidedBcsAssessmentResult? get _result => GuidedBcsService.assess(_answers);
+  int get _effectiveScore => _manuallyAdjustedScore
+      ? _finalScore
+      : (_result?.suggestedScore ?? _finalScore);
 
   @override
   void initState() {
@@ -229,11 +232,11 @@ class _GuidedBcsAssistantSheetState extends State<_GuidedBcsAssistantSheet> {
                           ),
                         ),
                         Slider(
-                          value: _finalScore.toDouble(),
+                          value: _effectiveScore.toDouble(),
                           min: 1,
                           max: 9,
                           divisions: 8,
-                          label: '$_finalScore',
+                          label: '$_effectiveScore',
                           onChanged: result == null
                               ? null
                               : (value) {
@@ -244,7 +247,7 @@ class _GuidedBcsAssistantSheetState extends State<_GuidedBcsAssistantSheet> {
                                 },
                         ),
                         Text(
-                          'Final score: $_finalScore',
+                          'Final score: $_effectiveScore',
                           style: theme.textTheme.bodySmall?.copyWith(
                             color: softText,
                           ),
@@ -278,7 +281,7 @@ class _GuidedBcsAssistantSheetState extends State<_GuidedBcsAssistantSheet> {
                 child: FilledButton.icon(
                   onPressed: result == null
                       ? null
-                      : () => Navigator.of(context).pop(_finalScore),
+                      : () => Navigator.of(context).pop(_effectiveScore),
                   icon: const Icon(Icons.check_circle_outline),
                   label: const Text('Use this BCS'),
                 ),

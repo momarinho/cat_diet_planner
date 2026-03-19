@@ -131,6 +131,15 @@ class _GroupCard extends StatelessWidget {
                       ),
                       OutlinedButton(
                         onPressed: () {
+                          Navigator.of(context).pushNamed(
+                            AppRoutes.groupFeedingDashboard,
+                            arguments: group,
+                          );
+                        },
+                        child: const Text('Dashboard'),
+                      ),
+                      OutlinedButton(
+                        onPressed: () {
                           Navigator.of(
                             context,
                           ).pushNamed(AppRoutes.catGroup, arguments: group);
@@ -160,6 +169,16 @@ class _GroupCard extends StatelessWidget {
                           );
                         },
                         child: const Text('Use Today'),
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: () {
+                          Navigator.of(context).pushNamed(
+                            AppRoutes.groupFeedingDashboard,
+                            arguments: group,
+                          );
+                        },
+                        child: const Text('Dashboard'),
                       ),
                       const SizedBox(height: 8),
                       OutlinedButton(

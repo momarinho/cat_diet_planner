@@ -8,6 +8,7 @@ abstract final class AppRoutes {
   static const dashboard = '/dashboard';
   static const catProfile = '/cat-profile';
   static const catGroup = '/cat-group';
+  static const groupFeedingDashboard = '/group-feeding-dashboard';
   static const settings = '/settings';
   static const notifications = '/notifications';
   static const howItWorks = '/how-it-works';

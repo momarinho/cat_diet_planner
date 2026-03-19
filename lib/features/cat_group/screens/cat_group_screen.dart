@@ -1,4 +1,5 @@
 import 'package:cat_diet_planner/core/constants/app_limits.dart';
+import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/data/models/cat_group.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/cat_groups_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/cat_profiles_provider.dart';
@@ -241,7 +242,24 @@ class _CatGroupScreenState extends ConsumerState<CatGroupScreen> {
         const Color(0xFF7A7678);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cat Group'), centerTitle: true),
+      appBar: AppBar(
+        title: const Text('Cat Group'),
+        centerTitle: true,
+        actions: [
+          if (_isEditing)
+            IconButton(
+              tooltip: 'Open feeding dashboard',
+              onPressed: () {
+                final group = widget.initialGroup;
+                if (group == null) return;
+                Navigator.of(
+                  context,
+                ).pushNamed(AppRoutes.groupFeedingDashboard, arguments: group);
+              },
+              icon: const Icon(Icons.dashboard_customize_outlined),
+            ),
+        ],
+      ),
       body: Form(
         key: _formKey,
         child: ListView(

@@ -71,6 +71,7 @@ class GroupTotalsSummaryBuilder {
               );
 
           return GroupCatSummaryRowData(
+            catId: cat.id,
             name: cat.name,
             weightKg: cat.weight,
             goalKey: cat.goal,

@@ -24,7 +24,7 @@ void main() {
                   onPressed: () async {
                     returnedScore = await showGuidedBcsAssistantSheet(
                       context,
-                      initialBcs: 5,
+                      initialBcs: 2,
                     );
                   },
                   child: const Text('Open'),

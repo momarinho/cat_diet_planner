@@ -32,6 +32,7 @@ class GroupTotalsSummaryData {
 
 class GroupCatSummaryRowData {
   const GroupCatSummaryRowData({
+    this.catId,
     required this.name,
     required this.goalKey,
     required this.kcalPerDay,
@@ -41,6 +42,7 @@ class GroupCatSummaryRowData {
     this.goalLabel,
   });
 
+  final String? catId;
   final String name;
   final String goalKey;
   final double kcalPerDay;
