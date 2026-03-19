@@ -42,12 +42,39 @@ class GuidedBcsAssessmentResult {
     required this.suggestedScore,
     required this.summary,
     required this.explanation,
+    required this.recommendation,
   });
 
   final String rangeLabel;
   final int suggestedScore;
   final String summary;
   final String explanation;
+  final GuidedBcsRecommendation recommendation;
+}
+
+class GuidedBcsRecommendation {
+  const GuidedBcsRecommendation({
+    required this.goal,
+    required this.goalLabel,
+    required this.rationale,
+    required this.calorieGuidance,
+    required this.monitoringCadence,
+    required this.followUpNote,
+  });
+
+  final String goal;
+  final String goalLabel;
+  final String rationale;
+  final String calorieGuidance;
+  final String monitoringCadence;
+  final String followUpNote;
+}
+
+class GuidedBcsSelection {
+  const GuidedBcsSelection({required this.finalScore, this.appliedGoal});
+
+  final int finalScore;
+  final String? appliedGoal;
 }
 
 class GuidedBcsService {
@@ -209,6 +236,18 @@ class GuidedBcsService {
         summary: 'Likely underweight',
         explanation:
             'Multiple answers point to a very obvious waist, little fat cover, or prominent ribs.',
+        recommendation: GuidedBcsRecommendation(
+          goal: 'gain',
+          goalLabel: 'Weight gain',
+          rationale:
+              'A lean body condition usually fits a conservative weight-gain goal until the cat returns closer to ideal.',
+          calorieGuidance:
+              'Expect a gentle calorie increase and tighter portion review, not an aggressive jump.',
+          monitoringCadence:
+              'Weigh in weekly until the body condition improves.',
+          followUpNote:
+              'If the cat has unexplained weight loss, poor appetite, or chronic disease, get veterinary guidance.',
+        ),
       );
     }
     if (total <= 4) {
@@ -218,6 +257,18 @@ class GuidedBcsService {
         summary: 'Likely ideal',
         explanation:
             'The answers suggest ribs are palpable with light cover and the body shape is still defined.',
+        recommendation: GuidedBcsRecommendation(
+          goal: 'maintenance',
+          goalLabel: 'Maintenance',
+          rationale:
+              'This range is usually consistent with staying on a maintenance goal instead of forcing gain or loss.',
+          calorieGuidance:
+              'Keep calories steady and use trend-based adjustments only if weight starts drifting.',
+          monitoringCadence:
+              'Weigh in every 2 to 4 weeks to confirm stability.',
+          followUpNote:
+              'Use treats and meal changes conservatively so the body condition stays in the ideal range.',
+        ),
       );
     }
     if (total <= 6) {
@@ -227,6 +278,18 @@ class GuidedBcsService {
         summary: 'Slightly above ideal',
         explanation:
             'The body shape looks softer and less defined, but not yet strongly overweight.',
+        recommendation: GuidedBcsRecommendation(
+          goal: 'loss',
+          goalLabel: 'Weight loss',
+          rationale:
+              'A mild loss goal is usually safer than waiting until the cat moves deeper into overweight territory.',
+          calorieGuidance:
+              'Use a modest calorie reduction and review snacks, toppers, and free-feeding habits.',
+          monitoringCadence:
+              'Weigh in every 1 to 2 weeks while adjusting portions.',
+          followUpNote:
+              'Avoid aggressive restriction. Slow loss is safer for cats.',
+        ),
       );
     }
     return const GuidedBcsAssessmentResult(
@@ -235,6 +298,18 @@ class GuidedBcsService {
       summary: 'Likely overweight',
       explanation:
           'Several answers indicate heavy fat cover, weak waist definition, or a hanging belly line.',
+      recommendation: GuidedBcsRecommendation(
+        goal: 'loss',
+        goalLabel: 'Weight loss',
+        rationale:
+            'This pattern usually fits a structured weight-loss goal with closer monitoring.',
+        calorieGuidance:
+            'Expect a more deliberate calorie reduction and stricter portion control.',
+        monitoringCadence:
+            'Weigh in weekly and review the feeding plan frequently.',
+        followUpNote:
+            'If mobility, breathing, grooming, or comorbidities are concerns, involve a veterinarian early.',
+      ),
     );
   }
 }

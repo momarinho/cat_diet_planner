@@ -18,6 +18,7 @@ void main() {
     expect(result, isNotNull);
     expect(result!.rangeLabel, 'BCS 4-5');
     expect(result.suggestedScore, 5);
+    expect(result.recommendation.goal, 'maintenance');
   });
 
   test('assessment suggests BCS 7+ for strongly overweight answers', () {
@@ -31,6 +32,7 @@ void main() {
     expect(result, isNotNull);
     expect(result!.rangeLabel, 'BCS 7+');
     expect(result.suggestedScore, 7);
+    expect(result.recommendation.goal, 'loss');
   });
 
   test('assessment suggests BCS 1-3 for strongly lean answers', () {
@@ -44,5 +46,6 @@ void main() {
     expect(result, isNotNull);
     expect(result!.rangeLabel, 'BCS 1-3');
     expect(result.suggestedScore, 3);
+    expect(result.recommendation.goal, 'gain');
   });
 }

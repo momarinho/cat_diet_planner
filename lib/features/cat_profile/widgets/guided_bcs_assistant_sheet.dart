@@ -1,22 +1,35 @@
+import 'package:cat_diet_planner/data/models/cat_profile.dart';
 import 'package:cat_diet_planner/features/cat_profile/services/guided_bcs_service.dart';
 import 'package:flutter/material.dart';
 
-Future<int?> showGuidedBcsAssistantSheet(
+Future<GuidedBcsSelection?> showGuidedBcsAssistantSheet(
   BuildContext context, {
   int? initialBcs,
+  String? currentGoal,
+  bool initialApplySuggestedGoal = true,
 }) {
-  return showModalBottomSheet<int>(
+  return showModalBottomSheet<GuidedBcsSelection>(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    builder: (context) => _GuidedBcsAssistantSheet(initialBcs: initialBcs),
+    builder: (context) => _GuidedBcsAssistantSheet(
+      initialBcs: initialBcs,
+      currentGoal: currentGoal,
+      initialApplySuggestedGoal: initialApplySuggestedGoal,
+    ),
   );
 }
 
 class _GuidedBcsAssistantSheet extends StatefulWidget {
-  const _GuidedBcsAssistantSheet({required this.initialBcs});
+  const _GuidedBcsAssistantSheet({
+    required this.initialBcs,
+    required this.currentGoal,
+    required this.initialApplySuggestedGoal,
+  });
 
   final int? initialBcs;
+  final String? currentGoal;
+  final bool initialApplySuggestedGoal;
 
   @override
   State<_GuidedBcsAssistantSheet> createState() =>
@@ -27,6 +40,7 @@ class _GuidedBcsAssistantSheetState extends State<_GuidedBcsAssistantSheet> {
   final Map<String, int> _answers = <String, int>{};
   late int _finalScore;
   bool _manuallyAdjustedScore = false;
+  bool _applySuggestedGoal = true;
 
   GuidedBcsAssessmentResult? get _result => GuidedBcsService.assess(_answers);
   int get _effectiveScore => _manuallyAdjustedScore
@@ -37,6 +51,7 @@ class _GuidedBcsAssistantSheetState extends State<_GuidedBcsAssistantSheet> {
   void initState() {
     super.initState();
     _finalScore = widget.initialBcs ?? 5;
+    _applySuggestedGoal = widget.initialApplySuggestedGoal;
   }
 
   void _selectAnswer(String questionId, int value) {
@@ -252,6 +267,97 @@ class _GuidedBcsAssistantSheetState extends State<_GuidedBcsAssistantSheet> {
                             color: softText,
                           ),
                         ),
+                        if (result != null) ...[
+                          const SizedBox(height: 14),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: primary.withValues(alpha: 0.06),
+                              borderRadius: BorderRadius.circular(18),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Recommended next step',
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: [
+                                    _RecommendationChip(
+                                      label:
+                                          'Goal: ${result.recommendation.goalLabel}',
+                                      primary: primary,
+                                    ),
+                                    _RecommendationChip(
+                                      label:
+                                          'Monitor: ${result.recommendation.monitoringCadence}',
+                                      primary: primary,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 10),
+                                Text(
+                                  result.recommendation.rationale,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: softText,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  result.recommendation.calorieGuidance,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: softText,
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  result.recommendation.followUpNote,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: softText,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                CheckboxListTile(
+                                  value: _applySuggestedGoal,
+                                  onChanged: (value) {
+                                    setState(
+                                      () =>
+                                          _applySuggestedGoal = value ?? false,
+                                    );
+                                  },
+                                  contentPadding: EdgeInsets.zero,
+                                  title: Text(
+                                    widget.currentGoal ==
+                                            result.recommendation.goal
+                                        ? 'Keep goal aligned with this recommendation'
+                                        : 'Apply ${result.recommendation.goalLabel.toLowerCase()} to this profile',
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    widget.currentGoal == null
+                                        ? 'The cat profile will save this recommended goal with the new BCS.'
+                                        : 'Current goal: ${catGoalLabel(widget.currentGoal!)}. You can save only the BCS if you prefer.',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: softText,
+                                    ),
+                                  ),
+                                  controlAffinity:
+                                      ListTileControlAffinity.leading,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -281,13 +387,52 @@ class _GuidedBcsAssistantSheetState extends State<_GuidedBcsAssistantSheet> {
                 child: FilledButton.icon(
                   onPressed: result == null
                       ? null
-                      : () => Navigator.of(context).pop(_effectiveScore),
+                      : () => Navigator.of(context).pop(
+                          GuidedBcsSelection(
+                            finalScore: _effectiveScore,
+                            appliedGoal: _applySuggestedGoal
+                                ? result.recommendation.goal
+                                : null,
+                          ),
+                        ),
                   icon: const Icon(Icons.check_circle_outline),
-                  label: const Text('Use this BCS'),
+                  label: Text(
+                    result == null
+                        ? 'Use this BCS'
+                        : _applySuggestedGoal
+                        ? 'Use BCS and goal'
+                        : 'Use this BCS',
+                  ),
                 ),
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _RecommendationChip extends StatelessWidget {
+  const _RecommendationChip({required this.label, required this.primary});
+
+  final String label;
+  final Color primary;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      decoration: BoxDecoration(
+        color: primary.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: theme.textTheme.labelMedium?.copyWith(
+          color: primary,
+          fontWeight: FontWeight.w800,
         ),
       ),
     );

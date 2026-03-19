@@ -61,4 +61,48 @@ void main() {
       await tester.pump();
     },
   );
+
+  testWidgets(
+    'guided BCS assistant applies recommended goal to the profile form',
+    (tester) async {
+      tester.view.devicePixelRatio = 1.0;
+      tester.view.physicalSize = const Size(1200, 2800);
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      await tester.pumpWidget(
+        ProviderScope(child: buildTestApp(home: const CatProfileScreen())),
+      );
+
+      await tester.enterText(find.byType(TextFormField).first, 'Skye');
+
+      await tester.tap(find.text('Guided assistant'));
+      await tester.pumpAndSettle();
+
+      Future<void> answer(String label) async {
+        final textFinder = find.text(label);
+        await tester.ensureVisible(textFinder);
+        final cardFinder = find.ancestor(
+          of: textFinder,
+          matching: find.byType(InkWell),
+        );
+        await tester.tap(cardFinder.first);
+        await tester.pumpAndSettle();
+      }
+
+      await answer('Very easy');
+      await answer('Very visible');
+      await answer('Strong tuck');
+      await answer('Very little');
+
+      await tester.ensureVisible(find.text('Use BCS and goal'));
+      await tester.tap(find.text('Use BCS and goal'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Weight gain'), findsWidgets);
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump();
+    },
+  );
 }

@@ -1,11 +1,14 @@
 import 'package:cat_diet_planner/core/constants/app_limits.dart';
 import 'package:cat_diet_planner/core/localization/app_feedback_localizer.dart';
 import 'package:cat_diet_planner/core/localization/app_formatters.dart';
+import 'package:cat_diet_planner/core/navigation/app_routes.dart';
 import 'package:cat_diet_planner/core/utils/cat_photo.dart';
 import 'package:cat_diet_planner/core/widgets/app_loading_state.dart';
 import 'package:cat_diet_planner/data/models/cat_profile.dart';
+import 'package:cat_diet_planner/features/cat_group/providers/selected_group_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/services/cat_photo_service.dart';
 import 'package:cat_diet_planner/features/cat_profile/providers/cat_profiles_provider.dart';
+import 'package:cat_diet_planner/features/cat_profile/providers/selected_cat_provider.dart';
 import 'package:cat_diet_planner/features/cat_profile/widgets/guided_bcs_assistant_sheet.dart';
 import 'package:cat_diet_planner/l10n/app_localizations.dart';
 import 'package:file_picker/file_picker.dart';
@@ -57,6 +60,7 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
   String? _photoPath;
   String? _photoBase64;
   bool _isSaving = false;
+  bool _offerPlansShortcutAfterSave = false;
 
   // clinical/routine state
   int? _bcs;
@@ -309,7 +313,48 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
     }
 
     if (!mounted) return;
-    Navigator.of(context).pop();
+    final navigator = Navigator.of(context);
+    final shouldOfferPlans = _offerPlansShortcutAfterSave;
+
+    setState(() {
+      _isSaving = false;
+      _offerPlansShortcutAfterSave = false;
+    });
+
+    if (shouldOfferPlans) {
+      final openPlans = await showDialog<bool>(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text('Profile saved'),
+            content: const Text(
+              'The BCS recommendation was saved. Do you want to open Plans for this cat now?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: const Text('Later'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                child: const Text('Open Plans'),
+              ),
+            ],
+          );
+        },
+      );
+
+      if (!mounted) return;
+      if (openPlans == true) {
+        ref.read(selectedGroupProvider.notifier).state = null;
+        ref.read(selectedCatProvider.notifier).state = profile;
+        navigator.pop();
+        navigator.pushNamed(AppRoutes.plans);
+        return;
+      }
+    }
+
+    navigator.pop();
   }
 
   Future<void> _deleteProfile() async {
@@ -373,12 +418,19 @@ class _CatProfileScreenState extends ConsumerState<CatProfileScreen> {
   }
 
   Future<void> _openGuidedBcsAssistant() async {
-    final selectedBcs = await showGuidedBcsAssistantSheet(
+    final selection = await showGuidedBcsAssistantSheet(
       context,
       initialBcs: _bcs,
+      currentGoal: _goal,
     );
-    if (!mounted || selectedBcs == null) return;
-    setState(() => _bcs = selectedBcs);
+    if (!mounted || selection == null) return;
+    setState(() {
+      _bcs = selection.finalScore;
+      if (selection.appliedGoal != null) {
+        _goal = selection.appliedGoal!;
+        _offerPlansShortcutAfterSave = true;
+      }
+    });
   }
 
   @override

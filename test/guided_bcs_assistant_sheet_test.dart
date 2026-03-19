@@ -1,3 +1,4 @@
+import 'package:cat_diet_planner/features/cat_profile/services/guided_bcs_service.dart';
 import 'package:cat_diet_planner/features/cat_profile/widgets/guided_bcs_assistant_sheet.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -8,7 +9,7 @@ void main() {
   testWidgets('guided BCS assistant completes and returns selected score', (
     tester,
   ) async {
-    int? returnedScore;
+    GuidedBcsSelection? returnedSelection;
     tester.view.physicalSize = const Size(1080, 2200);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -22,9 +23,10 @@ void main() {
               body: Center(
                 child: FilledButton(
                   onPressed: () async {
-                    returnedScore = await showGuidedBcsAssistantSheet(
+                    returnedSelection = await showGuidedBcsAssistantSheet(
                       context,
                       initialBcs: 2,
+                      currentGoal: 'maintenance',
                     );
                   },
                   child: const Text('Open'),
@@ -60,10 +62,80 @@ void main() {
     await tester.ensureVisible(find.text('BCS 4-5'));
     expect(find.text('BCS 4-5'), findsOneWidget);
 
+    expect(find.text('Goal: Maintenance'), findsOneWidget);
+    expect(
+      find.textContaining('Monitor: Weigh in every 2 to 4 weeks'),
+      findsOneWidget,
+    );
+
+    await tester.ensureVisible(find.text('Use BCS and goal'));
+    await tester.tap(find.text('Use BCS and goal'));
+    await tester.pumpAndSettle();
+
+    expect(returnedSelection, isNotNull);
+    expect(returnedSelection!.finalScore, 5);
+    expect(returnedSelection!.appliedGoal, 'maintenance');
+  });
+
+  testWidgets('guided BCS assistant can save only BCS without applying goal', (
+    tester,
+  ) async {
+    GuidedBcsSelection? returnedSelection;
+    tester.view.physicalSize = const Size(1080, 3200);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    await tester.pumpWidget(
+      buildTestApp(
+        home: Builder(
+          builder: (context) {
+            return Scaffold(
+              body: Center(
+                child: FilledButton(
+                  onPressed: () async {
+                    returnedSelection = await showGuidedBcsAssistantSheet(
+                      context,
+                      initialBcs: 7,
+                      currentGoal: 'maintenance',
+                      initialApplySuggestedGoal: false,
+                    );
+                  },
+                  child: const Text('Open'),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    Future<void> answer(String label) async {
+      final textFinder = find.text(label);
+      await tester.ensureVisible(textFinder);
+      final cardFinder = find.ancestor(
+        of: textFinder,
+        matching: find.byType(InkWell),
+      );
+      await tester.tap(cardFinder.first);
+      await tester.pumpAndSettle();
+    }
+
+    await answer('Hard to feel');
+    await answer('Barely visible');
+    await answer('Rounded or hanging');
+    await answer('Heavy cover');
+
     await tester.ensureVisible(find.text('Use this BCS'));
     await tester.tap(find.text('Use this BCS'));
     await tester.pumpAndSettle();
 
-    expect(returnedScore, 5);
+    expect(returnedSelection, isNotNull);
+    expect(returnedSelection!.finalScore, 7);
+    expect(returnedSelection!.appliedGoal, isNull);
   });
 }
