@@ -292,8 +292,10 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
   }) {
     final selectedFoods = _selectedFoods(repository);
     if (selectedFoods.isEmpty) return null;
+    final existingPlan = repository.getPlanForCat(cat.id);
     final foodSplitPercentByKcal = _selectedFoodSplitByKcal(repository);
     final targetKcalPerDay =
+        existingPlan?.targetKcalPerDay ??
         cat.manualTargetKcal ??
         DietCalculatorService.suggestTargetKcal(
           weightKg: cat.weight,
@@ -328,6 +330,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
       portionUnit: _portionUnit,
       portionUnitGrams: _portionUnitGramsValue(),
       dailyOverrides: dailyOverrides,
+      targetKcalPerDay: targetKcalPerDay,
       foodSplitPercentByKcal: foodSplitPercentByKcal,
       operationalNotes: _operationalNotesController.text.trim().isEmpty
           ? null
@@ -928,923 +931,1001 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
         _findGroupById(groups, _selectedGroupId) ??
         (groups.isNotEmpty ? groups.first : null);
 
-    final selectedCatHydrationKey = selectedCat == null
-        ? null
-        : _catHydrationKey(
-            selectedCat.id,
-            repository.getPlanForCat(selectedCat.id),
-          );
-    final selectedGroupHydrationKey = selectedGroup == null
-        ? null
-        : _groupHydrationKey(
-            selectedGroup.id,
-            repository.getPlanForGroup(selectedGroup.id),
-          );
+    return ValueListenableBuilder(
+      valueListenable: repository.individualPlanListenable(),
+      builder: (context, _, child) {
+        return ValueListenableBuilder(
+          valueListenable: repository.allGroupPlansListenable(),
+          builder: (context, _, child) {
+            final selectedCatHydrationKey = selectedCat == null
+                ? null
+                : _catHydrationKey(
+                    selectedCat.id,
+                    repository.getPlanForCat(selectedCat.id),
+                  );
+            final selectedGroupHydrationKey = selectedGroup == null
+                ? null
+                : _groupHydrationKey(
+                    selectedGroup.id,
+                    repository.getPlanForGroup(selectedGroup.id),
+                  );
 
-    if (!_planningForGroup &&
-        selectedCat != null &&
-        _hydratedCatId != selectedCatHydrationKey) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        _hydratePlanForCat(selectedCat, ref);
-      });
-    }
+            if (!_planningForGroup &&
+                selectedCat != null &&
+                _hydratedCatId != selectedCatHydrationKey) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                _hydratePlanForCat(selectedCat, ref);
+              });
+            }
 
-    if (_planningForGroup &&
-        selectedGroup != null &&
-        _hydratedGroupId != selectedGroupHydrationKey) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        _hydratePlanForGroup(selectedGroup.id, ref);
-      });
-    }
+            if (_planningForGroup &&
+                selectedGroup != null &&
+                _hydratedGroupId != selectedGroupHydrationKey) {
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                _hydratePlanForGroup(selectedGroup.id, ref);
+              });
+            }
 
-    final showIndividualEmpty = !_planningForGroup && cats.isEmpty;
-    final showGroupEmpty = _planningForGroup && groups.isEmpty;
-    final groupKcalPresets = <double>{
-      160,
-      180,
-      200,
-      220,
-      250,
-      if (selectedGroup != null)
-        repository.getPlanForGroup(selectedGroup.id)?.targetKcalPerCatPerDay ??
-            0,
-    }.where((value) => value > 0).toList()..sort();
-    final individualPreview = !_planningForGroup && selectedCat != null
-        ? _buildIndividualPreview(cat: selectedCat, repository: repository)
-        : null;
-    final groupPreview = _planningForGroup && selectedGroup != null
-        ? _buildGroupPreview(group: selectedGroup, repository: repository)
-        : null;
-    final groupTotalsSummary = _planningForGroup && selectedGroup != null
-        ? _buildGroupTotalsSummary(
-            group: selectedGroup,
-            cats: cats,
-            repository: repository,
-          )
-        : null;
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.plansTitle),
-        centerTitle: true,
-        backgroundColor: theme.scaffoldBackgroundColor,
-        surfaceTintColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          IconButton(
-            tooltip: l10n.planInspectorTooltip,
-            onPressed: () => _openPlanInspector(
-              repository: repository,
-              primary: primary,
-              selectedCat: selectedCat,
-              selectedGroup: selectedGroup,
-              individualPreview: individualPreview,
-              groupPreview: groupPreview,
-            ),
-            icon: const Icon(Icons.visibility_outlined),
-          ),
-        ],
-      ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
-        children: [
-          _SectionCard(
-            primary: primary,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  l10n.buildPlanTitle,
-                  style: theme.textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w900,
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Wrap(
-                  spacing: 10,
-                  children: [
-                    ChoiceChip(
-                      label: Text(l10n.individualPlanMode),
-                      selected: !_planningForGroup,
-                      onSelected: (_) {
-                        setState(() {
-                          _planningForGroup = false;
-                          _groupGoalFilter = 'all';
-                          _hydratedCatId = null;
-                          _mealTimes =
-                              DailyMealScheduleService.normalizeMealTimes(
-                                _mealTimes,
-                                mealsPerDay: _mealsPerDay,
-                              );
-                          _syncMealLabelControllers(
-                            DailyMealScheduleService.normalizeMealLabels(
-                              _currentMealLabels(),
-                              mealsPerDay: _mealsPerDay,
-                            ),
-                          );
-                          _syncMealShareControllers(
-                            _normalizedMealSharesForCount(_mealsPerDay),
-                          );
-                        });
-                      },
-                    ),
-                    ChoiceChip(
-                      label: Text(l10n.groupPlanMode),
-                      selected: _planningForGroup,
-                      onSelected: (_) {
-                        setState(() {
-                          _planningForGroup = true;
-                          _groupGoalFilter = 'all';
-                          _hydratedGroupId = null;
-                          _mealTimes =
-                              DailyMealScheduleService.normalizeMealTimes(
-                                _mealTimes,
-                                mealsPerDay: _mealsPerDay,
-                              );
-                          _syncMealLabelControllers(
-                            DailyMealScheduleService.normalizeMealLabels(
-                              _currentMealLabels(),
-                              mealsPerDay: _mealsPerDay,
-                            ),
-                          );
-                          _syncMealShareControllers(
-                            _normalizedMealSharesForCount(_mealsPerDay),
-                          );
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                if (!_planningForGroup)
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedCat?.id,
-                    decoration: InputDecoration(
-                      labelText: l10n.catProfileLabel,
-                      border: OutlineInputBorder(),
-                    ),
-                    items: cats.map((cat) {
-                      return DropdownMenuItem(
-                        value: cat.id,
-                        child: Text(cat.name),
-                      );
-                    }).toList(),
-                    onChanged: cats.isEmpty
-                        ? null
-                        : (value) {
-                            if (value == null) return;
-                            final nextCat = _findCatById(cats, value);
-                            if (nextCat == null) return;
-                            ref.read(selectedCatProvider.notifier).state =
-                                nextCat;
-                            setState(() {
-                              _selectedCatId = value;
-                              _hydratedCatId = null;
-                            });
-                          },
+            final showIndividualEmpty = !_planningForGroup && cats.isEmpty;
+            final showGroupEmpty = _planningForGroup && groups.isEmpty;
+            final groupKcalPresets = <double>{
+              160,
+              180,
+              200,
+              220,
+              250,
+              if (selectedGroup != null)
+                repository
+                        .getPlanForGroup(selectedGroup.id)
+                        ?.targetKcalPerCatPerDay ??
+                    0,
+            }.where((value) => value > 0).toList()..sort();
+            final individualPreview = !_planningForGroup && selectedCat != null
+                ? _buildIndividualPreview(
+                    cat: selectedCat,
+                    repository: repository,
                   )
-                else ...[
-                  DropdownButtonFormField<String>(
-                    initialValue: selectedGroup?.id,
-                    decoration: InputDecoration(
-                      labelText: l10n.groupLabel,
-                      border: OutlineInputBorder(),
+                : null;
+            final groupPreview = _planningForGroup && selectedGroup != null
+                ? _buildGroupPreview(
+                    group: selectedGroup,
+                    repository: repository,
+                  )
+                : null;
+            final groupTotalsSummary =
+                _planningForGroup && selectedGroup != null
+                ? _buildGroupTotalsSummary(
+                    group: selectedGroup,
+                    cats: cats,
+                    repository: repository,
+                  )
+                : null;
+
+            return Scaffold(
+              appBar: AppBar(
+                title: Text(l10n.plansTitle),
+                centerTitle: true,
+                backgroundColor: theme.scaffoldBackgroundColor,
+                surfaceTintColor: Colors.transparent,
+                elevation: 0,
+                actions: [
+                  IconButton(
+                    tooltip: l10n.planInspectorTooltip,
+                    onPressed: () => _openPlanInspector(
+                      repository: repository,
+                      primary: primary,
+                      selectedCat: selectedCat,
+                      selectedGroup: selectedGroup,
+                      individualPreview: individualPreview,
+                      groupPreview: groupPreview,
                     ),
-                    items: groups.map((group) {
-                      return DropdownMenuItem(
-                        value: group.id,
-                        child: Text(
-                          l10n.groupWithCats(group.name, group.catCount),
-                        ),
-                      );
-                    }).toList(),
-                    onChanged: groups.isEmpty
-                        ? null
-                        : (value) {
-                            if (value == null) return;
-                            setState(() {
-                              _selectedGroupId = value;
-                              _hydratedGroupId = null;
-                            });
-                          },
-                  ),
-                  const SizedBox(height: 14),
-                  TextFormField(
-                    controller: _groupKcalController,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: l10n.targetKcalPerCatPerDayLabel,
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children: groupKcalPresets.map((preset) {
-                      return ActionChip(
-                        label: Text('${preset.toStringAsFixed(0)} kcal'),
-                        onPressed: () {
-                          setState(() {
-                            _groupKcalController.text = preset.toStringAsFixed(
-                              0,
-                            );
-                          });
-                        },
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    width: double.infinity,
-                    child: OutlinedButton.icon(
-                      onPressed: () {
-                        Navigator.of(context).pushNamed(AppRoutes.catGroup);
-                      },
-                      icon: const Icon(Icons.groups_outlined),
-                      label: Text(l10n.createGroupAction),
-                    ),
+                    icon: const Icon(Icons.visibility_outlined),
                   ),
                 ],
-                const SizedBox(height: 14),
-                Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
-                  children: List.generate(4, (index) {
-                    final meals = index + 3;
-                    final selected = meals == _mealsPerDay;
-                    return ChoiceChip(
-                      label: Text(l10n.mealsPerDayChip(meals)),
-                      selected: selected,
-                      onSelected: (_) => setState(() {
-                        _mealsPerDay = meals;
-                        _mealTimes =
-                            DailyMealScheduleService.normalizeMealTimes(
-                              _mealTimes,
-                              mealsPerDay: meals,
-                            );
-                        _syncMealLabelControllers(
-                          DailyMealScheduleService.normalizeMealLabels(
-                            _currentMealLabels(),
-                            mealsPerDay: meals,
+              ),
+              body: ListView(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+                children: [
+                  _SectionCard(
+                    primary: primary,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.buildPlanTitle,
+                          style: theme.textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w900,
                           ),
-                        );
-                        _syncMealShareControllers(
-                          _normalizedMealSharesForCount(meals),
-                        );
-                      }),
-                    );
-                  }),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  l10n.planStartDateTitle,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                OutlinedButton.icon(
-                  onPressed: () => _pickPlanStartDate(context),
-                  icon: const Icon(Icons.event_rounded),
-                  label: Text(l10n.startsOnLabel(_formatDate(_planStartDate))),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  l10n.portionUnitTitle,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                DropdownButtonFormField<String>(
-                  initialValue: _portionUnit,
-                  decoration: InputDecoration(
-                    labelText: l10n.unitLabel,
-                    border: OutlineInputBorder(),
-                  ),
-                  items: PortionUnitService.supportedUnits().map((unit) {
-                    return DropdownMenuItem(value: unit, child: Text(unit));
-                  }).toList(),
-                  onChanged: (value) {
-                    if (value == null) return;
-                    setState(() {
-                      _portionUnit = value;
-                      _portionUnitGramsController.text =
-                          PortionUnitService.gramsPerUnit(
-                            value,
-                          ).toStringAsFixed(2);
-                    });
-                  },
-                ),
-                const SizedBox(height: 10),
-                TextFormField(
-                  controller: _portionUnitGramsController,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  decoration: InputDecoration(
-                    labelText: l10n.gramsPerUnitLabel,
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SwitchListTile(
-                  value: _weekendAlternative,
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.weekendAlternativeTitle),
-                  subtitle: Text(l10n.weekendAlternativeDescription),
-                  onChanged: _planningForGroup
-                      ? null
-                      : (value) => setState(() => _weekendAlternative = value),
-                ),
-                if (_weekendAlternative && !_planningForGroup) ...[
-                  const SizedBox(height: 8),
-                  TextFormField(
-                    controller: _weekendKcalFactorController,
-                    keyboardType: const TextInputType.numberWithOptions(
-                      decimal: true,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: l10n.weekendKcalFactorLabel,
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                ],
-                if (!_planningForGroup) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.byWeekdayTitle,
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    l10n.byWeekdayDescription,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      color: secondary,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  ...List.generate(7, (index) {
-                    final weekday = index + 1;
-                    final enabled = _weekdayOverridesEnabled[weekday] == true;
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: SwitchListTile(
-                              contentPadding: EdgeInsets.zero,
-                              title: Text(_weekdayLabel(context, weekday)),
-                              value: enabled,
-                              onChanged: (value) {
+                        ),
+                        const SizedBox(height: 14),
+                        Wrap(
+                          spacing: 10,
+                          children: [
+                            ChoiceChip(
+                              label: Text(l10n.individualPlanMode),
+                              selected: !_planningForGroup,
+                              onSelected: (_) {
                                 setState(() {
-                                  _weekdayOverridesEnabled[weekday] = value;
+                                  _planningForGroup = false;
+                                  _groupGoalFilter = 'all';
+                                  _hydratedCatId = null;
+                                  _mealTimes =
+                                      DailyMealScheduleService.normalizeMealTimes(
+                                        _mealTimes,
+                                        mealsPerDay: _mealsPerDay,
+                                      );
+                                  _syncMealLabelControllers(
+                                    DailyMealScheduleService.normalizeMealLabels(
+                                      _currentMealLabels(),
+                                      mealsPerDay: _mealsPerDay,
+                                    ),
+                                  );
+                                  _syncMealShareControllers(
+                                    _normalizedMealSharesForCount(_mealsPerDay),
+                                  );
                                 });
                               },
                             ),
+                            ChoiceChip(
+                              label: Text(l10n.groupPlanMode),
+                              selected: _planningForGroup,
+                              onSelected: (_) {
+                                setState(() {
+                                  _planningForGroup = true;
+                                  _groupGoalFilter = 'all';
+                                  _hydratedGroupId = null;
+                                  _mealTimes =
+                                      DailyMealScheduleService.normalizeMealTimes(
+                                        _mealTimes,
+                                        mealsPerDay: _mealsPerDay,
+                                      );
+                                  _syncMealLabelControllers(
+                                    DailyMealScheduleService.normalizeMealLabels(
+                                      _currentMealLabels(),
+                                      mealsPerDay: _mealsPerDay,
+                                    ),
+                                  );
+                                  _syncMealShareControllers(
+                                    _normalizedMealSharesForCount(_mealsPerDay),
+                                  );
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        if (!_planningForGroup)
+                          DropdownButtonFormField<String>(
+                            initialValue: selectedCat?.id,
+                            decoration: InputDecoration(
+                              labelText: l10n.catProfileLabel,
+                              border: OutlineInputBorder(),
+                            ),
+                            items: cats.map((cat) {
+                              return DropdownMenuItem(
+                                value: cat.id,
+                                child: Text(cat.name),
+                              );
+                            }).toList(),
+                            onChanged: cats.isEmpty
+                                ? null
+                                : (value) {
+                                    if (value == null) return;
+                                    final nextCat = _findCatById(cats, value);
+                                    if (nextCat == null) return;
+                                    ref
+                                            .read(selectedCatProvider.notifier)
+                                            .state =
+                                        nextCat;
+                                    setState(() {
+                                      _selectedCatId = value;
+                                      _hydratedCatId = null;
+                                    });
+                                  },
+                          )
+                        else ...[
+                          DropdownButtonFormField<String>(
+                            initialValue: selectedGroup?.id,
+                            decoration: InputDecoration(
+                              labelText: l10n.groupLabel,
+                              border: OutlineInputBorder(),
+                            ),
+                            items: groups.map((group) {
+                              return DropdownMenuItem(
+                                value: group.id,
+                                child: Text(
+                                  l10n.groupWithCats(
+                                    group.name,
+                                    group.catCount,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: groups.isEmpty
+                                ? null
+                                : (value) {
+                                    if (value == null) return;
+                                    setState(() {
+                                      _selectedGroupId = value;
+                                      _hydratedGroupId = null;
+                                    });
+                                  },
                           ),
-                          const SizedBox(width: 10),
+                          const SizedBox(height: 14),
+                          TextFormField(
+                            controller: _groupKcalController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            decoration: InputDecoration(
+                              labelText: l10n.targetKcalPerCatPerDayLabel,
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: groupKcalPresets.map((preset) {
+                              return ActionChip(
+                                label: Text(
+                                  '${preset.toStringAsFixed(0)} kcal',
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _groupKcalController.text = preset
+                                        .toStringAsFixed(0);
+                                  });
+                                },
+                              );
+                            }).toList(),
+                          ),
+                          const SizedBox(height: 10),
                           SizedBox(
-                            width: 130,
+                            width: double.infinity,
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                Navigator.of(
+                                  context,
+                                ).pushNamed(AppRoutes.catGroup);
+                              },
+                              icon: const Icon(Icons.groups_outlined),
+                              label: Text(l10n.createGroupAction),
+                            ),
+                          ),
+                        ],
+                        const SizedBox(height: 14),
+                        Wrap(
+                          spacing: 10,
+                          runSpacing: 10,
+                          children: List.generate(4, (index) {
+                            final meals = index + 3;
+                            final selected = meals == _mealsPerDay;
+                            return ChoiceChip(
+                              label: Text(l10n.mealsPerDayChip(meals)),
+                              selected: selected,
+                              onSelected: (_) => setState(() {
+                                _mealsPerDay = meals;
+                                _mealTimes =
+                                    DailyMealScheduleService.normalizeMealTimes(
+                                      _mealTimes,
+                                      mealsPerDay: meals,
+                                    );
+                                _syncMealLabelControllers(
+                                  DailyMealScheduleService.normalizeMealLabels(
+                                    _currentMealLabels(),
+                                    mealsPerDay: meals,
+                                  ),
+                                );
+                                _syncMealShareControllers(
+                                  _normalizedMealSharesForCount(meals),
+                                );
+                              }),
+                            );
+                          }),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          l10n.planStartDateTitle,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        OutlinedButton.icon(
+                          onPressed: () => _pickPlanStartDate(context),
+                          icon: const Icon(Icons.event_rounded),
+                          label: Text(
+                            l10n.startsOnLabel(_formatDate(_planStartDate)),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          l10n.portionUnitTitle,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        DropdownButtonFormField<String>(
+                          initialValue: _portionUnit,
+                          decoration: InputDecoration(
+                            labelText: l10n.unitLabel,
+                            border: OutlineInputBorder(),
+                          ),
+                          items: PortionUnitService.supportedUnits().map((
+                            unit,
+                          ) {
+                            return DropdownMenuItem(
+                              value: unit,
+                              child: Text(unit),
+                            );
+                          }).toList(),
+                          onChanged: (value) {
+                            if (value == null) return;
+                            setState(() {
+                              _portionUnit = value;
+                              _portionUnitGramsController.text =
+                                  PortionUnitService.gramsPerUnit(
+                                    value,
+                                  ).toStringAsFixed(2);
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 10),
+                        TextFormField(
+                          controller: _portionUnitGramsController,
+                          keyboardType: const TextInputType.numberWithOptions(
+                            decimal: true,
+                          ),
+                          decoration: InputDecoration(
+                            labelText: l10n.gramsPerUnitLabel,
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        SwitchListTile(
+                          value: _weekendAlternative,
+                          contentPadding: EdgeInsets.zero,
+                          title: Text(l10n.weekendAlternativeTitle),
+                          subtitle: Text(l10n.weekendAlternativeDescription),
+                          onChanged: _planningForGroup
+                              ? null
+                              : (value) =>
+                                    setState(() => _weekendAlternative = value),
+                        ),
+                        if (_weekendAlternative && !_planningForGroup) ...[
+                          const SizedBox(height: 8),
+                          TextFormField(
+                            controller: _weekendKcalFactorController,
+                            keyboardType: const TextInputType.numberWithOptions(
+                              decimal: true,
+                            ),
+                            decoration: InputDecoration(
+                              labelText: l10n.weekendKcalFactorLabel,
+                              border: OutlineInputBorder(),
+                            ),
+                          ),
+                        ],
+                        if (!_planningForGroup) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.byWeekdayTitle,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            l10n.byWeekdayDescription,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: secondary,
+                            ),
+                          ),
+                          const SizedBox(height: 10),
+                          ...List.generate(7, (index) {
+                            final weekday = index + 1;
+                            final enabled =
+                                _weekdayOverridesEnabled[weekday] == true;
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 10),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: SwitchListTile(
+                                      contentPadding: EdgeInsets.zero,
+                                      title: Text(
+                                        _weekdayLabel(context, weekday),
+                                      ),
+                                      value: enabled,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _weekdayOverridesEnabled[weekday] =
+                                              value;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  SizedBox(
+                                    width: 130,
+                                    child: TextFormField(
+                                      controller:
+                                          _weekdayKcalFactorControllers[weekday],
+                                      enabled: enabled,
+                                      keyboardType:
+                                          const TextInputType.numberWithOptions(
+                                            decimal: true,
+                                          ),
+                                      decoration: InputDecoration(
+                                        labelText: l10n.factorPercentLabel,
+                                        border: OutlineInputBorder(),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }),
+                        ],
+                        const SizedBox(height: 8),
+                        TextFormField(
+                          controller: _operationalNotesController,
+                          minLines: 2,
+                          maxLines: 4,
+                          decoration: InputDecoration(
+                            labelText: l10n.operationalNotesLabel,
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Text(
+                          l10n.mealLabelsTitle,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        ...List.generate(_mealLabelControllers.length, (index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
                             child: TextFormField(
-                              controller:
-                                  _weekdayKcalFactorControllers[weekday],
-                              enabled: enabled,
+                              controller: _mealLabelControllers[index],
+                              decoration: InputDecoration(
+                                labelText: l10n.mealNameLabel(index + 1),
+                                border: const OutlineInputBorder(),
+                              ),
+                            ),
+                          );
+                        }),
+                        const SizedBox(height: 6),
+                        Text(
+                          l10n.mealPortionsTitle,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.mealPortionsDescription,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: secondary,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ...List.generate(_mealShareControllers.length, (index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: TextFormField(
+                              controller: _mealShareControllers[index],
                               keyboardType:
                                   const TextInputType.numberWithOptions(
                                     decimal: true,
                                   ),
                               decoration: InputDecoration(
-                                labelText: l10n.factorPercentLabel,
-                                border: OutlineInputBorder(),
+                                labelText: l10n.mealShareLabel(
+                                  _mealLabelControllers[index].text
+                                          .trim()
+                                          .isEmpty
+                                      ? l10n.mealFallbackTitle(index + 1)
+                                      : _mealLabelControllers[index].text
+                                            .trim(),
+                                ),
+                                border: const OutlineInputBorder(),
+                                suffixText: '%',
                               ),
                             ),
+                          );
+                        }),
+                        const SizedBox(height: 6),
+                        Text(
+                          l10n.mealScheduleTitle,
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
                           ),
-                        ],
-                      ),
-                    );
-                  }),
-                ],
-                const SizedBox(height: 8),
-                TextFormField(
-                  controller: _operationalNotesController,
-                  minLines: 2,
-                  maxLines: 4,
-                  decoration: InputDecoration(
-                    labelText: l10n.operationalNotesLabel,
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  l10n.mealLabelsTitle,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                ...List.generate(_mealLabelControllers.length, (index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: TextFormField(
-                      controller: _mealLabelControllers[index],
-                      decoration: InputDecoration(
-                        labelText: l10n.mealNameLabel(index + 1),
-                        border: const OutlineInputBorder(),
-                      ),
-                    ),
-                  );
-                }),
-                const SizedBox(height: 6),
-                Text(
-                  l10n.mealPortionsTitle,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.mealPortionsDescription,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: secondary),
-                ),
-                const SizedBox(height: 12),
-                ...List.generate(_mealShareControllers.length, (index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: TextFormField(
-                      controller: _mealShareControllers[index],
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      decoration: InputDecoration(
-                        labelText: l10n.mealShareLabel(
-                          _mealLabelControllers[index].text.trim().isEmpty
-                              ? l10n.mealFallbackTitle(index + 1)
-                              : _mealLabelControllers[index].text.trim(),
                         ),
-                        border: const OutlineInputBorder(),
-                        suffixText: '%',
-                      ),
-                    ),
-                  );
-                }),
-                const SizedBox(height: 6),
-                Text(
-                  l10n.mealScheduleTitle,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.mealScheduleDescription,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: secondary),
-                ),
-                const SizedBox(height: 12),
-                ...List.generate(_mealTimes.length, (index) {
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: OutlinedButton.icon(
-                      onPressed: () => _pickMealTime(context, index),
-                      icon: const Icon(Icons.schedule_rounded),
-                      label: Text(
-                        '${AppLocalizations.of(context).mealFallbackTitle(index + 1)} • ${AppFormatters.formatStoredMealTime(context, _mealTimes[index])}',
-                      ),
-                    ),
-                  );
-                }),
-              ],
-            ),
-          ),
-          if (!_planningForGroup && selectedCat != null) ...[
-            const SizedBox(height: 16),
-            CatSuggestionsSection(
-              cat: selectedCat,
-              title: l10n.suggestionsTitle,
-              maxItems: 3,
-            ),
-          ],
-          if (showIndividualEmpty) ...[
-            const SizedBox(height: 16),
-            _EmptyPlanState(
-              primary: primary,
-              secondary: secondary,
-              title: l10n.noCatProfilesAvailableTitle,
-              message: l10n.noCatProfilesAvailableMessage,
-            ),
-          ],
-          if (showGroupEmpty) ...[
-            const SizedBox(height: 16),
-            _EmptyPlanState(
-              primary: primary,
-              secondary: secondary,
-              title: l10n.noGroupsAvailableTitle,
-              message: l10n.noGroupsAvailableMessage,
-            ),
-          ],
-          const SizedBox(height: 16),
-          Text(
-            l10n.availableFoodsTitle,
-            style: theme.textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const SizedBox(height: 12),
-          ValueListenableBuilder(
-            valueListenable: repository.foodsListenable(),
-            builder: (context, Box<FoodItem> box, _) {
-              final foods = repository.getAllFoods();
-
-              if (foods.isEmpty) {
-                return AppEmptyState(
-                  icon: Icons.pets_rounded,
-                  title: l10n.noFoodsAvailableTitle,
-                  description: l10n.noFoodsAvailableDescription,
-                );
-              }
-
-              return Column(
-                children: [
-                  SwitchListTile(
-                    value: _allowMultipleFoods,
-                    contentPadding: EdgeInsets.zero,
-                    title: Text(l10n.multipleFoodsTitle),
-                    subtitle: Text(l10n.multipleFoodsDescription),
-                    onChanged: (value) {
-                      setState(() {
-                        _allowMultipleFoods = value;
-                        if (!_allowMultipleFoods &&
-                            _selectedFoodKeys.isNotEmpty) {
-                          final firstKey = _selectedFoodKeys.first;
-                          _selectedFoodKeys
-                            ..clear()
-                            ..add(firstKey);
-                          _selectedFood = repository.findFoodByKey(firstKey);
-                        }
-                        if (_selectedFoodKeys.length <= 1) {
-                          _primaryFoodKcalSharePercent = 50;
-                        }
-                      });
-                    },
-                  ),
-                  if (_allowMultipleFoods && _selectedFoodKeys.length == 2) ...[
-                    const SizedBox(height: 12),
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: primary.withValues(alpha: 0.10),
+                        const SizedBox(height: 8),
+                        Text(
+                          l10n.mealScheduleDescription,
+                          style: theme.textTheme.bodyMedium?.copyWith(
+                            color: secondary,
+                          ),
                         ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        const SizedBox(height: 12),
+                        ...List.generate(_mealTimes.length, (index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: OutlinedButton.icon(
+                              onPressed: () => _pickMealTime(context, index),
+                              icon: const Icon(Icons.schedule_rounded),
+                              label: Text(
+                                '${AppLocalizations.of(context).mealFallbackTitle(index + 1)} • ${AppFormatters.formatStoredMealTime(context, _mealTimes[index])}',
+                              ),
+                            ),
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                  if (!_planningForGroup && selectedCat != null) ...[
+                    const SizedBox(height: 16),
+                    CatSuggestionsSection(
+                      cat: selectedCat,
+                      title: l10n.suggestionsTitle,
+                      maxItems: 3,
+                    ),
+                  ],
+                  if (showIndividualEmpty) ...[
+                    const SizedBox(height: 16),
+                    _EmptyPlanState(
+                      primary: primary,
+                      secondary: secondary,
+                      title: l10n.noCatProfilesAvailableTitle,
+                      message: l10n.noCatProfilesAvailableMessage,
+                    ),
+                  ],
+                  if (showGroupEmpty) ...[
+                    const SizedBox(height: 16),
+                    _EmptyPlanState(
+                      primary: primary,
+                      secondary: secondary,
+                      title: l10n.noGroupsAvailableTitle,
+                      message: l10n.noGroupsAvailableMessage,
+                    ),
+                  ],
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.availableFoodsTitle,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  ValueListenableBuilder(
+                    valueListenable: repository.foodsListenable(),
+                    builder: (context, Box<FoodItem> box, _) {
+                      final foods = repository.getAllFoods();
+
+                      if (foods.isEmpty) {
+                        return AppEmptyState(
+                          icon: Icons.pets_rounded,
+                          title: l10n.noFoodsAvailableTitle,
+                          description: l10n.noFoodsAvailableDescription,
+                        );
+                      }
+
+                      return Column(
                         children: [
-                          Text(
-                            'Mixed feeding split',
-                            style: theme.textTheme.titleSmall?.copyWith(
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const SizedBox(height: 6),
-                          Text(
-                            'V1 uses a kcal-based split between two foods.',
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: secondary,
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  _selectedFoods(repository).first.name,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                '${_primaryFoodKcalSharePercent.toStringAsFixed(0)}%',
-                                style: theme.textTheme.labelLarge?.copyWith(
-                                  color: primary,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ],
-                          ),
-                          Slider(
-                            value: _primaryFoodKcalSharePercent,
-                            min: 10,
-                            max: 90,
-                            divisions: 16,
-                            label:
-                                '${_primaryFoodKcalSharePercent.toStringAsFixed(0)}%',
+                          SwitchListTile(
+                            value: _allowMultipleFoods,
+                            contentPadding: EdgeInsets.zero,
+                            title: Text(l10n.multipleFoodsTitle),
+                            subtitle: Text(l10n.multipleFoodsDescription),
                             onChanged: (value) {
                               setState(() {
-                                _primaryFoodKcalSharePercent = value;
+                                _allowMultipleFoods = value;
+                                if (!_allowMultipleFoods &&
+                                    _selectedFoodKeys.isNotEmpty) {
+                                  final firstKey = _selectedFoodKeys.first;
+                                  _selectedFoodKeys
+                                    ..clear()
+                                    ..add(firstKey);
+                                  _selectedFood = repository.findFoodByKey(
+                                    firstKey,
+                                  );
+                                }
+                                if (_selectedFoodKeys.length <= 1) {
+                                  _primaryFoodKcalSharePercent = 50;
+                                }
                               });
                             },
                           ),
-                          Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  _selectedFoods(repository)[1].name,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                              Text(
-                                '${(100 - _primaryFoodKcalSharePercent).toStringAsFixed(0)}%',
-                                style: theme.textTheme.labelLarge?.copyWith(
-                                  color: primary,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                          Align(
-                            alignment: Alignment.centerLeft,
-                            child: ActionChip(
-                              label: Text(l10n.equalSplitLabel),
-                              onPressed: () {
-                                setState(() {
-                                  _primaryFoodKcalSharePercent = 50;
-                                });
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                  ...List<Widget>.generate(foods.length, (index) {
-                    final food = foods[index];
-                    final selected = _allowMultipleFoods
-                        ? _selectedFoodKeys.contains(food.key)
-                        : _selectedFood?.key == food.key;
-
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 12),
-                      child: InkWell(
-                        borderRadius: BorderRadius.circular(24),
-                        onTap: () => setState(() {
-                          // If multiple selection mode is active, toggle the food key
-                          if (_allowMultipleFoods) {
-                            final key = food.key;
-                            if (_selectedFoodKeys.contains(key)) {
-                              _selectedFoodKeys.remove(key);
-                              if (_selectedFoodKeys.length <= 1) {
-                                _primaryFoodKcalSharePercent = 50;
-                              }
-                            } else {
-                              if (_selectedFoodKeys.length >= 2) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Mixed feeding v1 supports up to 2 foods.',
-                                    ),
-                                  ),
-                                );
-                                return;
-                              }
-                              _selectedFoodKeys.add(key);
-                              if (_selectedFoodKeys.length == 2) {
-                                _primaryFoodKcalSharePercent = 50;
-                              }
-                            }
-                            // Keep `_selectedFood` in sync with a single representative when needed
-                            _selectedFood = _selectedFoodKeys.isNotEmpty
-                                ? repository.findFoodByKey(
-                                    _selectedFoodKeys.first,
-                                  )
-                                : null;
-                          } else {
-                            // Single selection behaviour (existing)
-                            _selectedFood = food;
-                            _selectedFoodKeys
-                              ..clear()
-                              ..add(food.key);
-                          }
-                        }),
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            final narrow = constraints.maxWidth < 360;
-                            return Container(
+                          if (_allowMultipleFoods &&
+                              _selectedFoodKeys.length == 2) ...[
+                            const SizedBox(height: 12),
+                            Container(
+                              width: double.infinity,
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: theme.colorScheme.surface,
-                                borderRadius: BorderRadius.circular(24),
+                                borderRadius: BorderRadius.circular(20),
                                 border: Border.all(
-                                  color: selected
-                                      ? primary
-                                      : primary.withValues(alpha: 0.10),
-                                  width: selected ? 2 : 1,
+                                  color: primary.withValues(alpha: 0.10),
                                 ),
                               ),
-                              child: narrow
-                                  ? Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Row(
-                                          children: [
-                                            CircleAvatar(
-                                              radius: 22,
-                                              backgroundColor: primary
-                                                  .withValues(alpha: 0.10),
-                                              child: Icon(
-                                                Icons.pets_rounded,
-                                                color: primary,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 12),
-                                            Expanded(
-                                              child: Column(
-                                                crossAxisAlignment:
-                                                    CrossAxisAlignment.start,
-                                                children: [
-                                                  Text(
-                                                    food.name,
-                                                    style: theme
-                                                        .textTheme
-                                                        .titleMedium
-                                                        ?.copyWith(
-                                                          fontWeight:
-                                                              FontWeight.w800,
-                                                        ),
-                                                  ),
-                                                  const SizedBox(height: 4),
-                                                  Text(
-                                                    food.brand ??
-                                                        l10n.unknownBrand,
-                                                    style: theme
-                                                        .textTheme
-                                                        .bodyMedium
-                                                        ?.copyWith(
-                                                          color: secondary,
-                                                        ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const SizedBox(height: 10),
-                                        Text(
-                                          '${food.kcalPer100g.toStringAsFixed(0)} kcal',
-                                          style: theme.textTheme.labelLarge
-                                              ?.copyWith(
-                                                color: primary,
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                        ),
-                                      ],
-                                    )
-                                  : Row(
-                                      children: [
-                                        CircleAvatar(
-                                          radius: 22,
-                                          backgroundColor: primary.withValues(
-                                            alpha: 0.10,
-                                          ),
-                                          child: Icon(
-                                            Icons.pets_rounded,
-                                            color: primary,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                food.name,
-                                                style: theme
-                                                    .textTheme
-                                                    .titleMedium
-                                                    ?.copyWith(
-                                                      fontWeight:
-                                                          FontWeight.w800,
-                                                    ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                food.brand ?? l10n.unknownBrand,
-                                                style: theme
-                                                    .textTheme
-                                                    .bodyMedium
-                                                    ?.copyWith(
-                                                      color: secondary,
-                                                    ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Text(
-                                          '${food.kcalPer100g.toStringAsFixed(0)} kcal',
-                                          style: theme.textTheme.labelLarge
-                                              ?.copyWith(
-                                                color: primary,
-                                                fontWeight: FontWeight.w800,
-                                              ),
-                                        ),
-                                      ],
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Mixed feeding split',
+                                    style: theme.textTheme.titleSmall?.copyWith(
+                                      fontWeight: FontWeight.w800,
                                     ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    'V1 uses a kcal-based split between two foods.',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: secondary,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 14),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          _selectedFoods(repository).first.name,
+                                          style: theme.textTheme.bodyMedium
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                        ),
+                                      ),
+                                      Text(
+                                        '${_primaryFoodKcalSharePercent.toStringAsFixed(0)}%',
+                                        style: theme.textTheme.labelLarge
+                                            ?.copyWith(
+                                              color: primary,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                  Slider(
+                                    value: _primaryFoodKcalSharePercent,
+                                    min: 10,
+                                    max: 90,
+                                    divisions: 16,
+                                    label:
+                                        '${_primaryFoodKcalSharePercent.toStringAsFixed(0)}%',
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _primaryFoodKcalSharePercent = value;
+                                      });
+                                    },
+                                  ),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          _selectedFoods(repository)[1].name,
+                                          style: theme.textTheme.bodyMedium
+                                              ?.copyWith(
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                        ),
+                                      ),
+                                      Text(
+                                        '${(100 - _primaryFoodKcalSharePercent).toStringAsFixed(0)}%',
+                                        style: theme.textTheme.labelLarge
+                                            ?.copyWith(
+                                              color: primary,
+                                              fontWeight: FontWeight.w800,
+                                            ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Align(
+                                    alignment: Alignment.centerLeft,
+                                    child: ActionChip(
+                                      label: Text(l10n.equalSplitLabel),
+                                      onPressed: () {
+                                        setState(() {
+                                          _primaryFoodKcalSharePercent = 50;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                          ...List<Widget>.generate(foods.length, (index) {
+                            final food = foods[index];
+                            final selected = _allowMultipleFoods
+                                ? _selectedFoodKeys.contains(food.key)
+                                : _selectedFood?.key == food.key;
+
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(24),
+                                onTap: () => setState(() {
+                                  // If multiple selection mode is active, toggle the food key
+                                  if (_allowMultipleFoods) {
+                                    final key = food.key;
+                                    if (_selectedFoodKeys.contains(key)) {
+                                      _selectedFoodKeys.remove(key);
+                                      if (_selectedFoodKeys.length <= 1) {
+                                        _primaryFoodKcalSharePercent = 50;
+                                      }
+                                    } else {
+                                      if (_selectedFoodKeys.length >= 2) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          const SnackBar(
+                                            content: Text(
+                                              'Mixed feeding v1 supports up to 2 foods.',
+                                            ),
+                                          ),
+                                        );
+                                        return;
+                                      }
+                                      _selectedFoodKeys.add(key);
+                                      if (_selectedFoodKeys.length == 2) {
+                                        _primaryFoodKcalSharePercent = 50;
+                                      }
+                                    }
+                                    // Keep `_selectedFood` in sync with a single representative when needed
+                                    _selectedFood = _selectedFoodKeys.isNotEmpty
+                                        ? repository.findFoodByKey(
+                                            _selectedFoodKeys.first,
+                                          )
+                                        : null;
+                                  } else {
+                                    // Single selection behaviour (existing)
+                                    _selectedFood = food;
+                                    _selectedFoodKeys
+                                      ..clear()
+                                      ..add(food.key);
+                                  }
+                                }),
+                                child: LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    final narrow = constraints.maxWidth < 360;
+                                    return Container(
+                                      padding: const EdgeInsets.all(16),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.surface,
+                                        borderRadius: BorderRadius.circular(24),
+                                        border: Border.all(
+                                          color: selected
+                                              ? primary
+                                              : primary.withValues(alpha: 0.10),
+                                          width: selected ? 2 : 1,
+                                        ),
+                                      ),
+                                      child: narrow
+                                          ? Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    CircleAvatar(
+                                                      radius: 22,
+                                                      backgroundColor: primary
+                                                          .withValues(
+                                                            alpha: 0.10,
+                                                          ),
+                                                      child: Icon(
+                                                        Icons.pets_rounded,
+                                                        color: primary,
+                                                      ),
+                                                    ),
+                                                    const SizedBox(width: 12),
+                                                    Expanded(
+                                                      child: Column(
+                                                        crossAxisAlignment:
+                                                            CrossAxisAlignment
+                                                                .start,
+                                                        children: [
+                                                          Text(
+                                                            food.name,
+                                                            style: theme
+                                                                .textTheme
+                                                                .titleMedium
+                                                                ?.copyWith(
+                                                                  fontWeight:
+                                                                      FontWeight
+                                                                          .w800,
+                                                                ),
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 4,
+                                                          ),
+                                                          Text(
+                                                            food.brand ??
+                                                                l10n.unknownBrand,
+                                                            style: theme
+                                                                .textTheme
+                                                                .bodyMedium
+                                                                ?.copyWith(
+                                                                  color:
+                                                                      secondary,
+                                                                ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                const SizedBox(height: 10),
+                                                Text(
+                                                  '${food.kcalPer100g.toStringAsFixed(0)} kcal',
+                                                  style: theme
+                                                      .textTheme
+                                                      .labelLarge
+                                                      ?.copyWith(
+                                                        color: primary,
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                      ),
+                                                ),
+                                              ],
+                                            )
+                                          : Row(
+                                              children: [
+                                                CircleAvatar(
+                                                  radius: 22,
+                                                  backgroundColor: primary
+                                                      .withValues(alpha: 0.10),
+                                                  child: Icon(
+                                                    Icons.pets_rounded,
+                                                    color: primary,
+                                                  ),
+                                                ),
+                                                const SizedBox(width: 12),
+                                                Expanded(
+                                                  child: Column(
+                                                    crossAxisAlignment:
+                                                        CrossAxisAlignment
+                                                            .start,
+                                                    children: [
+                                                      Text(
+                                                        food.name,
+                                                        style: theme
+                                                            .textTheme
+                                                            .titleMedium
+                                                            ?.copyWith(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .w800,
+                                                            ),
+                                                      ),
+                                                      const SizedBox(height: 4),
+                                                      Text(
+                                                        food.brand ??
+                                                            l10n.unknownBrand,
+                                                        style: theme
+                                                            .textTheme
+                                                            .bodyMedium
+                                                            ?.copyWith(
+                                                              color: secondary,
+                                                            ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                Text(
+                                                  '${food.kcalPer100g.toStringAsFixed(0)} kcal',
+                                                  style: theme
+                                                      .textTheme
+                                                      .labelLarge
+                                                      ?.copyWith(
+                                                        color: primary,
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                      ),
+                                                ),
+                                              ],
+                                            ),
+                                    );
+                                  },
+                                ),
+                              ),
                             );
-                          },
-                        ),
-                      ),
-                    );
-                  }),
-                ],
-              );
-            },
-          ),
-          if (_planningForGroup &&
-              selectedGroup != null &&
-              groupTotalsSummary != null) ...[
-            const SizedBox(height: 18),
-            Text(
-              l10n.groupPlanPreviewTitle,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.previewCoreTargetsSubtitle,
-              style: theme.textTheme.bodyMedium?.copyWith(color: secondary),
-            ),
-            const SizedBox(height: 12),
-            GroupTotalsSummaryCard(
-              summary: groupTotalsSummary,
-              primary: primary,
-              selectedGoalFilter: _groupGoalFilter,
-              onGoalFilterChanged: (value) {
-                setState(() => _groupGoalFilter = value);
-              },
-            ),
-          ],
-          if (!_planningForGroup &&
-              selectedCat != null &&
-              individualPreview != null) ...[
-            const SizedBox(height: 18),
-            Text(
-              l10n.dailySummaryTitle,
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              l10n.previewCoreTargetsSubtitle,
-              style: theme.textTheme.bodyMedium?.copyWith(color: secondary),
-            ),
-            const SizedBox(height: 12),
-            PlanQuickSummaryCard(
-              cat: selectedCat,
-              preview: individualPreview,
-              primary: primary,
-            ),
-          ],
-          const SizedBox(height: 18),
-          FilledButton.icon(
-            onPressed: _isSaving
-                ? null
-                : _planningForGroup
-                ? (groupPreview == null || selectedGroup == null
-                      ? null
-                      : () => _saveGroupPlan(selectedGroup))
-                : (individualPreview == null || selectedCat == null
-                      ? null
-                      : () => _saveIndividualPlan(selectedCat)),
-            icon: _isSaving
-                ? const SizedBox.shrink()
-                : const Icon(Icons.save_rounded),
-            label: _isSaving
-                ? AppLoadingState(compact: true, label: l10n.savingLabel)
-                : Text(
-                    _planningForGroup
-                        ? l10n.saveGroupPlanAction
-                        : l10n.savePlanAction,
+                          }),
+                        ],
+                      );
+                    },
                   ),
-          ),
-        ],
-      ),
+                  if (_planningForGroup &&
+                      selectedGroup != null &&
+                      groupTotalsSummary != null) ...[
+                    const SizedBox(height: 18),
+                    Text(
+                      l10n.groupPlanPreviewTitle,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.previewCoreTargetsSubtitle,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: secondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    GroupTotalsSummaryCard(
+                      summary: groupTotalsSummary,
+                      primary: primary,
+                      selectedGoalFilter: _groupGoalFilter,
+                      onGoalFilterChanged: (value) {
+                        setState(() => _groupGoalFilter = value);
+                      },
+                    ),
+                  ],
+                  if (!_planningForGroup &&
+                      selectedCat != null &&
+                      individualPreview != null) ...[
+                    const SizedBox(height: 18),
+                    Text(
+                      l10n.dailySummaryTitle,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      l10n.previewCoreTargetsSubtitle,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: secondary,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    PlanQuickSummaryCard(
+                      cat: selectedCat,
+                      preview: individualPreview,
+                      primary: primary,
+                    ),
+                  ],
+                  const SizedBox(height: 18),
+                  FilledButton.icon(
+                    onPressed: _isSaving
+                        ? null
+                        : _planningForGroup
+                        ? (groupPreview == null || selectedGroup == null
+                              ? null
+                              : () => _saveGroupPlan(selectedGroup))
+                        : (individualPreview == null || selectedCat == null
+                              ? null
+                              : () => _saveIndividualPlan(selectedCat)),
+                    icon: _isSaving
+                        ? const SizedBox.shrink()
+                        : const Icon(Icons.save_rounded),
+                    label: _isSaving
+                        ? AppLoadingState(
+                            compact: true,
+                            label: l10n.savingLabel,
+                          )
+                        : Text(
+                            _planningForGroup
+                                ? l10n.saveGroupPlanAction
+                                : l10n.savePlanAction,
+                          ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

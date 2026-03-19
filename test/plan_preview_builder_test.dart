@@ -75,4 +75,48 @@ void main() {
       expect(preview.mealPortionGrams[2], closeTo(30.6, 0.01));
     },
   );
+
+  test(
+    'buildIndividual respects an explicit target kcal override from a saved plan',
+    () {
+      final cat = CatProfile(
+        id: 'luna',
+        name: 'Luna',
+        weight: 4.3,
+        age: 36,
+        neutered: true,
+        activityLevel: 'moderate',
+        goal: 'maintenance',
+        createdAt: DateTime(2026, 3, 16),
+        manualTargetKcal: 235,
+      );
+      final foods = [
+        FoodItem(
+          barcode: 'food-1',
+          name: "Hill's Light Adult",
+          brand: "Hill's",
+          kcalPer100g: 318,
+          servingUnit: 'g',
+        ),
+      ];
+
+      final preview = PlanPreviewBuilder.buildIndividual(
+        cat: cat,
+        selectedFoods: foods,
+        mealsPerDay: 4,
+        mealTimes: const ['07:30 AM', '12:00 PM', '05:30 PM', '10:00 PM'],
+        mealLabels: const ['Breakfast', 'Lunch', 'Dinner', 'Late meal'],
+        normalizedMealShares: const [25, 25, 25, 25],
+        startDate: DateTime(2026, 3, 16),
+        portionUnit: 'g',
+        portionUnitGrams: 1,
+        dailyOverrides: const {},
+        targetKcalPerDay: 254,
+      );
+
+      expect(preview.targetKcalPerDay, 254);
+      expect(preview.portionGramsPerDay, closeTo(79.87, 0.05));
+      expect(preview.portionGramsPerMeal, closeTo(19.97, 0.05));
+    },
+  );
 }

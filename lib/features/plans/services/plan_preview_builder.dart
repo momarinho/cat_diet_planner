@@ -164,10 +164,12 @@ class PlanPreviewBuilder {
     required String portionUnit,
     required double portionUnitGrams,
     required Map<int, Map<dynamic, dynamic>> dailyOverrides,
+    double? targetKcalPerDay,
     Map<dynamic, double> foodSplitPercentByKcal = const {},
     String? operationalNotes,
   }) {
-    final targetKcalPerDay =
+    final resolvedTargetKcalPerDay =
+        targetKcalPerDay ??
         cat.manualTargetKcal ??
         DietCalculatorService.suggestTargetKcal(
           weightKg: cat.weight,
@@ -180,7 +182,7 @@ class PlanPreviewBuilder {
         );
     final foodBreakdown = buildFoodBreakdown(
       selectedFoods: selectedFoods,
-      targetKcalPerDay: targetKcalPerDay,
+      targetKcalPerDay: resolvedTargetKcalPerDay,
       mealsPerDay: mealsPerDay,
       normalizedMealShares: normalizedMealShares,
       foodSplitPercentByKcal: foodSplitPercentByKcal,
@@ -213,7 +215,7 @@ class PlanPreviewBuilder {
       title: 'Plan Preview',
       foodNames: selectedFoods.map((food) => food.name).toList(growable: false),
       foodBreakdown: foodBreakdown,
-      targetKcalPerDay: targetKcalPerDay,
+      targetKcalPerDay: resolvedTargetKcalPerDay,
       portionGramsPerDay: portionGramsPerDay,
       portionGramsPerMeal: portionGramsPerMeal,
       mealsPerDay: mealsPerDay,

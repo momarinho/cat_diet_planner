@@ -74,6 +74,10 @@ class PlanRepository {
     return HiveService.groupDietPlansBox.listenable(keys: [groupId]);
   }
 
+  ValueListenable<Box<GroupDietPlan>> allGroupPlansListenable() {
+    return HiveService.groupDietPlansBox.listenable();
+  }
+
   ValueListenable<Box<FoodItem>> foodsListenable() {
     return _foodRepository.foodsListenable();
   }
